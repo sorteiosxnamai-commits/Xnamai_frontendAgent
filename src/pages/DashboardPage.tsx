@@ -1,7 +1,13 @@
 import { ChannelBadge } from '@/components/ui/ChannelBadge';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
-import { ChartPanel, ChartTooltipContent, DashboardStatCard } from '@/components/dashboard/DashboardWidgets';
+import {
+  ChartPanel,
+  ChartTooltipContent,
+  DashboardStatCard,
+  InsightBanner,
+  ProgressRing,
+} from '@/components/dashboard/DashboardWidgets';
 import { Loading, Skeleton } from '@/components/ui/EmptyState';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDashboard } from '@/hooks/useQueries';
@@ -45,12 +51,7 @@ import {
   YAxis,
 } from 'recharts';
 
-const CHART_COLORS = {
-  teal: '#0d9488',
-  violet: '#7c3aed',
-  emerald: '#10b981',
-  amber: '#f59e0b',
-};
+const CHART = { teal: '#0d9488', violet: '#7c3aed', emerald: '#10b981' };
 
 const channelVolume: { name: string; value: number; type: ChannelType }[] = [
   { name: 'WhatsApp', value: 42, type: 'whatsapp' },
@@ -64,16 +65,16 @@ const channelVolume: { name: string; value: number; type: ChannelType }[] = [
 const PIE_COLORS = ['#0d9488', '#ec4899', '#8b5cf6', '#0ea5e9', '#3b82f6', '#6b7280'];
 
 const teamPerformance = [
-  { name: 'Ana Silva', resolved: 48, avgTime: '1m 12s', rating: 4.9 },
-  { name: 'Carlos Rocha', resolved: 41, avgTime: '1m 45s', rating: 4.7 },
-  { name: 'Julia Mendes', resolved: 36, avgTime: '2m 03s', rating: 4.8 },
-  { name: 'Roberto Lima', resolved: 29, avgTime: '2m 18s', rating: 4.5 },
+  { name: 'Ana Silva', resolved: 48, max: 50, avgTime: '1m 12s', rating: 4.9 },
+  { name: 'Carlos Rocha', resolved: 41, max: 50, avgTime: '1m 45s', rating: 4.7 },
+  { name: 'Julia Mendes', resolved: 36, max: 50, avgTime: '2m 03s', rating: 4.8 },
+  { name: 'Roberto Lima', resolved: 29, max: 50, avgTime: '2m 18s', rating: 4.5 },
 ];
 
 function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Bom dia';
-  if (hour < 18) return 'Boa tarde';
+  const h = new Date().getHours();
+  if (h < 12) return 'Bom dia';
+  if (h < 18) return 'Boa tarde';
   return 'Boa noite';
 }
 
@@ -92,15 +93,11 @@ export function DashboardPage() {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <Skeleton className="h-32 w-full rounded-2xl" />
+        <Skeleton className="h-40 w-full rounded-3xl" />
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-2xl" />
+            <Skeleton key={i} className="h-36 rounded-2xl" />
           ))}
-        </div>
-        <div className="grid gap-6 lg:grid-cols-3">
-          <Skeleton className="h-80 rounded-2xl lg:col-span-2" />
-          <Skeleton className="h-80 rounded-2xl" />
         </div>
         <Loading />
       </div>
@@ -110,373 +107,371 @@ export function DashboardPage() {
   if (!data) return null;
 
   const { stats, conversationsChart, ordersChart, responseTimeChart } = data;
-  const recentConversations = mockConversations.slice(0, 5);
+  const queue = mockConversations.filter((c) => c.status === 'waiting' || c.status === 'active').slice(0, 4);
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
-      >
-        <div>
-          <p className="text-sm font-medium text-primary-600 dark:text-primary-400">
-            {formatToday()}
-          </p>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
-            {getGreeting()}, {user?.name?.split(' ')[0] ?? 'Usuário'} 👋
-          </h1>
-          <p className="mt-1 text-gray-500 dark:text-gray-400">
-            Visão geral da operação multicanal em tempo real
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
-          >
-            <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
-            Atualizar
-          </button>
-          <Link
-            to="/atendimento"
-            className="flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm shadow-primary-600/25 transition-colors hover:bg-primary-700"
-          >
-            <Headphones className="h-4 w-4" />
-            Ir para atendimento
-          </Link>
-        </div>
-      </motion.div>
-
-      {/* Hero KPI strip */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        className="relative overflow-hidden rounded-2xl border border-primary-200/50 bg-gradient-to-br from-primary-600 via-primary-700 to-violet-700 p-6 text-white shadow-lg shadow-primary-900/20 sm:p-8"
-      >
-        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-8 left-1/3 h-40 w-40 rounded-full bg-violet-400/20 blur-2xl" />
-
-        <div className="relative grid gap-6 sm:grid-cols-3">
-          <div>
-            <div className="flex items-center gap-2 text-primary-100">
-              <Activity className="h-4 w-4" />
-              <span className="text-sm font-medium">Operação agora</span>
-            </div>
-            <p className="mt-3 text-4xl font-bold tracking-tight">{stats.activeConversations}</p>
-            <p className="mt-1 text-sm text-primary-100">conversas ativas</p>
-            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-              </span>
-              {stats.waitingQueue} aguardando na fila
-            </div>
-          </div>
-
-          <div className="border-white/10 sm:border-l sm:pl-8">
-            <div className="flex items-center gap-2 text-primary-100">
-              <Clock className="h-4 w-4" />
-              <span className="text-sm font-medium">Tempo médio</span>
-            </div>
-            <p className="mt-3 text-4xl font-bold tracking-tight">{stats.avgResponseTime}</p>
-            <p className="mt-1 text-sm text-primary-100">de resposta</p>
-            <p className="mt-3 text-xs text-emerald-200">↓ 18% mais rápido que ontem</p>
-          </div>
-
-          <div className="border-white/10 sm:border-l sm:pl-8">
-            <div className="flex items-center gap-2 text-primary-100">
-              <Star className="h-4 w-4" />
-              <span className="text-sm font-medium">Satisfação</span>
-            </div>
-            <p className="mt-3 text-4xl font-bold tracking-tight">
-              {stats.csat}
-              <span className="text-2xl font-normal text-primary-200">/5</span>
-            </p>
-            <p className="mt-1 text-sm text-primary-100">CSAT · NPS {stats.nps}</p>
-            <div className="mt-3 flex items-center gap-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star
-                  key={i}
-                  className={cn(
-                    'h-4 w-4',
-                    i < Math.floor(stats.csat) ? 'fill-amber-300 text-amber-300' : 'text-white/30',
-                  )}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Primary stats */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <DashboardStatCard
-          title="Conversas ativas"
-          value={stats.activeConversations}
-          icon={MessageSquare}
-          delta="+12%"
-          variant="primary"
-          delay={0.1}
-        />
-        <DashboardStatCard
-          title="Encerradas hoje"
-          value={stats.closedConversations}
-          icon={Users}
-          delta="+8%"
-          variant="default"
-          delay={0.15}
-        />
-        <DashboardStatCard
-          title="NPS"
-          value={stats.nps}
-          icon={TrendingUp}
-          delta="Meta: 70"
-          deltaUp={stats.nps >= 70}
-          variant="success"
-          delay={0.2}
-        />
-        <DashboardStatCard
-          title="Resolvidos pelo bot"
-          value={`${stats.botResolved}%`}
-          icon={Bot}
-          delta="+5%"
-          variant="violet"
-          delay={0.25}
-        />
+    <div className="relative min-h-full">
+      {/* Ambient background */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-32 top-0 h-96 w-96 rounded-full bg-teal-400/8 blur-3xl dark:bg-teal-500/5" />
+        <div className="absolute -right-24 top-1/3 h-80 w-80 rounded-full bg-violet-400/8 blur-3xl dark:bg-violet-500/5" />
       </div>
 
-      {/* Secondary stats row */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <DashboardStatCard
-          title="Na fila"
-          value={stats.waitingQueue}
-          icon={Headphones}
-          delta="-3"
-          deltaUp={false}
-          variant="warning"
-          delay={0.3}
-        />
-        <DashboardStatCard
-          title="Campanhas enviadas"
-          value={stats.campaignsSent.toLocaleString('pt-BR')}
-          icon={Megaphone}
-          delta="+240"
-          variant="default"
-          delay={0.35}
-        />
-        <DashboardStatCard
-          title="CSAT"
-          value={`${stats.csat}/5`}
-          icon={ThumbsUp}
-          delta="+0.3"
-          variant="success"
-          delay={0.4}
-        />
-        <DashboardStatCard
-          title="Copiloto IA"
-          value={stats.aiOnline ? 'Online' : 'Offline'}
-          icon={Sparkles}
-          variant={stats.aiOnline ? 'success' : 'warning'}
-          delay={0.45}
-        />
-      </div>
-
-      {/* Charts row */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <ChartPanel
-          title="Atendimentos da semana"
-          subtitle="Conversas e novos contatos por dia"
-          className="lg:col-span-2"
-          delay={0.5}
-          action={
-            <span className="flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-              <Calendar className="h-3.5 w-3.5" /> Últimos 7 dias
-            </span>
-          }
+      <div className="relative space-y-8">
+        {/* Header */}
+        <motion.header
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between"
         >
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={conversationsChart} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="gradConversas" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={CHART_COLORS.teal} stopOpacity={0.3} />
-                  <stop offset="100%" stopColor={CHART_COLORS.teal} stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="gradClientes" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={CHART_COLORS.violet} stopOpacity={0.25} />
-                  <stop offset="100%" stopColor={CHART_COLORS.violet} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-gray-100 dark:text-gray-800" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="#9ca3af" axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" axisLine={false} tickLine={false} />
-              <Tooltip content={<ChartTooltipContent />} />
-              <Legend wrapperStyle={{ fontSize: 12, paddingTop: 16 }} />
-              <Area
-                type="monotone"
-                dataKey="conversas"
-                stroke={CHART_COLORS.teal}
-                strokeWidth={2.5}
-                fill="url(#gradConversas)"
-                name="Conversas"
-              />
-              <Area
-                type="monotone"
-                dataKey="clientes"
-                stroke={CHART_COLORS.violet}
-                strokeWidth={2.5}
-                fill="url(#gradClientes)"
-                name="Novos contatos"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </ChartPanel>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700 dark:bg-teal-950/50 dark:text-teal-300">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-400 opacity-75" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-teal-500" />
+                </span>
+                Ao vivo
+              </span>
+              <span className="text-sm capitalize text-gray-500 dark:text-gray-400">{formatToday()}</span>
+            </div>
+            <h1 className="mt-3 text-3xl font-bold tracking-tight text-gray-900 dark:text-white lg:text-4xl">
+              {getGreeting()},{' '}
+              <span className="gradient-text">{user?.name?.split(' ')[0] ?? 'Usuário'}</span>
+            </h1>
+            <p className="mt-2 max-w-lg text-gray-500 dark:text-gray-400">
+              Sua operação multicanal em um painel único — métricas, fila e performance do time.
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            <button
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="inline-flex items-center gap-2 rounded-xl border border-gray-200/80 bg-white/80 px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm backdrop-blur transition-all hover:bg-white hover:shadow-md disabled:opacity-50 dark:border-gray-800 dark:bg-gray-900/80 dark:text-gray-200 dark:hover:bg-gray-900"
+            >
+              <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
+              Atualizar
+            </button>
+            <Link
+              to="/atendimento"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-teal-700 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-teal-600/30 transition-all hover:shadow-teal-600/40 hover:brightness-110"
+            >
+              <Headphones className="h-4 w-4" />
+              Central de Atendimento
+            </Link>
+          </div>
+        </motion.header>
 
-        {/* Live queue */}
-        <ChartPanel title="Fila ao vivo" subtitle="Aguardando atendimento" delay={0.55}>
-          <div className="space-y-3">
-            {recentConversations
-              .filter((c) => c.status === 'waiting' || c.status === 'active')
-              .slice(0, 4)
-              .map((conv, i) => (
+        {/* Hero bento */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="grid gap-4 lg:grid-cols-12"
+        >
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-teal-600 via-teal-700 to-violet-700 p-8 text-white shadow-2xl shadow-teal-900/30 lg:col-span-8">
+            <div className="pointer-events-none absolute inset-0 dashboard-grid-bg opacity-40" />
+            <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+            <div className="pointer-events-none absolute bottom-0 left-1/4 h-48 w-48 rounded-full bg-violet-400/20 blur-2xl" />
+
+            <div className="relative grid gap-8 sm:grid-cols-3">
+              <div>
+                <div className="flex items-center gap-2 text-teal-100">
+                  <Activity className="h-4 w-4" />
+                  <span className="text-xs font-semibold uppercase tracking-wider">Operação</span>
+                </div>
+                <p className="mt-4 text-5xl font-bold tabular-nums tracking-tight">{stats.activeConversations}</p>
+                <p className="mt-1 text-sm text-teal-100/90">conversas ativas agora</p>
+                <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium backdrop-blur-md">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                  {stats.waitingQueue} na fila de espera
+                </div>
+              </div>
+              <div className="border-white/10 sm:border-l sm:pl-8">
+                <div className="flex items-center gap-2 text-teal-100">
+                  <Clock className="h-4 w-4" />
+                  <span className="text-xs font-semibold uppercase tracking-wider">SLA</span>
+                </div>
+                <p className="mt-4 text-5xl font-bold tabular-nums tracking-tight">{stats.avgResponseTime}</p>
+                <p className="mt-1 text-sm text-teal-100/90">tempo médio de resposta</p>
+                <p className="mt-4 inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-2.5 py-1 text-xs font-semibold text-emerald-100">
+                  ↓ 18% vs. ontem
+                </p>
+              </div>
+              <div className="border-white/10 sm:border-l sm:pl-8">
+                <div className="flex items-center gap-2 text-teal-100">
+                  <Star className="h-4 w-4" />
+                  <span className="text-xs font-semibold uppercase tracking-wider">Qualidade</span>
+                </div>
+                <p className="mt-4 text-5xl font-bold tabular-nums tracking-tight">
+                  {stats.csat}
+                  <span className="text-2xl font-normal text-white/50">/5</span>
+                </p>
+                <p className="mt-1 text-sm text-teal-100/90">CSAT · NPS {stats.nps}</p>
+                <div className="mt-4 flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={cn(
+                        'h-4 w-4 transition-colors',
+                        i < Math.floor(stats.csat) ? 'fill-amber-300 text-amber-300 drop-shadow-sm' : 'text-white/20',
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 rounded-3xl border border-gray-200/70 bg-white/90 p-6 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90 lg:col-span-4">
+            <ProgressRing value={stats.botResolved} max={100} label="Bot" color="violet" />
+            <ProgressRing value={stats.nps} max={100} label="NPS" color="teal" />
+            <ProgressRing value={stats.csat * 20} max={100} label="CSAT" color="emerald" />
+            <div className="col-span-3 mt-2 border-t border-gray-100 pt-4 dark:border-gray-800">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">Meta mensal</span>
+                <span className="font-semibold text-gray-900 dark:text-white">847 / 1.000</span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-teal-500 to-violet-500 transition-all duration-1000"
+                  style={{ width: '84.7%' }}
+                />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* AI Insight */}
+        <InsightBanner
+          icon={Sparkles}
+          title="Copiloto IA identificou 12 conversas que podem ser resolvidas automaticamente"
+          description="Sugestão: ative o fluxo de FAQ para reduzir a fila em até 23% nas próximas 2 horas."
+          delay={0.1}
+          action={
+            <Link
+              to="/copiloto"
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-600/25 transition-all hover:bg-violet-700"
+            >
+              Ver sugestões <ArrowRight className="h-4 w-4" />
+            </Link>
+          }
+        />
+
+        {/* Stats grid */}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <DashboardStatCard title="Conversas ativas" value={stats.activeConversations} icon={MessageSquare} delta="+12%" variant="primary" delay={0.12} sparkline={[32, 38, 35, 42, 47, 44, 47]} />
+          <DashboardStatCard title="Encerradas hoje" value={stats.closedConversations} icon={Users} delta="+8%" delay={0.16} sparkline={[280, 290, 305, 298, 312, 308, 312]} />
+          <DashboardStatCard title="NPS" value={stats.nps} icon={TrendingUp} delta="Meta 70" deltaUp={stats.nps >= 70} variant="success" delay={0.2} sparkline={[65, 68, 70, 69, 71, 72, 72]} />
+          <DashboardStatCard title="Resolvidos pelo bot" value={`${stats.botResolved}%`} icon={Bot} delta="+5%" variant="violet" delay={0.24} sparkline={[58, 60, 62, 64, 65, 67, 68]} />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <DashboardStatCard title="Na fila" value={stats.waitingQueue} icon={Headphones} delta="-3" deltaUp={false} variant="warning" delay={0.28} sparkline={[12, 10, 11, 9, 8, 9, 8]} />
+          <DashboardStatCard title="Campanhas" value={stats.campaignsSent.toLocaleString('pt-BR')} icon={Megaphone} delta="+240" delay={0.32} sparkline={[900, 980, 1050, 1100, 1180, 1220, 1240]} />
+          <DashboardStatCard title="CSAT" value={`${stats.csat}/5`} icon={ThumbsUp} delta="+0.3" variant="success" delay={0.36} sparkline={[4.2, 4.3, 4.4, 4.5, 4.5, 4.6, 4.6]} />
+          <DashboardStatCard title="Copiloto IA" value={stats.aiOnline ? 'Online' : 'Offline'} icon={Sparkles} variant={stats.aiOnline ? 'success' : 'warning'} delay={0.4} />
+        </div>
+
+        {/* Main charts bento */}
+        <div className="grid gap-6 lg:grid-cols-12">
+          <ChartPanel
+            title="Atendimentos da semana"
+            subtitle="Volume de conversas e novos contatos"
+            className="lg:col-span-8"
+            delay={0.44}
+            accent="teal"
+            action={
+              <span className="inline-flex items-center gap-1.5 rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                <Calendar className="h-3.5 w-3.5" /> 7 dias
+              </span>
+            }
+          >
+            <ResponsiveContainer width="100%" height={320}>
+              <AreaChart data={conversationsChart} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={CHART.teal} stopOpacity={0.35} />
+                    <stop offset="100%" stopColor={CHART.teal} stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="gV" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={CHART.violet} stopOpacity={0.3} />
+                    <stop offset="100%" stopColor={CHART.violet} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="4 4" stroke="currentColor" className="text-gray-100 dark:text-gray-800/80" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} dy={8} />
+                <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} dx={-4} />
+                <Tooltip content={<ChartTooltipContent />} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 13, paddingTop: 20 }} />
+                <Area type="monotone" dataKey="conversas" stroke={CHART.teal} strokeWidth={3} fill="url(#gC)" name="Conversas" dot={false} activeDot={{ r: 6, strokeWidth: 2, stroke: '#fff' }} />
+                <Area type="monotone" dataKey="clientes" stroke={CHART.violet} strokeWidth={3} fill="url(#gV)" name="Novos contatos" dot={false} activeDot={{ r: 6, strokeWidth: 2, stroke: '#fff' }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </ChartPanel>
+
+          <ChartPanel title="Fila ao vivo" subtitle="Prioridade de atendimento" className="lg:col-span-4" delay={0.48} accent="violet">
+            <div className="space-y-2.5">
+              {queue.map((conv, i) => (
                 <motion.div
                   key={conv.id}
-                  initial={{ opacity: 0, x: -8 }}
+                  initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 + i * 0.05 }}
-                  className="flex items-center gap-3 rounded-xl border border-gray-100 p-3 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800/50"
+                  transition={{ delay: 0.5 + i * 0.06 }}
+                  className="group flex items-center gap-3 rounded-xl border border-gray-100/80 bg-gray-50/50 p-3.5 transition-all hover:border-teal-200/60 hover:bg-teal-50/30 hover:shadow-sm dark:border-gray-800 dark:bg-gray-800/30 dark:hover:border-teal-900/50 dark:hover:bg-teal-950/20"
                 >
-                  <Avatar name={conv.customerName} size="sm" />
+                  <div className="relative">
+                    <Avatar name={conv.customerName} size="sm" />
+                    {conv.status === 'waiting' && (
+                      <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-amber-400 dark:border-gray-900" />
+                    )}
+                  </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
-                      {conv.customerName}
-                    </p>
-                    <div className="mt-0.5 flex items-center gap-2">
+                    <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">{conv.customerName}</p>
+                    <div className="mt-1 flex items-center gap-2">
                       <ChannelBadge channel={conv.channel} showLabel={false} />
-                      <span className="text-xs text-gray-400">
-                        {formatRelativeTime(conv.lastMessageAt)}
-                      </span>
+                      <span className="text-[11px] text-gray-400">{formatRelativeTime(conv.lastMessageAt)}</span>
                     </div>
                   </div>
                   {conv.unreadCount > 0 && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-600 px-1.5 text-[10px] font-bold text-white">
+                    <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-teal-600 px-1.5 text-[10px] font-bold text-white shadow-sm">
                       {conv.unreadCount}
                     </span>
                   )}
                 </motion.div>
               ))}
-          </div>
-          <Link
-            to="/atendimento"
-            className="mt-4 flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-200 py-2.5 text-sm font-medium text-primary-600 transition-colors hover:border-primary-300 hover:bg-primary-50 dark:border-gray-700 dark:text-primary-400 dark:hover:bg-primary-900/20"
-          >
-            Ver todas as conversas <ArrowRight className="h-4 w-4" />
-          </Link>
-        </ChartPanel>
-      </div>
+            </div>
+            <Link
+              to="/atendimento"
+              className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-gray-900 py-3 text-sm font-semibold text-white transition-all hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
+            >
+              Abrir central <ArrowRight className="h-4 w-4" />
+            </Link>
+          </ChartPanel>
+        </div>
 
-      {/* Second charts row */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <ChartPanel
-          title="Volume mensal"
-          subtitle="Interações por mês"
-          delay={0.6}
-        >
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={ordersChart} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-gray-100 dark:text-gray-800" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#9ca3af" axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" axisLine={false} tickLine={false} />
-              <Tooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="pedidos" fill={CHART_COLORS.teal} radius={[6, 6, 0, 0]} name="Interações" />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartPanel>
+        {/* Bottom bento */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          <ChartPanel title="Volume mensal" subtitle="Interações totais" delay={0.52} accent="teal">
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={ordersChart} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="4 4" stroke="currentColor" className="text-gray-100 dark:text-gray-800/80" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <Tooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="pedidos" fill="url(#barGrad)" radius={[8, 8, 0, 0]} name="Interações" />
+                <defs>
+                  <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#14b8a6" />
+                    <stop offset="100%" stopColor="#0d9488" />
+                  </linearGradient>
+                </defs>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartPanel>
 
-        <ChartPanel title="Canais" subtitle="Distribuição de atendimentos" delay={0.65}>
-          <ResponsiveContainer width="100%" height={260}>
-            <PieChart>
-              <Pie
-                data={channelVolume}
-                cx="50%"
-                cy="50%"
-                innerRadius={55}
-                outerRadius={85}
-                paddingAngle={3}
-                dataKey="value"
-              >
-                {channelVolume.map((_, index) => (
-                  <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+          <ChartPanel title="Canais" subtitle="Share de atendimentos" delay={0.56} accent="violet">
+            <div className="flex items-center gap-4">
+              <ResponsiveContainer width="50%" height={200}>
+                <PieChart>
+                  <Pie data={channelVolume} cx="50%" cy="50%" innerRadius={48} outerRadius={72} paddingAngle={4} dataKey="value" strokeWidth={0}>
+                    {channelVolume.map((_, i) => (
+                      <Cell key={i} fill={PIE_COLORS[i]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex-1 space-y-2.5">
+                {channelVolume.map((ch, i) => (
+                  <div key={ch.type}>
+                    <div className="mb-1 flex justify-between text-xs">
+                      <span className="font-medium text-gray-700 dark:text-gray-300">{ch.name}</span>
+                      <span className="tabular-nums text-gray-500">{ch.value}%</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${ch.value}%`, backgroundColor: PIE_COLORS[i] }}
+                      />
+                    </div>
+                  </div>
                 ))}
-              </Pie>
-              <Tooltip content={<ChartTooltipContent />} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {channelVolume.slice(0, 4).map((ch, i) => (
-              <div key={ch.type} className="flex items-center gap-2 text-xs text-gray-500">
-                <span className="h-2 w-2 rounded-full" style={{ background: PIE_COLORS[i] }} />
-                {ch.name} · {ch.value}%
               </div>
-            ))}
-          </div>
-        </ChartPanel>
+            </div>
+          </ChartPanel>
 
-        <ChartPanel title="Performance do time" subtitle="Atendentes hoje" delay={0.7}>
-          <div className="space-y-4">
-            {teamPerformance.map((member, i) => (
-              <div key={member.name} className="flex items-center gap-3">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-500 dark:bg-gray-800">
-                  {i + 1}
-                </span>
-                <Avatar name={member.name} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
-                    {member.name}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {member.resolved} resolvidos · {member.avgTime}
-                  </p>
+          <ChartPanel title="Top atendentes" subtitle="Performance de hoje" delay={0.6} accent="amber">
+            <div className="space-y-4">
+              {teamPerformance.map((m, i) => (
+                <div key={m.name} className="group">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={cn(
+                        'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold',
+                        i === 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-800',
+                      )}
+                    >
+                      {i + 1}
+                    </span>
+                    <Avatar name={m.name} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">{m.name}</p>
+                        <Badge variant="success">{m.rating}</Badge>
+                      </div>
+                      <p className="text-[11px] text-gray-400">{m.resolved} resolvidos · {m.avgTime}</p>
+                    </div>
+                  </div>
+                  <div className="ml-10 mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-teal-400 to-teal-600 transition-all duration-700 group-hover:from-teal-500 group-hover:to-violet-500"
+                      style={{ width: `${(m.resolved / m.max) * 100}%` }}
+                    />
+                  </div>
                 </div>
-                <Badge variant="success">{member.rating}</Badge>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </ChartPanel>
+        </div>
+
+        {/* Response time */}
+        <ChartPanel
+          title="Tempo médio de resposta"
+          subtitle="Distribuição por horário · minutos"
+          delay={0.64}
+          accent="teal"
+          action={
+            <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
+              <Zap className="h-3.5 w-3.5" /> Melhor: 08h · 1.2 min
+            </span>
+          }
+        >
+          <ResponsiveContainer width="100%" height={280}>
+            <LineChart data={responseTimeChart} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+              <defs>
+                <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor={CHART.teal} />
+                  <stop offset="100%" stopColor={CHART.violet} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="4 4" stroke="currentColor" className="text-gray-100 dark:text-gray-800/80" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} dy={8} />
+              <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+              <Tooltip content={<ChartTooltipContent />} />
+              <Line
+                type="monotone"
+                dataKey="conversas"
+                stroke="url(#lineGrad)"
+                strokeWidth={3}
+                dot={{ r: 5, fill: CHART.teal, strokeWidth: 3, stroke: '#fff' }}
+                activeDot={{ r: 8, strokeWidth: 2, stroke: '#fff' }}
+                name="Tempo (min)"
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </ChartPanel>
       </div>
-
-      {/* Response time full width */}
-      <ChartPanel
-        title="Tempo médio de resposta"
-        subtitle="Por horário do dia (minutos)"
-        delay={0.75}
-        action={
-          <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-            <Zap className="h-3.5 w-3.5" /> Pico: 12h · 3.5 min
-          </span>
-        }
-      >
-        <ResponsiveContainer width="100%" height={260}>
-          <LineChart data={responseTimeChart} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-gray-100 dark:text-gray-800" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="#9ca3af" axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" axisLine={false} tickLine={false} />
-            <Tooltip content={<ChartTooltipContent />} />
-            <Line
-              type="monotone"
-              dataKey="conversas"
-              stroke={CHART_COLORS.teal}
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: CHART_COLORS.teal, strokeWidth: 2, stroke: '#fff' }}
-              activeDot={{ r: 6 }}
-              name="Tempo (min)"
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </ChartPanel>
     </div>
   );
 }
