@@ -96,9 +96,9 @@ export function LandingFooter() {
           <Logo size="sm" showCompany className="[&_span]:text-white [&_span_span]:text-teal-400 [&_p]:text-gray-500" />
           <p className="text-sm text-gray-500">© 2024 Tironitech · PulseDesk. Todos os direitos reservados.</p>
           <div className="flex gap-6 text-sm text-gray-500">
-            <a href="#" className="hover:text-gray-300">Privacidade</a>
-            <a href="#" className="hover:text-gray-300">Termos</a>
-            <a href="#" className="hover:text-gray-300">Suporte</a>
+            <Link to="/legal/privacidade" className="hover:text-gray-300">Privacidade</Link>
+            <Link to="/legal/termos" className="hover:text-gray-300">Termos</Link>
+            <Link to="/legal/suporte" className="hover:text-gray-300">Suporte</Link>
           </div>
         </div>
       </div>

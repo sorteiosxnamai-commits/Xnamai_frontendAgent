@@ -206,11 +206,32 @@ export interface AgentChatMessage {
 export interface AgentChatRequest {
   message: string;
   conversationId?: string;
+  customerId?: string;
+  mode?: AgentMode;
+  history?: { role: 'user' | 'assistant'; content: string }[];
+}
+
+export type AgentMode = 'agent' | 'copilot' | 'suggestion';
+
+export interface AgentContext {
+  conversation?: Conversation;
+  customer?: Customer;
+  customerDetail?: CustomerDetail;
+  messages: Message[];
+  lastCustomerMessage?: string;
+  productsCatalog: string;
+}
+
+export interface ConversationSuggestion {
+  insight: string;
+  suggestion: string;
+  priority: 'low' | 'medium' | 'high';
 }
 
 export interface AgentChatResponse {
   reply: string;
   conversationId: string;
+  source?: 'openai' | 'intelligent';
 }
 
 export interface Notification {

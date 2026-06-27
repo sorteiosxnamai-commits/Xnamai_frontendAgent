@@ -9,6 +9,7 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { FunnelPage } from '@/pages/FunnelPage';
 import { IntegrationsPage } from '@/pages/IntegrationsPage';
 import { LandingPage } from '@/pages/LandingPage';
+import { LegalPage } from '@/pages/LegalPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { ReportsPage } from '@/pages/ReportsPage';
@@ -20,6 +21,7 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/legal/:slug" element={<LegalPage />} />
 
       <Route element={<PublicRoute />}>
         <Route path="/login" element={<LoginPage />} />

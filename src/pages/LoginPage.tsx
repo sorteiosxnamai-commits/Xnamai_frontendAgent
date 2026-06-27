@@ -1,12 +1,15 @@
 import { Logo } from '@/components/layout/Logo';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
+import { useNotification } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Lock, Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -20,10 +23,15 @@ type LoginForm = z.infer<typeof loginSchema>;
 export function LoginPage() {
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { addToast } = useNotification();
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+
   const {
     register,
     handleSubmit,
     formState: { errors },
+    getValues,
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: { remember: false },
@@ -32,6 +40,20 @@ export function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     await login(data);
     navigate('/dashboard');
+  };
+
+  const handleForgotPassword = () => {
+    const email = resetEmail || getValues('email');
+    if (!email || !z.string().email().safeParse(email).success) {
+      addToast({ title: 'Email inválido', message: 'Informe um e-mail válido', type: 'warning' });
+      return;
+    }
+    addToast({
+      title: 'E-mail enviado',
+      message: `Link de recuperação enviado para ${email}`,
+      type: 'success',
+    });
+    setForgotOpen(false);
   };
 
   return (
@@ -93,7 +115,14 @@ export function LoginPage() {
                 />
                 Lembrar acesso
               </label>
-              <button type="button" className="text-sm text-teal-400 hover:underline">
+              <button
+                type="button"
+                className="text-sm text-teal-400 hover:underline"
+                onClick={() => {
+                  setResetEmail(getValues('email') ?? '');
+                  setForgotOpen(true);
+                }}
+              >
                 Esqueci minha senha
               </button>
             </div>
@@ -119,6 +148,24 @@ export function LoginPage() {
           Protegido com criptografia · Conformidade LGPD
         </p>
       </motion.div>
+
+      <Modal open={forgotOpen} onClose={() => setForgotOpen(false)} title="Recuperar senha" footer={
+        <>
+          <Button variant="outline" onClick={() => setForgotOpen(false)}>Cancelar</Button>
+          <Button onClick={handleForgotPassword}>Enviar link</Button>
+        </>
+      }>
+        <p className="mb-4 text-sm text-gray-500">
+          Informe seu e-mail e enviaremos um link para redefinir sua senha.
+        </p>
+        <Input
+          label="Email"
+          type="email"
+          value={resetEmail}
+          onChange={(e) => setResetEmail(e.target.value)}
+          placeholder="seu@empresa.com"
+        />
+      </Modal>
     </div>
   );
 }

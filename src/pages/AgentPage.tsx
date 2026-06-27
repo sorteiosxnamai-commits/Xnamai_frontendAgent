@@ -11,9 +11,11 @@ import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Bot, Clock, MessageSquare, Zap } from 'lucide-react';
 import { useState } from 'react';
+import { useNotification } from '@/contexts/NotificationContext';
 
 export function AgentPage() {
   const { data: status, isLoading } = useAgentStatus();
+  const { addToast } = useNotification();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -26,7 +28,18 @@ export function AgentPage() {
   ]);
 
   const chatMutation = useMutation({
-    mutationFn: (content: string) => agentService.chat({ message: content }),
+    mutationFn: (content: string) =>
+      agentService.chat({
+        message: content,
+        conversationId: 'agent-test',
+        mode: 'agent',
+        history: messages
+          .filter((m) => m.id !== 'welcome')
+          .map((m) => ({
+            role: (m.sender === 'customer' ? 'user' : 'assistant') as 'user' | 'assistant',
+            content: m.content,
+          })),
+      }),
     onSuccess: (response, content) => {
       const userMsg: Message = {
         id: `user-${Date.now()}`,
@@ -51,6 +64,23 @@ export function AgentPage() {
   const handleSend = (content: string) => {
     chatMutation.mutate(content);
   };
+
+  const restartMutation = useMutation({
+    mutationFn: () => agentService.restart(),
+    onSuccess: () => {
+      setMessages([
+        {
+          id: 'welcome',
+          conversationId: 'agent-test',
+          content: 'Olá! Sou o agente de IA do PulseDesk. Como posso ajudar?',
+          sender: 'ai',
+          timestamp: new Date().toISOString(),
+          status: 'read',
+        },
+      ]);
+      addToast({ title: 'Agente reiniciado', message: 'Sessão de teste resetada', type: 'success' });
+    },
+  });
 
   if (isLoading) return <Loading />;
 
@@ -114,7 +144,7 @@ export function AgentPage() {
                 {status?.online ? 'Operacional' : 'Indisponível'}
               </Badge>
             </div>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" onClick={() => restartMutation.mutate()} loading={restartMutation.isPending}>
               <Bot className="h-4 w-4" /> Reiniciar agente
             </Button>
           </div>

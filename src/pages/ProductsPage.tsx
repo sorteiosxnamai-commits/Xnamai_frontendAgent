@@ -2,6 +2,7 @@ import { ProductCard } from '@/components/cards/ProductCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Loading, SkeletonTable } from '@/components/ui/EmptyState';
+import { Modal } from '@/components/ui/Modal';
 import { Pagination } from '@/components/ui/Pagination';
 import { Search } from '@/components/ui/Search';
 import { Select } from '@/components/ui/Select';
@@ -28,13 +29,19 @@ export function ProductsPage() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+  const [selected, setSelected] = useState<Product | null>(null);
+  const [syncing, setSyncing] = useState(false);
   const { addToast } = useNotification();
 
   const { data, isLoading, refetch } = useProducts({ page, pageSize: 6, search, category: category || undefined });
 
-  const handleSync = () => {
+  const handleSync = async () => {
+    setSyncing(true);
     addToast({ title: 'Sincronização', message: 'Produtos sendo sincronizados com Mercos...', type: 'info' });
-    setTimeout(() => refetch(), 2000);
+    await new Promise((r) => setTimeout(r, 2000));
+    await refetch();
+    setSyncing(false);
+    addToast({ title: 'Sincronização concluída', message: 'Catálogo atualizado', type: 'success' });
   };
 
   if (isLoading) {
@@ -93,7 +100,7 @@ export function ProductsPage() {
           <p className="text-gray-500 dark:text-gray-400">Catálogo de produtos sincronizados</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleSync}>
+          <Button onClick={handleSync} loading={syncing}>
             <RefreshCw className="h-4 w-4" /> Sincronizar
           </Button>
           <Button variant={viewMode === 'table' ? 'primary' : 'outline'} size="icon" onClick={() => setViewMode('table')}>
@@ -122,11 +129,11 @@ export function ProductsPage() {
         </div>
 
         {viewMode === 'table' ? (
-          <Table columns={columns} data={data?.data ?? []} keyExtractor={(p) => p.id} />
+          <Table columns={columns} data={data?.data ?? []} keyExtractor={(p) => p.id} onRowClick={setSelected} />
         ) : (
           <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
             {(data?.data ?? []).map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.id} product={p} onClick={() => setSelected(p)} />
             ))}
           </div>
         )}
@@ -135,6 +142,21 @@ export function ProductsPage() {
           <Pagination page={data.page} totalPages={data.totalPages} total={data.total} onPageChange={setPage} />
         )}
       </div>
+
+      <Modal open={!!selected} onClose={() => setSelected(null)} title="Detalhes do produto" footer={
+        <Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button>
+      }>
+        {selected && (
+          <div className="space-y-3 text-sm">
+            <p><strong>Código:</strong> {selected.code}</p>
+            <p><strong>Nome:</strong> {selected.name}</p>
+            <p><strong>Preço:</strong> {formatCurrency(selected.price)}</p>
+            <p><strong>Estoque:</strong> {selected.stock} unidades</p>
+            <p><strong>Categoria:</strong> {selected.category}</p>
+            <p><strong>Sincronizado:</strong> {selected.synced ? 'Sim' : 'Não'}</p>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

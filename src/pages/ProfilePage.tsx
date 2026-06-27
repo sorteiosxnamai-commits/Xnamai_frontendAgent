@@ -6,12 +6,31 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNotification } from '@/contexts/NotificationContext';
 import { motion } from 'framer-motion';
 import { LogOut, Mail, Shield, Building2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export function ProfilePage() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const { addToast } = useNotification();
   const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    role: '',
+    company: '',
+  });
+
+  useEffect(() => {
+    if (user) {
+      setForm({
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        company: user.company,
+      });
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -19,6 +38,11 @@ export function ProfilePage() {
   };
 
   const handleSave = () => {
+    if (!form.name.trim()) {
+      addToast({ title: 'Nome obrigatório', type: 'warning' });
+      return;
+    }
+    updateProfile(form);
     addToast({ title: 'Perfil atualizado', message: 'Suas informações foram salvas', type: 'success' });
   };
 
@@ -31,17 +55,17 @@ export function ProfilePage() {
 
       <Card>
         <div className="flex flex-col items-center gap-4 sm:flex-row">
-          <Avatar name={user?.name ?? 'U'} size="lg" />
+          <Avatar name={form.name || user?.name || 'U'} size="lg" />
           <div className="text-center sm:text-left">
-            <h2 className="text-xl font-semibold">{user?.name}</h2>
+            <h2 className="text-xl font-semibold">{form.name || user?.name}</h2>
             <p className="flex items-center justify-center gap-1 text-sm text-gray-500 sm:justify-start">
-              <Mail className="h-4 w-4" /> {user?.email}
+              <Mail className="h-4 w-4" /> {form.email || user?.email}
             </p>
             <p className="flex items-center justify-center gap-1 text-sm text-gray-500 sm:justify-start">
-              <Shield className="h-4 w-4" /> {user?.role}
+              <Shield className="h-4 w-4" /> {form.role || user?.role}
             </p>
             <p className="flex items-center justify-center gap-1 text-sm text-gray-500 sm:justify-start">
-              <Building2 className="h-4 w-4" /> {user?.company}
+              <Building2 className="h-4 w-4" /> {form.company || user?.company}
             </p>
           </div>
         </div>
@@ -49,10 +73,10 @@ export function ProfilePage() {
 
       <Card title="Informações pessoais">
         <div className="space-y-4">
-          <Input label="Nome completo" defaultValue={user?.name} />
-          <Input label="Email" type="email" defaultValue={user?.email} />
-          <Input label="Cargo" defaultValue={user?.role} />
-          <Input label="Empresa" defaultValue={user?.company} />
+          <Input label="Nome completo" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          <Input label="Cargo" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} />
+          <Input label="Empresa" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
           <div className="flex gap-3">
             <Button onClick={handleSave}>Salvar</Button>
             <Button variant="danger" onClick={handleLogout}>

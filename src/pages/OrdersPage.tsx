@@ -1,5 +1,7 @@
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { Loading, SkeletonTable } from '@/components/ui/EmptyState';
+import { Modal } from '@/components/ui/Modal';
 import { Pagination } from '@/components/ui/Pagination';
 import { Search } from '@/components/ui/Search';
 import { Select } from '@/components/ui/Select';
@@ -30,6 +32,7 @@ export function OrdersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
+  const [selected, setSelected] = useState<Order | null>(null);
 
   const { data, isLoading } = useOrders({ page, pageSize: 6, search, status: status || undefined });
 
@@ -94,12 +97,26 @@ export function OrdersPage() {
           />
         </div>
 
-        <Table columns={columns} data={data?.data ?? []} keyExtractor={(o) => o.id} />
+        <Table columns={columns} data={data?.data ?? []} keyExtractor={(o) => o.id} onRowClick={setSelected} />
 
         {data && (
           <Pagination page={data.page} totalPages={data.totalPages} total={data.total} onPageChange={setPage} />
         )}
       </div>
+
+      <Modal open={!!selected} onClose={() => setSelected(null)} title={`Pedido ${selected?.number}`} footer={
+        <Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button>
+      }>
+        {selected && (
+          <div className="space-y-3 text-sm">
+            <p><strong>Cliente:</strong> {selected.customerName}</p>
+            <p><strong>Status:</strong> {orderStatusLabels[selected.status]}</p>
+            <p><strong>Valor total:</strong> {formatCurrency(selected.total)}</p>
+            <p><strong>Itens:</strong> {selected.items}</p>
+            <p><strong>Data:</strong> {formatDate(selected.createdAt)}</p>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

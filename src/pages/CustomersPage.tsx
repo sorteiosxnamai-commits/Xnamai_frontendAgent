@@ -2,12 +2,14 @@ import { CustomerCard } from '@/components/cards/CustomerCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Loading, SkeletonTable } from '@/components/ui/EmptyState';
+import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Pagination } from '@/components/ui/Pagination';
 import { Search } from '@/components/ui/Search';
 import { Table } from '@/components/ui/Table';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useCustomers } from '@/hooks/useQueries';
+import { customerEditStore, customerStore } from '@/store/customerStore';
 import { formatCurrency, formatDate } from '@/utils';
 import type { Customer } from '@/types';
 import { Eye, LayoutGrid, List, Pencil, RefreshCw } from 'lucide-react';
@@ -18,16 +20,54 @@ export function CustomersPage() {
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', company: '', city: '', notes: '' });
+  const [syncingId, setSyncingId] = useState<string | null>(null);
   const { addToast } = useNotification();
 
-  const { data, isLoading } = useCustomers({ page, pageSize: 6, search });
+  const { data, isLoading, refetch } = useCustomers({ page, pageSize: 6, search });
 
-  const handleSync = (customer: Customer) => {
+  const handleSync = async (customer: Customer) => {
+    setSyncingId(customer.id);
     addToast({
       title: 'Sincronização iniciada',
       message: `Sincronizando ${customer.name} com Mercos...`,
       type: 'info',
     });
+    await new Promise((r) => setTimeout(r, 1500));
+    customerStore.markSynced(customer.id);
+    setSyncingId(null);
+    addToast({
+      title: 'Sincronização concluída',
+      message: `${customer.name} atualizado`,
+      type: 'success',
+    });
+    refetch();
+  };
+
+  const openEdit = (customer: Customer) => {
+    const edits = customerEditStore.get(customer.id);
+    setEditCustomer(customer);
+    setEditForm({
+      name: edits?.name ?? customer.name,
+      email: edits?.email ?? customer.email,
+      phone: edits?.phone ?? customer.phone,
+      company: edits?.company ?? customer.company,
+      city: edits?.city ?? customer.city,
+      notes: edits?.notes ?? customer.notes ?? '',
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editCustomer) return;
+    if (!editForm.name.trim()) {
+      addToast({ title: 'Nome obrigatório', type: 'warning' });
+      return;
+    }
+    customerEditStore.save(editCustomer.id, editForm);
+    addToast({ title: 'Cliente atualizado', message: editForm.name, type: 'success' });
+    setEditCustomer(null);
+    refetch();
   };
 
   if (isLoading) {
@@ -45,14 +85,14 @@ export function CustomersPage() {
       header: 'Nome',
       render: (c: Customer) => (
         <div>
-          <p className="font-medium">{c.name}</p>
-          <p className="text-xs text-gray-500">{c.company}</p>
+          <p className="font-medium">{customerEditStore.get(c.id)?.name ?? c.name}</p>
+          <p className="text-xs text-gray-500">{customerEditStore.get(c.id)?.company ?? c.company}</p>
         </div>
       ),
     },
-    { key: 'email', header: 'Email' },
-    { key: 'phone', header: 'Telefone' },
-    { key: 'city', header: 'Cidade' },
+    { key: 'email', header: 'Email', render: (c: Customer) => customerEditStore.get(c.id)?.email ?? c.email },
+    { key: 'phone', header: 'Telefone', render: (c: Customer) => customerEditStore.get(c.id)?.phone ?? c.phone },
+    { key: 'city', header: 'Cidade', render: (c: Customer) => customerEditStore.get(c.id)?.city ?? c.city },
     {
       key: 'ordersCount',
       header: 'Pedidos',
@@ -67,8 +107,8 @@ export function CustomersPage() {
       key: 'synced',
       header: 'Status',
       render: (c: Customer) => (
-        <Badge variant={c.synced ? 'success' : 'warning'}>
-          {c.synced ? 'Sincronizado' : 'Pendente'}
+        <Badge variant={c.synced || customerStore.isSyncedOverride(c.id) ? 'success' : 'warning'}>
+          {c.synced || customerStore.isSyncedOverride(c.id) ? 'Sincronizado' : 'Pendente'}
         </Badge>
       ),
     },
@@ -80,16 +120,21 @@ export function CustomersPage() {
           <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedCustomer(c); }}>
             <Eye className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEdit(c); }}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleSync(c); }}>
+          <Button variant="ghost" size="icon" loading={syncingId === c.id} onClick={(e) => { e.stopPropagation(); handleSync(c); }}>
             <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
       ),
     },
   ];
+
+  const displayCustomer = (c: Customer) => {
+    const edits = customerEditStore.get(c.id);
+    return edits ? { ...c, ...edits } : c;
+  };
 
   return (
     <div className="space-y-6">
@@ -136,7 +181,7 @@ export function CustomersPage() {
         ) : (
           <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
             {(data?.data ?? []).map((c) => (
-              <CustomerCard key={c.id} customer={c} onClick={() => setSelectedCustomer(c)} />
+              <CustomerCard key={c.id} customer={displayCustomer(c)} onClick={() => setSelectedCustomer(c)} />
             ))}
           </div>
         )}
@@ -158,25 +203,50 @@ export function CustomersPage() {
         footer={
           <>
             <Button variant="outline" onClick={() => setSelectedCustomer(null)}>Fechar</Button>
-            <Button onClick={() => selectedCustomer && handleSync(selectedCustomer)}>
+            <Button onClick={() => selectedCustomer && openEdit(selectedCustomer)}>Editar</Button>
+            <Button loading={!!selectedCustomer && syncingId === selectedCustomer.id} onClick={() => selectedCustomer && handleSync(selectedCustomer)}>
               <RefreshCw className="h-4 w-4" /> Sincronizar
             </Button>
           </>
         }
       >
-        {selectedCustomer && (
-          <div className="space-y-3 text-sm">
-            <p><strong>Nome:</strong> {selectedCustomer.name}</p>
-            <p><strong>Empresa:</strong> {selectedCustomer.company}</p>
-            <p><strong>Email:</strong> {selectedCustomer.email}</p>
-            <p><strong>Telefone:</strong> {selectedCustomer.phone}</p>
-            <p><strong>Cidade:</strong> {selectedCustomer.city}</p>
-            <p><strong>Pedidos:</strong> {selectedCustomer.ordersCount}</p>
-            <p><strong>Total gasto:</strong> {formatCurrency(selectedCustomer.totalSpent)}</p>
-            <p><strong>Último contato:</strong> {formatDate(selectedCustomer.lastContact)}</p>
-            {selectedCustomer.notes && <p><strong>Observações:</strong> {selectedCustomer.notes}</p>}
-          </div>
-        )}
+        {selectedCustomer && (() => {
+          const c = displayCustomer(selectedCustomer);
+          return (
+            <div className="space-y-3 text-sm">
+              <p><strong>Nome:</strong> {c.name}</p>
+              <p><strong>Empresa:</strong> {c.company}</p>
+              <p><strong>Email:</strong> {c.email}</p>
+              <p><strong>Telefone:</strong> {c.phone}</p>
+              <p><strong>Cidade:</strong> {c.city}</p>
+              <p><strong>Pedidos:</strong> {c.ordersCount}</p>
+              <p><strong>Total gasto:</strong> {formatCurrency(c.totalSpent)}</p>
+              <p><strong>Último contato:</strong> {formatDate(c.lastContact)}</p>
+              {c.notes && <p><strong>Observações:</strong> {c.notes}</p>}
+            </div>
+          );
+        })()}
+      </Modal>
+
+      <Modal
+        open={!!editCustomer}
+        onClose={() => setEditCustomer(null)}
+        title="Editar cliente"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setEditCustomer(null)}>Cancelar</Button>
+            <Button onClick={handleSaveEdit}>Salvar</Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Input label="Nome" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+          <Input label="Email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
+          <Input label="Telefone" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
+          <Input label="Empresa" value={editForm.company} onChange={(e) => setEditForm({ ...editForm, company: e.target.value })} />
+          <Input label="Cidade" value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} />
+          <Input label="Observações" value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} />
+        </div>
       </Modal>
     </div>
   );

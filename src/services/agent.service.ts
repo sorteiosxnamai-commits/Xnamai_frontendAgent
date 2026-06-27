@@ -1,15 +1,68 @@
-import { api } from './api';
 import { mockAgentStatus } from '@/data/mocks';
+import { buildAiContext, contextToPrompt } from '@/services/ai/contextBuilder';
+import {
+  generateConversationSuggestion,
+  generateIntelligentReply,
+} from '@/services/ai/intelligentEngine';
+import { callOpenAI } from '@/services/ai/openaiProvider';
+import { aiSettingsStore } from '@/store/aiSettingsStore';
 import { delay } from '@/utils';
-import type { AgentStatus, AgentChatRequest, AgentChatResponse } from '@/types';
+import type {
+  AgentChatRequest,
+  AgentChatResponse,
+  AgentStatus,
+  ConversationSuggestion,
+  Message,
+} from '@/types';
+import { api } from './api';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
+
+async function resolveReply(payload: AgentChatRequest): Promise<{ reply: string; source: 'openai' | 'intelligent' }> {
+  const ctx = buildAiContext({
+    conversationId: payload.conversationId,
+    customerId: payload.customerId,
+    history: payload.history?.map((h, i) => ({
+      id: `h-${i}`,
+      conversationId: payload.conversationId ?? '',
+      content: h.content,
+      sender: h.role === 'user' ? 'customer' : 'ai',
+      timestamp: new Date().toISOString(),
+      status: 'read' as const,
+    })),
+  });
+
+  const mode = payload.mode ?? 'copilot';
+  const systemPrompt = contextToPrompt(ctx);
+
+  if (aiSettingsStore.isConfigured()) {
+    try {
+      const history = (payload.history ?? []).map((h) => ({
+        role: h.role,
+        content: h.content,
+      }));
+      const reply = await callOpenAI(payload.message, systemPrompt, history, mode);
+      return { reply, source: 'openai' };
+    } catch {
+      // fallback to intelligent engine if OpenAI fails
+    }
+  }
+
+  await delay(800);
+  const reply = generateIntelligentReply(payload.message, ctx, mode);
+  return { reply, source: 'intelligent' };
+}
 
 export const agentService = {
   getStatus: async (): Promise<AgentStatus> => {
     if (USE_MOCK) {
       await delay(400);
-      return mockAgentStatus;
+      const configured = aiSettingsStore.isConfigured();
+      return {
+        ...mockAgentStatus,
+        model: configured ? aiSettingsStore.get().model : 'PulseDesk IA (local)',
+        online: true,
+      };
     }
     const { data } = await api.get<AgentStatus>('/agent/status');
     return data;
@@ -17,20 +70,57 @@ export const agentService = {
 
   chat: async (payload: AgentChatRequest): Promise<AgentChatResponse> => {
     if (USE_MOCK) {
-      await delay(1500);
-      const responses = [
-        'Posso ajudar com informações sobre produtos, pedidos e clientes.',
-        'Com base nos dados disponíveis, recomendo verificar o estoque do item solicitado.',
-        'Entendi sua solicitação. Vou analisar as opções disponíveis para você.',
-        'O cliente possui 3 pedidos recentes. Deseja que eu detalhe algum deles?',
-      ];
-      const reply = responses[Math.floor(Math.random() * responses.length)];
+      const { reply, source } = await resolveReply(payload);
       return {
         reply,
         conversationId: payload.conversationId ?? `conv-${Date.now()}`,
+        source,
       };
     }
     const { data } = await api.post<AgentChatResponse>('/agent/chat', payload);
     return data;
   },
+
+  suggestForConversation: async (
+    conversationId: string,
+    customerId?: string,
+    extraMessages?: Message[],
+  ): Promise<ConversationSuggestion & { source: 'openai' | 'intelligent' }> => {
+    const ctx = buildAiContext({
+      conversationId,
+      customerId,
+      history: extraMessages,
+    });
+
+    if (aiSettingsStore.isConfigured()) {
+      try {
+        const prompt = `Com base no contexto, retorne JSON exatamente neste formato:
+{"insight":"1 frase de análise","suggestion":"mensagem pronta para enviar ao cliente","priority":"low|medium|high"}
+
+Última mensagem do cliente: ${ctx.lastCustomerMessage ?? ''}`;
+        const raw = await callOpenAI(prompt, contextToPrompt(ctx), [], 'suggestion');
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]) as ConversationSuggestion;
+          return { ...parsed, source: 'openai' };
+        }
+      } catch {
+        // fallback
+      }
+    }
+
+    await delay(600);
+    return { ...generateConversationSuggestion(ctx), source: 'intelligent' };
+  },
+
+  restart: async (): Promise<void> => {
+    if (USE_MOCK) {
+      await delay(1200);
+      return;
+    }
+    await api.post('/agent/restart');
+  },
+
+  getAiMode: (): 'openai' | 'intelligent' =>
+    aiSettingsStore.isConfigured() ? 'openai' : 'intelligent',
 };

@@ -2,30 +2,75 @@ import { ChannelBadge } from '@/components/ui/ChannelBadge';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, StatCard } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
 import { Loading } from '@/components/ui/EmptyState';
+import { Modal } from '@/components/ui/Modal';
+import { Select } from '@/components/ui/Select';
+import { useNotification } from '@/contexts/NotificationContext';
+import { usePlatformMutations } from '@/hooks/usePlatformMutations';
 import { useChatbots } from '@/hooks/usePlatform';
+import type { ChannelType, ChatbotFlow } from '@/types';
 import { motion } from 'framer-motion';
 import { Bot, Clock, MessageSquare, Plus, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export function ChatbotPage() {
   const { data: flows, isLoading } = useChatbots();
+  const { createChatbot, updateChatbot, toggleChatbot } = usePlatformMutations();
+  const { addToast } = useNotification();
+  const navigate = useNavigate();
 
-  if (isLoading) return <Loading />;
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editFlow, setEditFlow] = useState<ChatbotFlow | null>(null);
+  const [form, setForm] = useState({ name: '', channel: 'whatsapp' as ChannelType, active: true });
 
   const totalResolved = (flows ?? []).reduce((s, f) => s + f.resolved, 0);
   const totalTriggers = (flows ?? []).reduce((s, f) => s + f.triggers, 0);
   const resolutionRate = totalTriggers > 0 ? Math.round((totalResolved / totalTriggers) * 100) : 0;
+
+  const handleCreate = async () => {
+    if (!form.name.trim()) {
+      addToast({ title: 'Nome obrigatório', type: 'warning' });
+      return;
+    }
+    await createChatbot.mutateAsync(form);
+    addToast({ title: 'Fluxo criado', message: form.name, type: 'success' });
+    setCreateOpen(false);
+    setForm({ name: '', channel: 'whatsapp', active: true });
+  };
+
+  const handleEdit = async () => {
+    if (!editFlow) return;
+    await updateChatbot.mutateAsync({ id: editFlow.id, patch: form });
+    addToast({ title: 'Fluxo atualizado', type: 'success' });
+    setEditFlow(null);
+  };
+
+  const handleTest = (flow: ChatbotFlow) => {
+    addToast({ title: 'Teste iniciado', message: `Simulando fluxo "${flow.name}"`, type: 'info' });
+    navigate('/atendimento');
+  };
+
+  const handleToggle = async (flow: ChatbotFlow) => {
+    await toggleChatbot.mutateAsync(flow.id);
+    addToast({
+      title: flow.active ? 'Fluxo desativado' : 'Fluxo ativado',
+      message: flow.name,
+      type: 'success',
+    });
+  };
+
+  if (isLoading) return <Loading />;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Robô de Atendimento</h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Automatize o atendimento 24/7 com triagem inteligente e respostas instantâneas
-          </p>
+          <p className="text-gray-500 dark:text-gray-400">Automatize o atendimento 24/7 com triagem inteligente</p>
         </div>
-        <Button>
+        <Button onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4" /> Novo fluxo
         </Button>
       </div>
@@ -50,9 +95,11 @@ export function ChatbotPage() {
                   <ChannelBadge channel={flow.channel} className="mt-1" />
                 </div>
               </div>
-              <Badge variant={flow.active ? 'success' : 'default'}>
-                {flow.active ? 'Ativo' : 'Inativo'}
-              </Badge>
+              <button type="button" onClick={() => handleToggle(flow)}>
+                <Badge variant={flow.active ? 'success' : 'default'} className="cursor-pointer">
+                  {flow.active ? 'Ativo' : 'Inativo'}
+                </Badge>
+              </button>
             </div>
             <div className="mt-4 grid grid-cols-2 gap-4 border-t border-gray-100 pt-4 dark:border-gray-800">
               <div>
@@ -65,12 +112,48 @@ export function ChatbotPage() {
               </div>
             </div>
             <div className="mt-4 flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1">Editar fluxo</Button>
-              <Button variant="outline" size="sm" className="flex-1">Testar</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => {
+                  setEditFlow(flow);
+                  setForm({ name: flow.name, channel: flow.channel, active: flow.active });
+                }}
+              >
+                Editar fluxo
+              </Button>
+              <Button variant="outline" size="sm" className="flex-1" onClick={() => handleTest(flow)}>
+                Testar
+              </Button>
             </div>
           </Card>
         ))}
       </div>
+
+      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Novo fluxo" footer={
+        <>
+          <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
+          <Button onClick={handleCreate} loading={createChatbot.isPending}>Criar</Button>
+        </>
+      }>
+        <div className="space-y-4">
+          <Input label="Nome do fluxo" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Triagem Inicial" />
+          <Select label="Canal" options={[{ value: 'whatsapp', label: 'WhatsApp' }, { value: 'webchat', label: 'WebChat' }, { value: 'instagram', label: 'Instagram' }]} value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value as ChannelType })} />
+        </div>
+      </Modal>
+
+      <Modal open={!!editFlow} onClose={() => setEditFlow(null)} title="Editar fluxo" footer={
+        <>
+          <Button variant="outline" onClick={() => setEditFlow(null)}>Cancelar</Button>
+          <Button onClick={handleEdit} loading={updateChatbot.isPending}>Salvar</Button>
+        </>
+      }>
+        <div className="space-y-4">
+          <Input label="Nome" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <Select label="Canal" options={[{ value: 'whatsapp', label: 'WhatsApp' }, { value: 'webchat', label: 'WebChat' }, { value: 'instagram', label: 'Instagram' }]} value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value as ChannelType })} />
+        </div>
+      </Modal>
     </motion.div>
   );
 }

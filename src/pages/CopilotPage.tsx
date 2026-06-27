@@ -17,16 +17,19 @@ import {
   Wand2,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useNotification } from '@/contexts/NotificationContext';
+import { aiSettingsStore } from '@/store/aiSettingsStore';
 
 const aiTools = [
-  { icon: FileText, title: 'Resumo inteligente', desc: 'Resume conversas longas automaticamente' },
-  { icon: Mic, title: 'Transcrição de áudio', desc: 'Converte áudios em texto em tempo real' },
-  { icon: Wand2, title: 'Texto mágico', desc: 'Gera respostas com tom de voz da empresa' },
-  { icon: Sparkles, title: 'Sugestões', desc: 'Sugere respostas contextuais ao atendente' },
+  { icon: FileText, title: 'Resumo inteligente', desc: 'Resume conversas longas automaticamente', prompt: 'Resuma a última conversa do Carlos Mendes em 3 tópicos' },
+  { icon: Mic, title: 'Transcrição de áudio', desc: 'Converte áudios em texto em tempo real', prompt: 'Transcreva o áudio recebido do cliente sobre pedido #4521' },
+  { icon: Wand2, title: 'Texto mágico', desc: 'Gera respostas com tom de voz da empresa', prompt: 'Escreva uma resposta profissional para pedido de orçamento' },
+  { icon: Sparkles, title: 'Sugestões', desc: 'Sugere respostas contextuais ao atendente', prompt: 'Sugira 3 respostas para cliente insatisfeito com prazo' },
 ];
 
 export function CopilotPage() {
   const { data: status, isLoading } = useAgentStatus();
+  const { addToast } = useNotification();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -39,7 +42,18 @@ export function CopilotPage() {
   ]);
 
   const chatMutation = useMutation({
-    mutationFn: (content: string) => agentService.chat({ message: content }),
+    mutationFn: (content: string) =>
+      agentService.chat({
+        message: content,
+        conversationId: 'copilot',
+        mode: 'copilot',
+        history: messages
+          .filter((m) => m.id !== 'welcome')
+          .map((m) => ({
+            role: (m.sender === 'customer' ? 'user' : 'assistant') as 'user' | 'assistant',
+            content: m.content,
+          })),
+      }),
     onSuccess: (response, content) => {
       setMessages((prev) => [
         ...prev,
@@ -63,6 +77,8 @@ export function CopilotPage() {
     },
   });
 
+  const aiMode = agentService.getAiMode();
+
   if (isLoading) return <Loading />;
 
   return (
@@ -71,6 +87,9 @@ export function CopilotPage() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Copiloto IA</h1>
         <p className="text-gray-500 dark:text-gray-400">
           IA generativa que trabalha junto com seu time — resumos, transcrições e sugestões
+        </p>
+        <p className="mt-1 text-xs text-gray-400">
+          Motor: {aiMode === 'openai' ? `OpenAI (${aiSettingsStore.get().model})` : 'IA contextual PulseDesk (dados do app)'}
         </p>
       </div>
 
@@ -82,14 +101,31 @@ export function CopilotPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {aiTools.map(({ icon: Icon, title, desc }) => (
-          <Card key={title} className="cursor-pointer transition-shadow hover:shadow-md">
+        {aiTools.map(({ icon: Icon, title, desc, prompt }) => (
+          <div
+            key={title}
+            className="cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onClick={() => {
+              addToast({ title: title, message: 'Processando com Copiloto IA...', type: 'info' });
+              chatMutation.mutate(prompt);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                addToast({ title: title, message: 'Processando com Copiloto IA...', type: 'info' });
+                chatMutation.mutate(prompt);
+              }
+            }}
+          >
+          <Card className="transition-shadow hover:shadow-md">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-50 text-violet-600 dark:bg-violet-900/30">
               <Icon className="h-5 w-5" />
             </div>
             <h3 className="mt-3 font-semibold text-gray-900 dark:text-white">{title}</h3>
             <p className="mt-1 text-sm text-gray-500">{desc}</p>
           </Card>
+          </div>
         ))}
       </div>
 

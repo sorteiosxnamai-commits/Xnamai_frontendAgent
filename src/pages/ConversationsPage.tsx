@@ -5,10 +5,13 @@ import { MessageInput } from '@/components/chat/MessageInput';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { EmptyState, Loading } from '@/components/ui/EmptyState';
+import { Modal } from '@/components/ui/Modal';
 import { Search } from '@/components/ui/Search';
 import { Select } from '@/components/ui/Select';
 import { useChat } from '@/contexts/ChatContext';
+import { useNotification } from '@/contexts/NotificationContext';
 import { useConversations, useCustomerDetail, useMessages } from '@/hooks/useQueries';
+import { useConversationSuggestion } from '@/hooks/useConversationSuggestion';
 import { conversationsService } from '@/services/conversations.service';
 import { formatCurrency, formatDateTime } from '@/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -21,7 +24,20 @@ import {
   User,
   Wand2,
 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const AGENTS = [
+  { value: 'ana', label: 'Ana Silva — Vendas' },
+  { value: 'carlos', label: 'Carlos Mendes — Suporte' },
+  { value: 'julia', label: 'Julia Santos — Comercial' },
+];
+
+const PRODUCTS = [
+  { value: 'p1', label: 'Sensor PT100 Industrial' },
+  { value: 'p2', label: 'Controlador CLP-200' },
+  { value: 'p3', label: 'Módulo I/O 16 canais' },
+];
 
 export function ConversationsPage() {
   const {
@@ -46,6 +62,29 @@ export function ConversationsPage() {
   const { data: customerDetail } = useCustomerDetail(activeConversation?.customerId);
   const queryClient = useQueryClient();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { addToast } = useNotification();
+  const navigate = useNavigate();
+
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [reserveOpen, setReserveOpen] = useState(false);
+  const [transferAgent, setTransferAgent] = useState('ana');
+  const [reserveProduct, setReserveProduct] = useState('p1');
+
+  const mergedForAi = useMemo(() => {
+    if (!activeConversationId) return [];
+    return [
+      ...(messages ?? []),
+      ...(localMessages[activeConversationId] ?? []),
+    ].filter(
+      (msg, index, self) => self.findIndex((m) => m.id === msg.id) === index,
+    );
+  }, [messages, localMessages, activeConversationId]);
+
+  const { data: aiSuggestion, isLoading: aiLoading } = useConversationSuggestion(
+    activeConversationId,
+    activeConversation?.customerId,
+    mergedForAi,
+  );
 
   const filtered = conversations ? filterConversations(conversations) : [];
 
@@ -75,12 +114,42 @@ export function ConversationsPage() {
     setTimeout(() => setIsTyping(false), 2000);
   };
 
-  const allMessages = [
-    ...(messages ?? []),
-    ...(localMessages[activeConversationId ?? ''] ?? []),
-  ].filter(
-    (msg, index, self) => self.findIndex((m) => m.id === msg.id) === index,
-  );
+  const handleUseSuggestion = () => {
+    const text = aiSuggestion?.suggestion;
+    if (!text) {
+      addToast({ title: 'Aguarde', message: 'A IA ainda está analisando a conversa', type: 'warning' });
+      return;
+    }
+    handleSend(text);
+    addToast({ title: 'Sugestão enviada', message: 'Mensagem contextual inserida no chat', type: 'success' });
+  };
+
+  const handleTransfer = () => {
+    const agent = AGENTS.find((a) => a.value === transferAgent);
+    addToast({
+      title: 'Atendimento transferido',
+      message: `Conversa encaminhada para ${agent?.label}`,
+      type: 'success',
+    });
+    setTransferOpen(false);
+  };
+
+  const handleOpenFunnel = () => {
+    addToast({ title: 'Funil aberto', message: 'Oportunidade vinculada ao cliente', type: 'info' });
+    navigate('/funil');
+  };
+
+  const handleReserve = () => {
+    const product = PRODUCTS.find((p) => p.value === reserveProduct);
+    addToast({
+      title: 'Produto reservado',
+      message: `${product?.label} reservado por 48h`,
+      type: 'success',
+    });
+    setReserveOpen(false);
+  };
+
+  const allMessages = mergedForAi;
 
   if (isLoading) return <Loading />;
 
@@ -94,7 +163,6 @@ export function ConversationsPage() {
       </div>
 
       <div className="flex flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-        {/* Coluna 1 - Lista */}
         <div className="flex w-full flex-col border-r border-gray-200 md:w-80 lg:w-96 dark:border-gray-700">
           <div className="space-y-3 border-b border-gray-200 p-3 dark:border-gray-700">
             <Search
@@ -142,7 +210,6 @@ export function ConversationsPage() {
           </div>
         </div>
 
-        {/* Coluna 2 - Chat */}
         <div className="hidden flex-1 flex-col md:flex">
           {activeConversation ? (
             <>
@@ -194,7 +261,6 @@ export function ConversationsPage() {
           )}
         </div>
 
-        {/* Coluna 3 - Info cliente */}
         <div className="hidden w-80 flex-col border-l border-gray-200 xl:flex dark:border-gray-700">
           {customerDetail ? (
             <div className="flex-1 overflow-y-auto p-4">
@@ -244,23 +310,47 @@ export function ConversationsPage() {
 
               <div className="mt-6 space-y-2">
                 <div className="rounded-lg bg-violet-50 p-3 dark:bg-violet-900/20">
-                  <p className="flex items-center gap-1 text-xs font-medium text-violet-700 dark:text-violet-300">
-                    <Sparkles className="h-3.5 w-3.5" /> Copiloto IA
-                  </p>
-                  <p className="mt-1 text-xs text-violet-600 dark:text-violet-400">
-                    Cliente solicita orçamento. Sugestão: verificar estoque e enviar proposta em até 2h.
-                  </p>
-                  <Button variant="outline" size="sm" className="mt-2 w-full text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="flex items-center gap-1 text-xs font-medium text-violet-700 dark:text-violet-300">
+                      <Sparkles className="h-3.5 w-3.5" /> Copiloto IA
+                    </p>
+                    {aiSuggestion && (
+                      <Badge variant={aiSuggestion.priority === 'high' ? 'danger' : aiSuggestion.priority === 'medium' ? 'warning' : 'default'} className="text-[10px]">
+                        {aiSuggestion.source === 'openai' ? 'GPT' : 'IA local'}
+                      </Badge>
+                    )}
+                  </div>
+                  {aiLoading ? (
+                    <p className="mt-2 text-xs text-violet-500">Analisando conversa...</p>
+                  ) : (
+                    <>
+                      <p className="mt-1 text-xs text-violet-600 dark:text-violet-400">
+                        {aiSuggestion?.insight ?? 'Selecione uma conversa para análise.'}
+                      </p>
+                      {aiSuggestion?.suggestion && (
+                        <p className="mt-2 rounded-md bg-white/60 p-2 text-xs text-gray-700 dark:bg-gray-900/40 dark:text-gray-300">
+                          {aiSuggestion.suggestion}
+                        </p>
+                      )}
+                    </>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 w-full text-xs"
+                    onClick={handleUseSuggestion}
+                    disabled={aiLoading || !aiSuggestion?.suggestion}
+                  >
                     <Wand2 className="h-3 w-3" /> Usar sugestão
                   </Button>
                 </div>
-                <Button variant="outline" className="w-full justify-start" size="sm">
+                <Button variant="outline" className="w-full justify-start" size="sm" onClick={() => setTransferOpen(true)}>
                   <RefreshCw className="h-4 w-4" /> Transferir atendimento
                 </Button>
-                <Button variant="outline" className="w-full justify-start" size="sm">
+                <Button variant="outline" className="w-full justify-start" size="sm" onClick={handleOpenFunnel}>
                   <ShoppingCart className="h-4 w-4" /> Abrir no funil
                 </Button>
-                <Button variant="outline" className="w-full justify-start" size="sm">
+                <Button variant="outline" className="w-full justify-start" size="sm" onClick={() => setReserveOpen(true)}>
                   <Package className="h-4 w-4" /> Reservar produto
                 </Button>
               </div>
@@ -270,6 +360,35 @@ export function ConversationsPage() {
           )}
         </div>
       </div>
+
+      <Modal open={transferOpen} onClose={() => setTransferOpen(false)} title="Transferir atendimento" footer={
+        <>
+          <Button variant="outline" onClick={() => setTransferOpen(false)}>Cancelar</Button>
+          <Button onClick={handleTransfer}>Transferir</Button>
+        </>
+      }>
+        <Select
+          label="Atendente"
+          options={AGENTS}
+          value={transferAgent}
+          onChange={(e) => setTransferAgent(e.target.value)}
+        />
+      </Modal>
+
+      <Modal open={reserveOpen} onClose={() => setReserveOpen(false)} title="Reservar produto" footer={
+        <>
+          <Button variant="outline" onClick={() => setReserveOpen(false)}>Cancelar</Button>
+          <Button onClick={handleReserve}>Confirmar reserva</Button>
+        </>
+      }>
+        <Select
+          label="Produto"
+          options={PRODUCTS}
+          value={reserveProduct}
+          onChange={(e) => setReserveProduct(e.target.value)}
+        />
+        <p className="mt-3 text-xs text-gray-500">A reserva expira automaticamente em 48 horas.</p>
+      </Modal>
     </div>
   );
 }

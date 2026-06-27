@@ -1,11 +1,16 @@
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Loading } from '@/components/ui/EmptyState';
+import { Modal } from '@/components/ui/Modal';
+import { useNotification } from '@/contexts/NotificationContext';
+import { usePlatformMutations } from '@/hooks/usePlatformMutations';
 import { useIntegrations } from '@/hooks/usePlatform';
 import type { Integration } from '@/types';
 import { motion } from 'framer-motion';
-import { Link2, Plug } from 'lucide-react';
+import { ExternalLink, Link2, Plug } from 'lucide-react';
+import { useState } from 'react';
 
 const categoryLabels = {
   crm: 'CRM',
@@ -16,6 +21,22 @@ const categoryLabels = {
 
 export function IntegrationsPage() {
   const { data: integrations, isLoading } = useIntegrations();
+  const { toggleIntegration } = usePlatformMutations();
+  const { addToast } = useNotification();
+  const [selected, setSelected] = useState<Integration | null>(null);
+  const [confirm, setConfirm] = useState<Integration | null>(null);
+
+  const handleToggle = async () => {
+    if (!confirm) return;
+    await toggleIntegration.mutateAsync(confirm.id);
+    addToast({
+      title: confirm.connected ? 'Integração desconectada' : 'Integração conectada',
+      message: confirm.name,
+      type: 'success',
+    });
+    setConfirm(null);
+    setSelected(null);
+  };
 
   if (isLoading) return <Loading />;
 
@@ -29,9 +50,7 @@ export function IntegrationsPage() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Integrações</h1>
-        <p className="text-gray-500 dark:text-gray-400">
-          Conecte CRMs, ERPs e plataformas de e-commerce — sincronização em tempo real
-        </p>
+        <p className="text-gray-500 dark:text-gray-400">Conecte CRMs, ERPs e plataformas de e-commerce</p>
       </div>
 
       <Card>
@@ -45,6 +64,13 @@ export function IntegrationsPage() {
             </p>
             <p className="text-sm text-gray-500">Não encontrou seu sistema? Integramos para você.</p>
           </div>
+          <Button
+            variant="outline"
+            className="ml-auto"
+            onClick={() => addToast({ title: 'Solicitação enviada', message: 'Nossa equipe entrará em contato em até 24h', type: 'info' })}
+          >
+            <ExternalLink className="h-4 w-4" /> Solicitar integração
+          </Button>
         </div>
       </Card>
 
@@ -69,6 +95,7 @@ export function IntegrationsPage() {
                   variant={integration.connected ? 'outline' : 'primary'}
                   size="sm"
                   className="mt-3 w-full"
+                  onClick={() => (integration.connected ? setSelected(integration) : setConfirm(integration))}
                 >
                   <Plug className="h-4 w-4" />
                   {integration.connected ? 'Gerenciar' : 'Conectar'}
@@ -78,6 +105,34 @@ export function IntegrationsPage() {
           </div>
         </div>
       ))}
+
+      <Modal open={!!selected} onClose={() => setSelected(null)} title={`Gerenciar ${selected?.name}`} footer={
+        <>
+          <Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button>
+          <Button variant="danger" onClick={() => selected && setConfirm(selected)}>Desconectar</Button>
+        </>
+      }>
+        {selected && (
+          <div className="space-y-3 text-sm">
+            <p>Integração <strong>{selected.name}</strong> está ativa e sincronizando dados.</p>
+            <p className="text-gray-500">Última sincronização: há 5 minutos</p>
+            <Button variant="outline" className="w-full" onClick={() => addToast({ title: 'Sincronização manual', message: 'Dados atualizados', type: 'success' })}>
+              Sincronizar agora
+            </Button>
+          </div>
+        )}
+      </Modal>
+
+      <ConfirmModal
+        open={!!confirm}
+        onClose={() => setConfirm(null)}
+        onConfirm={handleToggle}
+        loading={toggleIntegration.isPending}
+        title={confirm?.connected ? 'Desconectar integração?' : 'Conectar integração?'}
+        message={`Deseja ${confirm?.connected ? 'desconectar' : 'conectar'} ${confirm?.name}?`}
+        confirmLabel={confirm?.connected ? 'Desconectar' : 'Conectar'}
+        variant={confirm?.connected ? 'danger' : 'primary'}
+      />
     </motion.div>
   );
 }

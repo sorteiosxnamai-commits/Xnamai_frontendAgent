@@ -1,13 +1,37 @@
 import { ChannelBadge } from '@/components/ui/ChannelBadge';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Loading } from '@/components/ui/EmptyState';
+import { Modal } from '@/components/ui/Modal';
+import { Select } from '@/components/ui/Select';
+import { useNotification } from '@/contexts/NotificationContext';
+import { usePlatformMutations } from '@/hooks/usePlatformMutations';
 import { useFunnel } from '@/hooks/usePlatform';
 import { formatCurrency } from '@/utils';
+import type { FunnelDeal } from '@/types';
 import { motion } from 'framer-motion';
 import { DollarSign } from 'lucide-react';
+import { useState } from 'react';
 
 export function FunnelPage() {
   const { data: stages, isLoading } = useFunnel();
+  const { moveDeal } = usePlatformMutations();
+  const { addToast } = useNotification();
+  const [selectedDeal, setSelectedDeal] = useState<FunnelDeal | null>(null);
+  const [targetStage, setTargetStage] = useState('');
+
+  const handleMove = async () => {
+    if (!selectedDeal || !targetStage || targetStage === selectedDeal.stageId) return;
+    await moveDeal.mutateAsync({ dealId: selectedDeal.id, stageId: targetStage });
+    const stageName = stages?.find((s) => s.id === targetStage)?.name;
+    addToast({ title: 'Negócio movido', message: `"${selectedDeal.title}" → ${stageName}`, type: 'success' });
+    setSelectedDeal(null);
+  };
+
+  const openDeal = (deal: FunnelDeal) => {
+    setSelectedDeal(deal);
+    setTargetStage(deal.stageId);
+  };
 
   if (isLoading) return <Loading />;
 
@@ -47,7 +71,8 @@ export function FunnelPage() {
             </div>
             <div className="space-y-3">
               {stage.deals.map((deal) => (
-                <Card key={deal.id} className="!p-4 cursor-pointer transition-shadow hover:shadow-md">
+                <div key={deal.id} className="cursor-pointer" onClick={() => openDeal(deal)} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && openDeal(deal)}>
+                <Card className="!p-4 transition-shadow hover:shadow-md">
                   <h4 className="font-medium text-gray-900 dark:text-white">{deal.title}</h4>
                   <p className="mt-1 text-sm text-gray-500">{deal.contact}</p>
                   <div className="mt-3 flex items-center justify-between">
@@ -55,6 +80,7 @@ export function FunnelPage() {
                     <ChannelBadge channel={deal.channel} showLabel={false} />
                   </div>
                 </Card>
+                </div>
               ))}
               {stage.deals.length === 0 && (
                 <div className="rounded-lg border-2 border-dashed border-gray-200 p-6 text-center text-sm text-gray-400 dark:border-gray-700">
@@ -65,6 +91,36 @@ export function FunnelPage() {
           </div>
         ))}
       </div>
+
+      <Modal
+        open={!!selectedDeal}
+        onClose={() => setSelectedDeal(null)}
+        title={selectedDeal?.title ?? 'Negócio'}
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setSelectedDeal(null)}>Fechar</Button>
+            <Button onClick={handleMove} loading={moveDeal.isPending} disabled={targetStage === selectedDeal?.stageId}>
+              Mover estágio
+            </Button>
+          </>
+        }
+      >
+        {selectedDeal && (
+          <div className="space-y-4 text-sm">
+            <p><strong>Contato:</strong> {selectedDeal.contact}</p>
+            <p><strong>Valor:</strong> {formatCurrency(selectedDeal.value)}</p>
+            <div className="flex items-center gap-2">
+              <strong>Canal:</strong> <ChannelBadge channel={selectedDeal.channel} />
+            </div>
+            <Select
+              label="Mover para estágio"
+              options={(stages ?? []).map((s) => ({ value: s.id, label: s.name }))}
+              value={targetStage}
+              onChange={(e) => setTargetStage(e.target.value)}
+            />
+          </div>
+        )}
+      </Modal>
     </motion.div>
   );
 }
