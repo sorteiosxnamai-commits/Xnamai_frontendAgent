@@ -1,4 +1,5 @@
 import { LandingFooter, LandingNavbar, LandingSection } from '@/components/landing/LandingLayout';
+import { LandingChatDemo } from '@/components/landing/LandingChatDemo';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
@@ -184,65 +185,7 @@ export function LandingPage() {
             7 dias grátis · Treinamento incluso · Sem cartão
           </motion.p>
 
-          {/* Mock dashboard preview */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="relative mx-auto mt-16 max-w-5xl"
-          >
-            <div className="rounded-2xl border border-white/10 bg-gray-900/80 p-2 shadow-2xl shadow-teal-900/20 backdrop-blur">
-              <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
-                <div className="flex gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-red-500/80" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
-                  <div className="h-3 w-3 rounded-full bg-green-500/80" />
-                </div>
-                <span className="flex-1 text-center text-xs text-gray-500">app.pulsedesk.io/atendimento</span>
-              </div>
-              <div className="grid grid-cols-12 gap-2 p-4">
-                <div className="col-span-3 space-y-2 rounded-lg bg-gray-800/50 p-3">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="flex items-center gap-2 rounded-lg bg-gray-700/50 p-2">
-                      <div className="h-8 w-8 rounded-full bg-teal-600/30" />
-                      <div className="flex-1 space-y-1">
-                        <div className="h-2 w-16 rounded bg-gray-600" />
-                        <div className="h-1.5 w-24 rounded bg-gray-700" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="col-span-6 rounded-lg bg-gray-800/50 p-4">
-                  <div className="mb-4 flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-teal-600/40" />
-                    <div>
-                      <div className="h-2 w-24 rounded bg-gray-600" />
-                      <div className="mt-1 h-1.5 w-16 rounded bg-green-600/40" />
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="mr-12 rounded-2xl rounded-tl-sm bg-gray-700/60 p-3 text-xs text-gray-400">
-                      Preciso de um orçamento para 50 unidades
-                    </div>
-                    <div className="ml-12 rounded-2xl rounded-tr-sm bg-teal-600/30 p-3 text-xs text-teal-200">
-                      Olá! Vou verificar disponibilidade e preparar o orçamento.
-                    </div>
-                    <div className="mr-12 rounded-2xl rounded-tl-sm bg-gray-700/60 p-3 text-xs text-gray-400">
-                      Quando consigo receber a proposta?
-                    </div>
-                  </div>
-                </div>
-                <div className="col-span-3 space-y-2 rounded-lg bg-gray-800/50 p-3">
-                  <div className="rounded-lg bg-violet-600/20 p-2 text-[10px] text-violet-300">
-                    <Sparkles className="mb-1 h-3 w-3" /> Copiloto: Sugerir proposta em 2h
-                  </div>
-                  <div className="h-2 w-full rounded bg-gray-700" />
-                  <div className="h-2 w-3/4 rounded bg-gray-700" />
-                  <div className="h-2 w-1/2 rounded bg-gray-700" />
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          <LandingChatDemo />
 
           <motion.div
             animate={{ y: [0, 8, 0] }}
@@ -280,10 +223,16 @@ export function LandingPage() {
           {channels.map(({ icon: Icon, name, color }) => (
             <div
               key={name}
-              className="flex flex-col items-center rounded-2xl border border-white/5 bg-gray-900/50 p-6 transition-colors hover:border-teal-500/30 hover:bg-gray-900"
+              className="group flex cursor-default flex-col items-center rounded-2xl border border-white/5 bg-gray-900/50 p-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:border-teal-500/40 hover:bg-gray-900 hover:shadow-xl hover:shadow-teal-900/25"
             >
-              <Icon className={`h-8 w-8 ${color}`} />
-              <span className="mt-3 text-sm font-medium text-gray-300">{name}</span>
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[0.04] transition-all duration-300 ease-out group-hover:-translate-y-3 group-hover:bg-white/[0.08] group-hover:shadow-lg group-hover:shadow-black/20">
+                <Icon
+                  className={`h-8 w-8 ${color} transition-all duration-300 ease-out group-hover:-translate-y-0.5 group-hover:scale-110`}
+                />
+              </div>
+              <span className="mt-4 text-sm font-medium text-gray-300 transition-colors duration-300 group-hover:text-white">
+                {name}
+              </span>
             </div>
           ))}
         </div>

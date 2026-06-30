@@ -9,6 +9,7 @@ import {
   Headphones,
   LayoutDashboard,
   Link2,
+  LogOut,
   Megaphone,
   Radio,
   Settings,
@@ -17,7 +18,8 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navSections = [
   {
@@ -57,6 +59,15 @@ interface SidebarProps {
 }
 
 export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleExitToLanding = () => {
+    onMobileClose();
+    logout();
+    navigate('/');
+  };
+
   const content = (
     <aside
       className={cn(
@@ -114,6 +125,21 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
           </div>
         ))}
       </nav>
+
+      <div className="border-t border-gray-200 p-3 dark:border-gray-800">
+        <button
+          type="button"
+          onClick={handleExitToLanding}
+          className={cn(
+            'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20',
+            collapsed && 'justify-center px-2',
+          )}
+          title={collapsed ? 'Sair da plataforma' : undefined}
+        >
+          <LogOut className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>Sair da plataforma</span>}
+        </button>
+      </div>
 
       {!collapsed && (
         <div className="border-t border-gray-200 p-4 dark:border-gray-800">

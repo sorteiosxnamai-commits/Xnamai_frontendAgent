@@ -80,7 +80,7 @@ export function ProfilePage() {
           <div className="flex gap-3">
             <Button onClick={handleSave}>Salvar</Button>
             <Button variant="danger" onClick={handleLogout}>
-              <LogOut className="h-4 w-4" /> Sair
+              <LogOut className="h-4 w-4" /> Sair da plataforma
             </Button>
           </div>
         </div>
