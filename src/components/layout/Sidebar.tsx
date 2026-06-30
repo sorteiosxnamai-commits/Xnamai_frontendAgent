@@ -144,7 +144,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
       {!collapsed && (
         <div className="border-t border-gray-200 p-4 dark:border-gray-800">
           <div className="rounded-lg bg-gradient-to-br from-primary-50 to-violet-50 p-3 dark:from-primary-900/20 dark:to-violet-900/20">
-            <p className="text-xs font-medium text-primary-800 dark:text-primary-300">Teste grátis 7 dias</p>
+            <p className="text-xs font-medium text-primary-800 dark:text-primary-300">Teste grátis 5 dias</p>
             <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
               Treinamento e suporte inclusos
             </p>

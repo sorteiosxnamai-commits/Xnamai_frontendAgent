@@ -47,10 +47,12 @@ export function LandingChatDemo() {
   const [typing, setTyping] = useState(false);
   const [copilotVisible, setCopilotVisible] = useState(false);
   const [activeSidebar, setActiveSidebar] = useState(0);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    const el = chatScrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
   }, [messages, typing]);
 
   useEffect(() => {
@@ -179,12 +181,14 @@ export function LandingChatDemo() {
 
             <div className="relative flex-1 overflow-hidden">
               <div className="absolute inset-x-0 top-0 z-10 h-6 bg-gradient-to-b from-gray-800/80 to-transparent pointer-events-none" />
-              <div className="max-h-[140px] space-y-3 overflow-y-auto scroll-smooth pr-1 sm:max-h-[160px]">
-                <AnimatePresence initial={false} mode="popLayout">
+              <div
+                ref={chatScrollRef}
+                className="max-h-[140px] space-y-3 overflow-y-auto scroll-smooth pr-1 sm:max-h-[160px]"
+              >
+                <AnimatePresence initial={false}>
                   {messages.map((msg) => (
                     <motion.div
                       key={msg.id}
-                      layout
                       initial={{ opacity: 0, y: 24, scale: 0.92 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -12, scale: 0.95 }}
@@ -200,7 +204,6 @@ export function LandingChatDemo() {
                   ))}
                   {typing && <TypingIndicator key="typing" />}
                 </AnimatePresence>
-                <div ref={chatEndRef} />
               </div>
               <div className="absolute inset-x-0 bottom-0 z-10 h-4 bg-gradient-to-t from-gray-800/80 to-transparent pointer-events-none" />
             </div>

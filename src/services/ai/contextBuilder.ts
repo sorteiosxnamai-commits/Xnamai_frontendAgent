@@ -7,6 +7,7 @@ import {
 } from '@/data/mocks';
 import type { AgentContext, Message } from '@/types';
 import { formatCurrency } from '@/utils';
+import { detectIntentFromContext, getPlaybook } from './conversationPlaybooks';
 
 export function buildAiContext(options: {
   conversationId?: string;
@@ -50,10 +51,15 @@ export function buildAiContext(options: {
 }
 
 export function contextToPrompt(ctx: AgentContext): string {
+  const playbook = getPlaybook(ctx.conversation?.id);
+  const intent = detectIntentFromContext(ctx);
+
   const lines: string[] = [
-    'Você é o Copiloto IA do PulseDesk (Tironitech), plataforma de atendimento omnichannel.',
-    'Responda sempre em português do Brasil, de forma profissional, objetiva e útil ao atendente.',
-    'Use os dados abaixo quando relevante. Se não souber algo, seja honesto.',
+    'Você é o Copiloto IA do PulseDesk (Tironitech), plataforma de atendimento omnichannel B2B.',
+    'Responda em português do Brasil, de forma profissional, empática e orientada a ação.',
+    'Use SEMPRE os dados abaixo. Cite valores, estoque e prazos quando disponíveis.',
+    'Para sugestões: escreva mensagens prontas para o atendente copiar e enviar ao cliente.',
+    'Para resumos: inclua tom do cliente, urgência e próximo passo recomendado.',
   ];
 
   if (ctx.conversation) {
@@ -65,7 +71,9 @@ export function contextToPrompt(ctx: AgentContext): string {
       `- Status: ${ctx.conversation.status}`,
       `- Protocolo: ${ctx.conversation.protocol ?? 'N/A'}`,
       `- Departamento: ${ctx.conversation.department ?? 'N/A'}`,
+      `- Intenção detectada: ${intent}`,
       `- Última mensagem: ${ctx.conversation.lastMessage}`,
+      playbook ? `- Insight: ${playbook.insight}` : '',
     );
   }
 

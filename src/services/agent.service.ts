@@ -48,7 +48,7 @@ async function resolveReply(payload: AgentChatRequest): Promise<{ reply: string;
     }
   }
 
-  await delay(800);
+  await delay(450);
   const reply = generateIntelligentReply(payload.message, ctx, mode);
   return { reply, source: 'intelligent' };
 }
@@ -60,7 +60,7 @@ export const agentService = {
       const configured = aiSettingsStore.isConfigured();
       return {
         ...mockAgentStatus,
-        model: configured ? aiSettingsStore.get().model : 'PulseDesk IA (local)',
+        model: configured ? aiSettingsStore.get().model : 'PulseDesk IA Pro',
         online: true,
       };
     }
@@ -109,7 +109,7 @@ export const agentService = {
       }
     }
 
-    await delay(600);
+    await delay(400);
     return { ...generateConversationSuggestion(ctx), source: 'intelligent' };
   },
 

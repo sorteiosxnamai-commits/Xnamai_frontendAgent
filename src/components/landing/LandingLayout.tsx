@@ -9,7 +9,7 @@ const navLinks = [
   { href: '#recursos', label: 'Recursos' },
   { href: '#canais', label: 'Canais' },
   { href: '#segmentos', label: 'Segmentos' },
-  { href: '#integracoes', label: 'Integrações' },
+  { href: '#como-funciona', label: 'Como funciona' },
   { href: '#faq', label: 'FAQ' },
 ];
 

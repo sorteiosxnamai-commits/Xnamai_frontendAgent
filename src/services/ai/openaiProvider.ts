@@ -7,9 +7,12 @@ interface ChatMessage {
 }
 
 const MODE_INSTRUCTIONS: Record<AgentMode, string> = {
-  agent: 'Você é o Agente IA autônomo do PulseDesk. Responda diretamente ao usuário final de forma cordial e resolutiva.',
-  copilot: 'Você é o Copiloto IA do PulseDesk. Ajude o ATENDENTE com resumos, sugestões de resposta, análises e dados. Use markdown quando útil.',
-  suggestion: 'Gere apenas a mensagem sugerida para o atendente enviar ao cliente, sem explicações extras.',
+  agent:
+    'Você é o Agente IA do PulseDesk. Responda ao atendente de forma cordial, cite dados reais do contexto (estoque, pedidos, valores) e proponha ações concretas.',
+  copilot:
+    'Você é o Copiloto IA do PulseDesk. Ajude o ATENDENTE (não fale com o cliente diretamente salvo em sugestões entre aspas). Use markdown, bullets e emojis moderados. Seja específico com números do contexto.',
+  suggestion:
+    'Retorne APENAS o texto da mensagem pronta para o atendente enviar ao cliente. Tom profissional, empático, em português BR. Sem explicações extras.',
 };
 
 export async function callOpenAI(

@@ -21,11 +21,20 @@ import { useNotification } from '@/contexts/NotificationContext';
 import { aiSettingsStore } from '@/store/aiSettingsStore';
 
 const aiTools = [
-  { icon: FileText, title: 'Resumo inteligente', desc: 'Resume conversas longas automaticamente', prompt: 'Resuma a última conversa do Carlos Mendes em 3 tópicos' },
-  { icon: Mic, title: 'Transcrição de áudio', desc: 'Converte áudios em texto em tempo real', prompt: 'Transcreva o áudio recebido do cliente sobre pedido #4521' },
-  { icon: Wand2, title: 'Texto mágico', desc: 'Gera respostas com tom de voz da empresa', prompt: 'Escreva uma resposta profissional para pedido de orçamento' },
-  { icon: Sparkles, title: 'Sugestões', desc: 'Sugere respostas contextuais ao atendente', prompt: 'Sugira 3 respostas para cliente insatisfeito com prazo' },
+  { icon: FileText, title: 'Resumo inteligente', desc: 'Resume conversas longas automaticamente', prompt: 'Resuma a conversa do Carlos Mendes', conversationId: 'c1' },
+  { icon: Mic, title: 'Transcrição de áudio', desc: 'Converte áudios em texto em tempo real', prompt: 'Transcreva o áudio do Roberto sobre pedido #4521', conversationId: 'c3' },
+  { icon: Wand2, title: 'Texto mágico', desc: 'Gera respostas com tom de voz da empresa', prompt: 'Gere texto profissional para orçamento Pro-X500', conversationId: 'c1' },
+  { icon: Sparkles, title: 'Sugestões', desc: 'Sugere respostas contextuais ao atendente', prompt: 'Sugira resposta para cliente insatisfeito com prazo', conversationId: 'c3' },
 ];
+
+function resolveConversationId(message: string): string {
+  const norm = message.toLowerCase();
+  if (norm.includes('roberto') || norm.includes('4521') || norm.includes('entrega')) return 'c3';
+  if (norm.includes('fernanda') || norm.includes('xt-200') || norm.includes('estoque')) return 'c4';
+  if (norm.includes('joão') || norm.includes('joao') || norm.includes('visita')) return 'c5';
+  if (norm.includes('lucas') || norm.includes('urgente')) return 'c7';
+  return 'c1';
+}
 
 export function CopilotPage() {
   const { data: status, isLoading } = useAgentStatus();
@@ -34,7 +43,7 @@ export function CopilotPage() {
     {
       id: 'welcome',
       conversationId: 'copilot',
-      content: 'Sou o Copiloto IA do PulseDesk. Posso resumir conversas, transcrever áudios e sugerir respostas.',
+      content: 'Sou o Copiloto IA do PulseDesk. Conheço clientes, estoque, pedidos e conversas em tempo real. Peça resumos, sugestões de resposta, orçamentos ou transcrições.',
       sender: 'ai',
       timestamp: new Date().toISOString(),
       status: 'read',
@@ -42,10 +51,10 @@ export function CopilotPage() {
   ]);
 
   const chatMutation = useMutation({
-    mutationFn: (content: string) =>
+    mutationFn: ({ message, conversationId }: { message: string; conversationId?: string }) =>
       agentService.chat({
-        message: content,
-        conversationId: 'copilot',
+        message,
+        conversationId: conversationId ?? resolveConversationId(message),
         mode: 'copilot',
         history: messages
           .filter((m) => m.id !== 'welcome')
@@ -54,13 +63,13 @@ export function CopilotPage() {
             content: m.content,
           })),
       }),
-    onSuccess: (response, content) => {
+    onSuccess: (response, { message }) => {
       setMessages((prev) => [
         ...prev,
         {
           id: `u-${Date.now()}`,
           conversationId: 'copilot',
-          content,
+          content: message,
           sender: 'customer',
           timestamp: new Date().toISOString(),
           status: 'read',
@@ -101,7 +110,7 @@ export function CopilotPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {aiTools.map(({ icon: Icon, title, desc, prompt }) => (
+        {aiTools.map(({ icon: Icon, title, desc, prompt, conversationId }) => (
           <div
             key={title}
             className="cursor-pointer"
@@ -109,12 +118,12 @@ export function CopilotPage() {
             tabIndex={0}
             onClick={() => {
               addToast({ title: title, message: 'Processando com Copiloto IA...', type: 'info' });
-              chatMutation.mutate(prompt);
+              chatMutation.mutate({ message: prompt, conversationId });
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 addToast({ title: title, message: 'Processando com Copiloto IA...', type: 'info' });
-                chatMutation.mutate(prompt);
+                chatMutation.mutate({ message: prompt, conversationId });
               }
             }}
           >
@@ -144,17 +153,23 @@ export function CopilotPage() {
             {chatMutation.isPending && <p className="text-sm text-gray-400">Processando...</p>}
           </div>
           <MessageInput
-            onSend={(c) => chatMutation.mutate(c)}
+            onSend={(c) => chatMutation.mutate({ message: c })}
             disabled={chatMutation.isPending}
             placeholder="Peça um resumo, transcrição ou sugestão..."
           />
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => chatMutation.mutate('Resuma a última conversa do Carlos Mendes')}>
-            Resumir conversa
+          <Button variant="outline" size="sm" onClick={() => chatMutation.mutate({ message: 'Resuma a conversa do Carlos Mendes', conversationId: 'c1' })}>
+            Orçamento Carlos
           </Button>
-          <Button variant="outline" size="sm" onClick={() => chatMutation.mutate('Sugira resposta para pedido de orçamento')}>
-            Sugerir resposta
+          <Button variant="outline" size="sm" onClick={() => chatMutation.mutate({ message: 'Status do pedido #4521 do Roberto', conversationId: 'c3' })}>
+            Rastrear pedido
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => chatMutation.mutate({ message: 'Consultar estoque XT-200', conversationId: 'c4' })}>
+            Estoque XT-200
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => chatMutation.mutate({ message: 'Qual o tom e urgência desta conversa?', conversationId: 'c7' })}>
+            Analisar urgência
           </Button>
         </div>
       </Card>

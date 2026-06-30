@@ -38,8 +38,16 @@ export function LoginPage() {
   });
 
   const onSubmit = async (data: LoginForm) => {
-    await login(data);
-    navigate('/dashboard');
+    try {
+      await login(data);
+      navigate('/dashboard');
+    } catch (error) {
+      addToast({
+        title: 'Login inválido',
+        message: error instanceof Error ? error.message : 'E-mail ou senha incorretos',
+        type: 'error',
+      });
+    }
   };
 
   const handleForgotPassword = () => {
@@ -136,8 +144,8 @@ export function LoginPage() {
           <div className="mt-6 border-t border-white/5 pt-6 text-center">
             <p className="text-sm text-gray-500">
               Ainda não tem conta?{' '}
-              <Link to="/" className="font-medium text-teal-400 hover:underline">
-                Solicite teste grátis
+              <Link to="/cadastro" className="font-medium text-teal-400 hover:underline">
+                Criar conta grátis
               </Link>
             </p>
           </div>

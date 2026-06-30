@@ -12,7 +12,6 @@ import {
   GitBranch,
   Headphones,
   Instagram,
-  Link2,
   Mail,
   MessageCircle,
   Mic,
@@ -67,9 +66,31 @@ const segments = [
   'Financeiro', 'Imobiliário', 'Tecnologia', 'Indústria', 'Turismo',
 ];
 
-const integrations = [
-  'HubSpot', 'RD Station', 'Pipedrive', 'Salesforce', 'Omie',
-  'Shopify', 'Bling', 'Nuvemshop', 'Zoho CRM', 'Totvs',
+const steps = [
+  {
+    step: '01',
+    icon: MessageCircle,
+    title: 'Conecte seus canais',
+    desc: 'WhatsApp, Instagram, WebChat e e-mail em minutos — um painel, zero confusão.',
+    color: 'text-green-400',
+    glow: 'group-hover:shadow-green-900/30',
+  },
+  {
+    step: '02',
+    icon: Sparkles,
+    title: 'Atenda com IA + time',
+    desc: 'Robô triagem 24/7, Copiloto sugere respostas e humanos assumem quando precisar.',
+    color: 'text-violet-400',
+    glow: 'group-hover:shadow-violet-900/30',
+  },
+  {
+    step: '03',
+    icon: BarChart3,
+    title: 'Converta e analise',
+    desc: 'Funil de vendas, campanhas e dashboards com NPS, CSAT e tempo de resposta.',
+    color: 'text-teal-400',
+    glow: 'group-hover:shadow-teal-900/30',
+  },
 ];
 
 const benefits = [
@@ -94,7 +115,7 @@ const faqs = [
   },
   {
     q: 'Tem teste grátis?',
-    a: '7 dias gratuitos com treinamento e suporte inclusos. Sem cartão de crédito.',
+    a: '5 dias gratuitos com treinamento e suporte inclusos. Sem cartão de crédito.',
   },
 ];
 
@@ -182,7 +203,7 @@ export function LandingPage() {
             transition={{ delay: 0.4 }}
             className="mt-4 text-sm text-gray-500"
           >
-            7 dias grátis · Treinamento incluso · Sem cartão
+            5 dias grátis · Treinamento incluso · Sem cartão
           </motion.p>
 
           <LandingChatDemo />
@@ -318,24 +339,49 @@ export function LandingPage() {
         </div>
       </LandingSection>
 
-      {/* Integrações */}
-      <LandingSection id="integracoes" className="bg-gray-900/30">
+      {/* Como funciona */}
+      <LandingSection id="como-funciona" className="bg-gray-900/30">
         <div className="text-center">
-          <Link2 className="mx-auto h-10 w-10 text-teal-400" />
-          <h2 className="mt-4 text-3xl font-bold sm:text-4xl">Integrações poderosas</h2>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-500/10"
+          >
+            <Zap className="h-6 w-6 text-teal-400" />
+          </motion.div>
+          <h2 className="text-3xl font-bold sm:text-4xl">Como funciona o PulseDesk</h2>
           <p className="mx-auto mt-4 max-w-2xl text-gray-400">
-            Conecte CRMs, ERPs e e-commerces. Sincronização em tempo real.
+            Do primeiro contato ao fechamento — três passos para escalar seu atendimento.
           </p>
         </div>
-        <div className="mt-10 flex flex-wrap justify-center gap-4">
-          {integrations.map((name) => (
-            <div
-              key={name}
-              className="flex h-14 min-w-[120px] items-center justify-center rounded-xl border border-white/5 bg-gray-900/50 px-6 text-sm font-medium text-gray-300"
+
+        <div className="relative mt-14 grid gap-6 md:grid-cols-3">
+          <div className="pointer-events-none absolute top-16 hidden h-0.5 w-full bg-gradient-to-r from-transparent via-teal-500/30 to-transparent md:block" />
+
+          {steps.map(({ step, icon: Icon, title, desc, color, glow }, i) => (
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.12 }}
+              className={`group relative rounded-2xl border border-white/5 bg-gray-900/60 p-8 transition-all duration-300 ease-out hover:-translate-y-2 hover:border-teal-500/30 hover:bg-gray-900 hover:shadow-xl ${glow}`}
             >
-              {name}
-            </div>
+              <span className="text-xs font-bold tracking-widest text-teal-500/80">{step}</span>
+              <div className="mt-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.04] transition-all duration-300 group-hover:-translate-y-2 group-hover:bg-white/[0.08]">
+                <Icon className={`h-7 w-7 ${color} transition-transform duration-300 group-hover:scale-110`} />
+              </div>
+              <h3 className="mt-5 text-xl font-semibold text-white">{title}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-gray-400">{desc}</p>
+            </motion.div>
           ))}
+        </div>
+
+        <div className="mt-12 text-center">
+          <Button size="lg" onClick={() => navigate('/login')}>
+            Começar em 3 passos <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
       </LandingSection>
 
@@ -387,7 +433,7 @@ export function LandingPage() {
               Pronto para transformar seu atendimento?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-teal-100">
-              Teste grátis por 7 dias. Treinamento e suporte inclusos.
+              Teste grátis por 5 dias. Treinamento e suporte inclusos.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button size="lg" variant="secondary" className="min-w-[220px] bg-white text-teal-800 hover:bg-gray-100" onClick={() => navigate('/login')}>

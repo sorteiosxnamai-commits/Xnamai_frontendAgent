@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AuthResponse, LoginCredentials } from '@/types';
+import type { AuthResponse, LoginCredentials, RegisterCredentials } from '@/types';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
 
@@ -33,5 +33,7 @@ api.interceptors.response.use(
 export const authService = {
   login: (credentials: LoginCredentials) =>
     api.post<AuthResponse>('/auth/login', credentials),
+  register: (credentials: RegisterCredentials) =>
+    api.post<AuthResponse>('/auth/register', credentials),
   logout: () => api.post('/auth/logout'),
 };

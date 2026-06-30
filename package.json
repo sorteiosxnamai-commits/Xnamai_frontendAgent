@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "backend": "powershell -ExecutionPolicy Bypass -File scripts/start-backend.ps1",
+    "backend:restart": "powershell -ExecutionPolicy Bypass -File scripts/restart-backend.ps1",
+    "backend:seed": "cd ..\\backend-xnamai && .\\venv\\Scripts\\python.exe scripts\\seed_usuarios.py",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

@@ -18,6 +18,13 @@ export interface LoginCredentials {
   remember?: boolean;
 }
 
+export interface RegisterCredentials {
+  name: string;
+  email: string;
+  password: string;
+  company?: string;
+}
+
 export type ChannelType =
   | 'whatsapp'
   | 'instagram'

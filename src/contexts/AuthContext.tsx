@@ -7,13 +7,17 @@ import {
   type ReactNode,
 } from 'react';
 import { mockUser } from '@/data/mocks';
-import type { LoginCredentials, User } from '@/types';
+import { authService } from '@/services/api';
+import type { LoginCredentials, RegisterCredentials, User } from '@/types';
+
+const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 
 interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => void;
   updateProfile: (patch: Partial<User>) => void;
 }
@@ -33,20 +37,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (credentials: LoginCredentials) => {
     setIsLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 800));
       if (!credentials.email || !credentials.password) {
         throw new Error('Credenciais inválidas');
       }
-      const authUser = { ...mockUser, email: credentials.email };
-      localStorage.setItem(TOKEN_KEY, 'mock-jwt-token');
-      localStorage.setItem(USER_KEY, JSON.stringify(authUser));
-      setUser(authUser);
+
+      if (USE_MOCK) {
+        await new Promise((r) => setTimeout(r, 800));
+        const authUser = { ...mockUser, email: credentials.email };
+        localStorage.setItem(TOKEN_KEY, 'mock-jwt-token');
+        localStorage.setItem(USER_KEY, JSON.stringify(authUser));
+        setUser(authUser);
+        return;
+      }
+
+      const { data } = await authService.login(credentials);
+      localStorage.setItem(TOKEN_KEY, data.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+      setUser(data.user);
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
+        (error instanceof Error ? error.message : 'Não foi possível entrar');
+      throw new Error(typeof message === 'string' ? message : 'Não foi possível entrar');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const register = useCallback(async (credentials: RegisterCredentials) => {
+    setIsLoading(true);
+    try {
+      if (!credentials.name || !credentials.email || !credentials.password) {
+        throw new Error('Preencha todos os campos obrigatórios');
+      }
+
+      if (USE_MOCK) {
+        await new Promise((r) => setTimeout(r, 800));
+        const authUser: User = {
+          id: `mock-${Date.now()}`,
+          name: credentials.name,
+          email: credentials.email,
+          role: 'user',
+          company: credentials.company || 'PulseDesk',
+        };
+        localStorage.setItem(TOKEN_KEY, 'mock-jwt-token');
+        localStorage.setItem(USER_KEY, JSON.stringify(authUser));
+        setUser(authUser);
+        return;
+      }
+
+      const { data } = await authService.register(credentials);
+      localStorage.setItem(TOKEN_KEY, data.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+      setUser(data.user);
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
+        (error instanceof Error ? error.message : 'Não foi possível criar a conta');
+      throw new Error(typeof message === 'string' ? message : 'Não foi possível criar a conta');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   const logout = useCallback(() => {
+    if (!USE_MOCK) {
+      authService.logout().catch(() => undefined);
+    }
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     setUser(null);
@@ -67,10 +124,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!user,
       isLoading,
       login,
+      register,
       logout,
       updateProfile,
     }),
-    [user, isLoading, login, logout, updateProfile],
+    [user, isLoading, login, register, logout, updateProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
