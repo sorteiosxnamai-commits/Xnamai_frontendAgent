@@ -91,7 +91,7 @@ export const agentService = {
   },
 
   chat: async (payload: AgentChatRequest): Promise<AgentChatResponse> => {
-    if (USE_MOCK || aiSettingsStore.isConfigured()) {
+    if (USE_MOCK) {
       const { reply, source } = await resolveReply(payload);
       return {
         reply,

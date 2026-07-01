@@ -123,6 +123,13 @@ export function CopilotPage() {
         },
       ]);
     },
+    onError: (err: unknown) => {
+      const detail =
+        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
+        (err as Error)?.message ??
+        'Falha ao contactar o Copiloto';
+      addToast({ title: 'Copiloto indisponível', message: String(detail), type: 'error' });
+    },
   });
 
   const aiMode = agentService.getAiMode();
