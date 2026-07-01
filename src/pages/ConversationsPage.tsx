@@ -104,6 +104,7 @@ export function ConversationsPage() {
     onSuccess: (message) => {
       addLocalMessage(activeConversationId!, message);
       queryClient.invalidateQueries({ queryKey: ['messages', activeConversationId] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 

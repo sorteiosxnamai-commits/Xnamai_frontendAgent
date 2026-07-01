@@ -19,7 +19,7 @@ interface AuthContextValue {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => void;
-  updateProfile: (patch: Partial<User>) => void;
+  updateProfile: (patch: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -109,13 +109,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
-  const updateProfile = useCallback((patch: Partial<User>) => {
-    setUser((prev) => {
-      if (!prev) return prev;
-      const updated = { ...prev, ...patch };
-      localStorage.setItem(USER_KEY, JSON.stringify(updated));
-      return updated;
+  const updateProfile = useCallback(async (patch: Partial<User>) => {
+    if (USE_MOCK) {
+      setUser((prev) => {
+        if (!prev) return prev;
+        const updated = { ...prev, ...patch };
+        localStorage.setItem(USER_KEY, JSON.stringify(updated));
+        return updated;
+      });
+      return;
+    }
+
+    const { data } = await authService.updateProfile({
+      name: patch.name,
+      company: patch.company,
     });
+    localStorage.setItem(USER_KEY, JSON.stringify(data));
+    setUser(data);
   }, []);
 
   const value = useMemo(

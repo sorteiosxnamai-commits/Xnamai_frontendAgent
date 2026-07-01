@@ -10,8 +10,7 @@ import {
 } from '@/components/dashboard/DashboardWidgets';
 import { Loading, Skeleton } from '@/components/ui/EmptyState';
 import { useAuth } from '@/contexts/AuthContext';
-import { useDashboard } from '@/hooks/useQueries';
-import { mockConversations } from '@/data/mocks';
+import { useDashboard, useConversations } from '@/hooks/useQueries';
 import { cn, formatRelativeTime } from '@/utils';
 import type { ChannelType } from '@/types';
 import { motion } from 'framer-motion';
@@ -89,6 +88,7 @@ function formatToday(): string {
 export function DashboardPage() {
   const { user } = useAuth();
   const { data, isLoading, refetch, isFetching } = useDashboard();
+  const { data: conversations } = useConversations();
 
   if (isLoading) {
     return (
@@ -107,7 +107,11 @@ export function DashboardPage() {
   if (!data) return null;
 
   const { stats, conversationsChart, ordersChart, responseTimeChart } = data;
-  const queue = mockConversations.filter((c) => c.status === 'waiting' || c.status === 'active').slice(0, 4);
+  const queue = (conversations ?? [])
+    .filter((c) => c.status === 'waiting' || c.status === 'active')
+    .slice(0, 4);
+  const conversasSpark = conversationsChart.map((c) => c.conversas);
+  const pedidosSpark = ordersChart.map((c) => c.pedidos);
 
   return (
     <div className="relative min-h-full">
@@ -260,16 +264,16 @@ export function DashboardPage() {
 
         {/* Stats grid */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <DashboardStatCard title="Conversas ativas" value={stats.activeConversations} icon={MessageSquare} delta="+12%" variant="primary" delay={0.12} sparkline={[32, 38, 35, 42, 47, 44, 47]} />
-          <DashboardStatCard title="Encerradas hoje" value={stats.closedConversations} icon={Users} delta="+8%" delay={0.16} sparkline={[280, 290, 305, 298, 312, 308, 312]} />
-          <DashboardStatCard title="NPS" value={stats.nps} icon={TrendingUp} delta="Meta 70" deltaUp={stats.nps >= 70} variant="success" delay={0.2} sparkline={[65, 68, 70, 69, 71, 72, 72]} />
-          <DashboardStatCard title="Resolvidos pelo bot" value={`${stats.botResolved}%`} icon={Bot} delta="+5%" variant="violet" delay={0.24} sparkline={[58, 60, 62, 64, 65, 67, 68]} />
+          <DashboardStatCard title="Conversas ativas" value={stats.activeConversations} icon={MessageSquare} variant="primary" delay={0.12} sparkline={conversasSpark.length ? conversasSpark : undefined} />
+          <DashboardStatCard title="Encerradas" value={stats.closedConversations} icon={Users} delay={0.16} sparkline={conversasSpark.length ? conversasSpark : undefined} />
+          <DashboardStatCard title="NPS" value={stats.nps} icon={TrendingUp} deltaUp={stats.nps >= 70} variant="success" delay={0.2} />
+          <DashboardStatCard title="Resolvidos pelo bot" value={`${stats.botResolved}%`} icon={Bot} variant="violet" delay={0.24} sparkline={conversasSpark.length ? conversasSpark : undefined} />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <DashboardStatCard title="Na fila" value={stats.waitingQueue} icon={Headphones} delta="-3" deltaUp={false} variant="warning" delay={0.28} sparkline={[12, 10, 11, 9, 8, 9, 8]} />
-          <DashboardStatCard title="Campanhas" value={stats.campaignsSent.toLocaleString('pt-BR')} icon={Megaphone} delta="+240" delay={0.32} sparkline={[900, 980, 1050, 1100, 1180, 1220, 1240]} />
-          <DashboardStatCard title="CSAT" value={`${stats.csat}/5`} icon={ThumbsUp} delta="+0.3" variant="success" delay={0.36} sparkline={[4.2, 4.3, 4.4, 4.5, 4.5, 4.6, 4.6]} />
+          <DashboardStatCard title="Na fila" value={stats.waitingQueue} icon={Headphones} variant="warning" delay={0.28} sparkline={conversasSpark.length ? conversasSpark : undefined} />
+          <DashboardStatCard title="Pedidos sync" value={pedidosSpark.reduce((a, b) => a + b, 0)} icon={Megaphone} delay={0.32} sparkline={pedidosSpark.length ? pedidosSpark : undefined} />
+          <DashboardStatCard title="CSAT" value={stats.csat ? `${stats.csat}/5` : '—'} icon={ThumbsUp} variant="success" delay={0.36} />
           <DashboardStatCard title="Copiloto IA" value={stats.aiOnline ? 'Online' : 'Offline'} icon={Sparkles} variant={stats.aiOnline ? 'success' : 'warning'} delay={0.4} />
         </div>
 

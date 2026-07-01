@@ -8,6 +8,8 @@
     "backend": "powershell -ExecutionPolicy Bypass -File scripts/start-backend.ps1",
     "backend:restart": "powershell -ExecutionPolicy Bypass -File scripts/restart-backend.ps1",
     "backend:seed": "cd ..\\backend-xnamai && .\\venv\\Scripts\\python.exe scripts\\seed_usuarios.py",
+    "backend:setup-conversas": "cd ..\\backend-xnamai && .\\venv\\Scripts\\python.exe scripts\\apply_conversas_schema.py && .\\venv\\Scripts\\python.exe scripts\\seed_conversas.py",
+    "backend:seed-conversas": "cd ..\\backend-xnamai && .\\venv\\Scripts\\python.exe scripts\\seed_conversas.py",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

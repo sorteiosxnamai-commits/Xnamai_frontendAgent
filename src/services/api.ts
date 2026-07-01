@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AuthResponse, LoginCredentials, RegisterCredentials } from '@/types';
+import type { AuthResponse, LoginCredentials, RegisterCredentials, User } from '@/types';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
 
@@ -35,5 +35,17 @@ export const authService = {
     api.post<AuthResponse>('/auth/login', credentials),
   register: (credentials: RegisterCredentials) =>
     api.post<AuthResponse>('/auth/register', credentials),
+  forgotPassword: (email: string) =>
+    api.post<{ success: boolean; message: string; resetUrl?: string }>(
+      '/auth/forgot-password',
+      { email },
+    ),
+  resetPassword: (token: string, password: string) =>
+    api.post<{ success: boolean; message: string }>('/auth/reset-password', {
+      token,
+      password,
+    }),
+  updateProfile: (patch: { name?: string; company?: string }) =>
+    api.patch<User>('/auth/profile', patch),
   logout: () => api.post('/auth/logout'),
 };

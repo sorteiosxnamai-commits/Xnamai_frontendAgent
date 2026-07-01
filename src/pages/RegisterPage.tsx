@@ -5,7 +5,7 @@ import { useNotification } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Building2, Lock, Mail, UserPlus } from 'lucide-react';
+import { ArrowLeft, Building2, UserPlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';

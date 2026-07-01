@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { authService } from '@/services/api';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Lock, Mail } from 'lucide-react';
@@ -50,18 +51,40 @@ export function LoginPage() {
     }
   };
 
-  const handleForgotPassword = () => {
+  const [forgotLoading, setForgotLoading] = useState(false);
+
+  const handleForgotPassword = async () => {
     const email = resetEmail || getValues('email');
     if (!email || !z.string().email().safeParse(email).success) {
       addToast({ title: 'Email inválido', message: 'Informe um e-mail válido', type: 'warning' });
       return;
     }
-    addToast({
-      title: 'E-mail enviado',
-      message: `Link de recuperação enviado para ${email}`,
-      type: 'success',
-    });
-    setForgotOpen(false);
+
+    setForgotLoading(true);
+    try {
+      const { data } = await authService.forgotPassword(email);
+      addToast({
+        title: 'Solicitação enviada',
+        message: data.message,
+        type: 'success',
+      });
+      if (data.resetUrl) {
+        addToast({
+          title: 'Link de recuperação (dev)',
+          message: data.resetUrl,
+          type: 'info',
+        });
+      }
+      setForgotOpen(false);
+    } catch {
+      addToast({
+        title: 'Erro',
+        message: 'Não foi possível solicitar a recuperação. Tente novamente.',
+        type: 'error',
+      });
+    } finally {
+      setForgotLoading(false);
+    }
   };
 
   return (
@@ -160,7 +183,7 @@ export function LoginPage() {
       <Modal open={forgotOpen} onClose={() => setForgotOpen(false)} title="Recuperar senha" footer={
         <>
           <Button variant="outline" onClick={() => setForgotOpen(false)}>Cancelar</Button>
-          <Button onClick={handleForgotPassword}>Enviar link</Button>
+          <Button onClick={handleForgotPassword} loading={forgotLoading}>Enviar link</Button>
         </>
       }>
         <p className="mb-4 text-sm text-gray-500">

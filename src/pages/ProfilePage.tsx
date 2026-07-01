@@ -37,13 +37,17 @@ export function ProfilePage() {
     navigate('/');
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name.trim()) {
       addToast({ title: 'Nome obrigatório', type: 'warning' });
       return;
     }
-    updateProfile(form);
-    addToast({ title: 'Perfil atualizado', message: 'Suas informações foram salvas', type: 'success' });
+    try {
+      await updateProfile({ name: form.name, company: form.company });
+      addToast({ title: 'Perfil atualizado', message: 'Suas informações foram salvas no Supabase', type: 'success' });
+    } catch {
+      addToast({ title: 'Erro', message: 'Não foi possível salvar o perfil', type: 'error' });
+    }
   };
 
   return (
@@ -74,8 +78,8 @@ export function ProfilePage() {
       <Card title="Informações pessoais">
         <div className="space-y-4">
           <Input label="Nome completo" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          <Input label="Cargo" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} />
+          <Input label="Email" type="email" value={form.email} disabled />
+          <Input label="Cargo" value={form.role} disabled />
           <Input label="Empresa" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
           <div className="flex gap-3">
             <Button onClick={handleSave}>Salvar</Button>
