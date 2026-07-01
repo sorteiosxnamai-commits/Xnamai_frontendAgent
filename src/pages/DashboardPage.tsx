@@ -1,5 +1,4 @@
 import { ChannelBadge } from '@/components/ui/ChannelBadge';
-import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import {
   ChartPanel,
@@ -10,13 +9,15 @@ import {
 } from '@/components/dashboard/DashboardWidgets';
 import { Loading, Skeleton } from '@/components/ui/EmptyState';
 import { useAuth } from '@/contexts/AuthContext';
-import { useDashboard, useConversations } from '@/hooks/useQueries';
-import { cn, formatRelativeTime } from '@/utils';
+import { useChannels } from '@/hooks/usePlatform';
+import { useDashboard, useConversations, useSalesMetrics } from '@/hooks/useQueries';
+import { cn, formatCurrency, formatRelativeTime } from '@/utils';
 import type { ChannelType } from '@/types';
 import { motion } from 'framer-motion';
 import {
   Activity,
   ArrowRight,
+  BarChart3,
   Bot,
   Calendar,
   Clock,
@@ -24,6 +25,7 @@ import {
   Megaphone,
   MessageSquare,
   RefreshCw,
+  ShoppingCart,
   Sparkles,
   Star,
   ThumbsUp,
@@ -52,23 +54,48 @@ import {
 
 const CHART = { teal: '#0d9488', violet: '#7c3aed', emerald: '#10b981' };
 
-const channelVolume: { name: string; value: number; type: ChannelType }[] = [
-  { name: 'WhatsApp', value: 42, type: 'whatsapp' },
-  { name: 'Instagram', value: 18, type: 'instagram' },
-  { name: 'WebChat', value: 15, type: 'webchat' },
-  { name: 'Telegram', value: 10, type: 'telegram' },
-  { name: 'Facebook', value: 9, type: 'facebook' },
-  { name: 'E-mail', value: 6, type: 'email' },
-];
-
 const PIE_COLORS = ['#0d9488', '#ec4899', '#8b5cf6', '#0ea5e9', '#3b82f6', '#6b7280'];
 
-const teamPerformance = [
-  { name: 'Ana Silva', resolved: 48, max: 50, avgTime: '1m 12s', rating: 4.9 },
-  { name: 'Carlos Rocha', resolved: 41, max: 50, avgTime: '1m 45s', rating: 4.7 },
-  { name: 'Julia Mendes', resolved: 36, max: 50, avgTime: '2m 03s', rating: 4.8 },
-  { name: 'Roberto Lima', resolved: 29, max: 50, avgTime: '2m 18s', rating: 4.5 },
-];
+const CHANNEL_LABELS: Record<ChannelType, string> = {
+  whatsapp: 'WhatsApp',
+  instagram: 'Instagram',
+  webchat: 'WebChat',
+  telegram: 'Telegram',
+  facebook: 'Facebook',
+  sms: 'SMS',
+  email: 'E-mail',
+};
+
+function buildChannelVolume(
+  channels: { type: ChannelType; name: string; messagesToday: number }[] | undefined,
+  conversations: { channel: ChannelType }[] | undefined,
+): { name: string; value: number; type: ChannelType }[] {
+  const fromChannels = (channels ?? [])
+    .filter((c) => c.messagesToday > 0)
+    .map((c) => ({ name: c.name, count: c.messagesToday, type: c.type }));
+
+  const source = fromChannels.length
+    ? fromChannels
+    : Object.entries(
+        (conversations ?? []).reduce<Record<string, number>>((acc, c) => {
+          acc[c.channel] = (acc[c.channel] ?? 0) + 1;
+          return acc;
+        }, {}),
+      ).map(([type, count]) => ({
+        name: CHANNEL_LABELS[type as ChannelType] ?? type,
+        count,
+        type: type as ChannelType,
+      }));
+
+  const total = source.reduce((sum, item) => sum + item.count, 0);
+  if (!total) return [];
+
+  return source.map((item) => ({
+    name: item.name,
+    type: item.type,
+    value: Math.max(1, Math.round((item.count / total) * 100)),
+  }));
+}
 
 function getGreeting(): string {
   const h = new Date().getHours();
@@ -89,6 +116,8 @@ export function DashboardPage() {
   const { user } = useAuth();
   const { data, isLoading, refetch, isFetching } = useDashboard();
   const { data: conversations } = useConversations();
+  const { data: channels } = useChannels();
+  const { data: salesMetrics } = useSalesMetrics();
 
   if (isLoading) {
     return (
@@ -112,6 +141,14 @@ export function DashboardPage() {
     .slice(0, 4);
   const conversasSpark = conversationsChart.map((c) => c.conversas);
   const pedidosSpark = ordersChart.map((c) => c.pedidos);
+  const channelVolume = buildChannelVolume(channels, conversations);
+
+  const atendimentoResumo = [
+    { label: 'Ativas', value: stats.activeConversations, color: 'bg-teal-500' },
+    { label: 'Na fila', value: stats.waitingQueue, color: 'bg-amber-500' },
+    { label: 'Encerradas', value: stats.closedConversations, color: 'bg-violet-500' },
+  ];
+  const atendimentoTotal = atendimentoResumo.reduce((s, i) => s + i.value, 0) || 1;
 
   return (
     <div className="relative min-h-full">
@@ -246,6 +283,24 @@ export function DashboardPage() {
           </div>
         </motion.div>
 
+        {/* Vendas */}
+        {salesMetrics && (
+          <InsightBanner
+            icon={ShoppingCart}
+            title={`${salesMetrics.quantidadeVendas} vendas confirmadas · ${formatCurrency(salesMetrics.valorTotalVendido)}`}
+            description={`Receita retida: ${formatCurrency(salesMetrics.valorRetido)} · ${salesMetrics.quantidadeEntregues} entregues · Pipeline: ${formatCurrency(salesMetrics.valorPipeline)}`}
+            delay={0.08}
+            action={
+              <Link
+                to="/relatorios"
+                className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-teal-600/25 transition-all hover:bg-teal-700"
+              >
+                Ver métricas <BarChart3 className="h-4 w-4" />
+              </Link>
+            }
+          />
+        )}
+
         {/* AI Insight */}
         <InsightBanner
           icon={Sparkles}
@@ -374,63 +429,56 @@ export function DashboardPage() {
             </ResponsiveContainer>
           </ChartPanel>
 
-          <ChartPanel title="Canais" subtitle="Share de atendimentos" delay={0.56} accent="violet">
-            <div className="flex items-center gap-4">
-              <ResponsiveContainer width="50%" height={200}>
-                <PieChart>
-                  <Pie data={channelVolume} cx="50%" cy="50%" innerRadius={48} outerRadius={72} paddingAngle={4} dataKey="value" strokeWidth={0}>
-                    {channelVolume.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i]} />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<ChartTooltipContent />} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="flex-1 space-y-2.5">
-                {channelVolume.map((ch, i) => (
-                  <div key={ch.type}>
-                    <div className="mb-1 flex justify-between text-xs">
-                      <span className="font-medium text-gray-700 dark:text-gray-300">{ch.name}</span>
-                      <span className="tabular-nums text-gray-500">{ch.value}%</span>
+          <ChartPanel title="Canais" subtitle="Distribuição real de atendimentos" delay={0.56} accent="violet">
+            {channelVolume.length === 0 ? (
+              <p className="py-12 text-center text-sm text-gray-500">Sem mensagens registradas nos canais.</p>
+            ) : (
+              <div className="flex items-center gap-4">
+                <ResponsiveContainer width="50%" height={200}>
+                  <PieChart>
+                    <Pie data={channelVolume} cx="50%" cy="50%" innerRadius={48} outerRadius={72} paddingAngle={4} dataKey="value" strokeWidth={0}>
+                      {channelVolume.map((_, i) => (
+                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<ChartTooltipContent />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex-1 space-y-2.5">
+                  {channelVolume.map((ch, i) => (
+                    <div key={ch.type}>
+                      <div className="mb-1 flex justify-between text-xs">
+                        <span className="flex items-center gap-1.5 font-medium text-gray-700 dark:text-gray-300">
+                          <ChannelBadge channel={ch.type} showLabel={false} />
+                          {ch.name}
+                        </span>
+                        <span className="tabular-nums text-gray-500">{ch.value}%</span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{ width: `${ch.value}%`, backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${ch.value}%`, backgroundColor: PIE_COLORS[i] }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </ChartPanel>
 
-          <ChartPanel title="Top atendentes" subtitle="Performance de hoje" delay={0.6} accent="amber">
+          <ChartPanel title="Atendimento hoje" subtitle="Conversas por status" delay={0.6} accent="amber">
             <div className="space-y-4">
-              {teamPerformance.map((m, i) => (
-                <div key={m.name} className="group">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={cn(
-                        'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold',
-                        i === 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-800',
-                      )}
-                    >
-                      {i + 1}
-                    </span>
-                    <Avatar name={m.name} size="sm" />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">{m.name}</p>
-                        <Badge variant="success">{m.rating}</Badge>
-                      </div>
-                      <p className="text-[11px] text-gray-400">{m.resolved} resolvidos · {m.avgTime}</p>
-                    </div>
+              {atendimentoResumo.map((item) => (
+                <div key={item.label} className="group">
+                  <div className="mb-1.5 flex items-center justify-between text-sm">
+                    <span className="font-medium text-gray-700 dark:text-gray-300">{item.label}</span>
+                    <span className="font-bold tabular-nums text-gray-900 dark:text-white">{item.value}</span>
                   </div>
-                  <div className="ml-10 mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                  <div className="h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-teal-400 to-teal-600 transition-all duration-700 group-hover:from-teal-500 group-hover:to-violet-500"
-                      style={{ width: `${(m.resolved / m.max) * 100}%` }}
+                      className={cn('h-full rounded-full transition-all duration-700', item.color)}
+                      style={{ width: `${(item.value / atendimentoTotal) * 100}%` }}
                     />
                   </div>
                 </div>

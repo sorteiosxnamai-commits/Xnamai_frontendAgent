@@ -1,3 +1,5 @@
+import { ChartPanel, DashboardStatCard } from '@/components/dashboard/DashboardWidgets';
+import { SalesFunnel } from '@/components/sales/SalesFunnel';
 import { ChannelBadge } from '@/components/ui/ChannelBadge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -7,14 +9,16 @@ import { Select } from '@/components/ui/Select';
 import { useNotification } from '@/contexts/NotificationContext';
 import { usePlatformMutations } from '@/hooks/usePlatformMutations';
 import { useFunnel } from '@/hooks/usePlatform';
+import { useSalesMetrics } from '@/hooks/useQueries';
 import { formatCurrency } from '@/utils';
 import type { FunnelDeal } from '@/types';
 import { motion } from 'framer-motion';
-import { DollarSign } from 'lucide-react';
+import { DollarSign, GitBranch, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
 
 export function FunnelPage() {
-  const { data: stages, isLoading } = useFunnel();
+  const { data: stages, isLoading: loadingFunnel } = useFunnel();
+  const { data: metrics, isLoading: loadingMetrics } = useSalesMetrics();
   const { moveDeal } = usePlatformMutations();
   const { addToast } = useNotification();
   const [selectedDeal, setSelectedDeal] = useState<FunnelDeal | null>(null);
@@ -33,7 +37,7 @@ export function FunnelPage() {
     setTargetStage(deal.stageId);
   };
 
-  if (isLoading) return <Loading />;
+  if (loadingFunnel || loadingMetrics) return <Loading />;
 
   const totalValue = (stages ?? []).reduce(
     (sum, stage) => sum + stage.deals.reduce((s, d) => s + d.value, 0),
@@ -46,50 +50,96 @@ export function FunnelPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Funil de Vendas</h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Visualize oportunidades, mova leads e aumente sua taxa de conversão
+            Acompanhe a conversão e gerencie oportunidades no pipeline comercial
           </p>
         </div>
         <Card className="!p-4">
           <div className="flex items-center gap-3">
             <DollarSign className="h-8 w-8 text-primary-600" />
             <div>
-              <p className="text-sm text-gray-500">Pipeline total</p>
+              <p className="text-sm text-gray-500">Pipeline comercial</p>
               <p className="text-xl font-bold">{formatCurrency(totalValue)}</p>
             </div>
           </div>
         </Card>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-4">
-        {(stages ?? []).map((stage) => (
-          <div key={stage.id} className="min-w-[280px] flex-shrink-0">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900 dark:text-white">{stage.name}</h3>
-              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium dark:bg-gray-800">
-                {stage.deals.length}
-              </span>
-            </div>
-            <div className="space-y-3">
-              {stage.deals.map((deal) => (
-                <div key={deal.id} className="cursor-pointer" onClick={() => openDeal(deal)} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && openDeal(deal)}>
-                <Card className="!p-4 transition-shadow hover:shadow-md">
-                  <h4 className="font-medium text-gray-900 dark:text-white">{deal.title}</h4>
-                  <p className="mt-1 text-sm text-gray-500">{deal.contact}</p>
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="font-bold text-primary-600">{formatCurrency(deal.value)}</span>
-                    <ChannelBadge channel={deal.channel} showLabel={false} />
+      <div className="grid gap-4 sm:grid-cols-3">
+        <DashboardStatCard
+          title="Oportunidades"
+          value={metrics?.pipelineNegocios ?? 0}
+          icon={GitBranch}
+          variant="primary"
+          delta={formatCurrency(metrics?.pipelineValor ?? 0)}
+        />
+        <DashboardStatCard
+          title="Pedidos confirmados"
+          value={metrics?.quantidadeVendas ?? 0}
+          icon={ShoppingCart}
+          variant="success"
+          delta={formatCurrency(metrics?.valorTotalVendido ?? 0)}
+        />
+        <DashboardStatCard
+          title="Receita retida"
+          value={formatCurrency(metrics?.valorRetido ?? 0)}
+          icon={DollarSign}
+          variant="violet"
+          delta={`${metrics?.quantidadeEntregues ?? 0} entregues`}
+        />
+      </div>
+
+      <ChartPanel
+        title="Funil de conversão"
+        subtitle="Do primeiro contato até a receita concretizada — estilo Mercado Livre"
+        accent="violet"
+        delay={0.05}
+      >
+        <SalesFunnel steps={metrics?.funil ?? []} />
+      </ChartPanel>
+
+      <div>
+        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Pipeline operacional</h2>
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          Mova negócios entre estágios — clique em um card para alterar a etapa
+        </p>
+        <div className="flex gap-4 overflow-x-auto pb-4">
+          {(stages ?? []).map((stage) => (
+            <div key={stage.id} className="min-w-[280px] flex-shrink-0">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900 dark:text-white">{stage.name}</h3>
+                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium dark:bg-gray-800">
+                  {stage.deals.length}
+                </span>
+              </div>
+              <div className="space-y-3">
+                {stage.deals.map((deal) => (
+                  <div
+                    key={deal.id}
+                    className="cursor-pointer"
+                    onClick={() => openDeal(deal)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && openDeal(deal)}
+                  >
+                    <Card className="!p-4 transition-shadow hover:shadow-md">
+                      <h4 className="font-medium text-gray-900 dark:text-white">{deal.title}</h4>
+                      <p className="mt-1 text-sm text-gray-500">{deal.contact}</p>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="font-bold text-primary-600">{formatCurrency(deal.value)}</span>
+                        <ChannelBadge channel={deal.channel} showLabel={false} />
+                      </div>
+                    </Card>
                   </div>
-                </Card>
-                </div>
-              ))}
-              {stage.deals.length === 0 && (
-                <div className="rounded-lg border-2 border-dashed border-gray-200 p-6 text-center text-sm text-gray-400 dark:border-gray-700">
-                  Nenhum negócio
-                </div>
-              )}
+                ))}
+                {stage.deals.length === 0 && (
+                  <div className="rounded-lg border-2 border-dashed border-gray-200 p-6 text-center text-sm text-gray-400 dark:border-gray-700">
+                    Nenhum negócio
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <Modal
