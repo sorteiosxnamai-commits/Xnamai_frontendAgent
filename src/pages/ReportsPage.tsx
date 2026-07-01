@@ -39,14 +39,17 @@ const FUNNEL_COLORS = ['#3483fa', '#2968c8', '#1f4f96', '#165a72', '#0d9488', '#
 function SalesFunnel({ steps }: { steps: SalesFunnelStep[] }) {
   if (!steps.length) return null;
 
-  const maxQty = Math.max(...steps.map((s) => s.quantidade), 1);
-
   return (
     <div className="space-y-3">
       {steps.map((step, index) => {
-        const widthPct = Math.max(28, (step.quantidade / maxQty) * 100);
+        const widthPct = Math.max(18, step.conversaoPct);
         const isRevenue = step.tipo === 'receita';
         const color = isRevenue ? '#047857' : FUNNEL_COLORS[index % FUNNEL_COLORS.length];
+        const prevStep = index > 0 ? steps[index - 1] : null;
+        const dropFromPrev =
+          prevStep && prevStep.quantidade > step.quantidade
+            ? Math.round((step.quantidade / prevStep.quantidade) * 100)
+            : null;
 
         return (
           <motion.div
@@ -66,7 +69,7 @@ function SalesFunnel({ steps }: { steps: SalesFunnelStep[] }) {
                 </span>
                 <span className="font-medium text-gray-800 dark:text-gray-200">{step.label}</span>
               </div>
-              <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+              <div className="flex flex-wrap items-center gap-3 text-gray-500 dark:text-gray-400">
                 <span>
                   <strong className="text-gray-900 dark:text-white">{step.quantidade}</strong> un.
                 </span>
@@ -81,6 +84,9 @@ function SalesFunnel({ steps }: { steps: SalesFunnelStep[] }) {
                 >
                   {step.conversaoPct}% do topo
                 </span>
+                {dropFromPrev !== null && (
+                  <span className="text-xs text-gray-400">↓ {dropFromPrev}% da etapa anterior</span>
+                )}
               </div>
             </div>
             <div className="flex justify-center">
@@ -179,7 +185,7 @@ export function ReportsPage() {
           value={metrics?.quantidadeVendas ?? 0}
           icon={ShoppingCart}
           variant="primary"
-          delta={`${metrics?.taxaConversao ?? 0}% conversão`}
+          delta={`${metrics?.quantidadeConcluidas ?? 0} enviados/entregues`}
           sparkline={sparkline}
         />
         <DashboardStatCard
@@ -190,17 +196,18 @@ export function ReportsPage() {
           delta={`Ticket ${formatCurrency(metrics?.ticketMedio ?? 0)}`}
         />
         <DashboardStatCard
-          title="Volume bruto"
-          value={formatCurrency(metrics?.volumeBruto ?? 0)}
+          title="Volume em pipeline"
+          value={formatCurrency(metrics?.valorPipeline ?? 0)}
           icon={Banknote}
           variant="violet"
+          delta={`${metrics?.quantidadeVendas ?? 0} pedidos confirmados`}
         />
         <DashboardStatCard
           title="Receita retida"
           value={formatCurrency(metrics?.valorRetido ?? 0)}
           icon={Wallet}
           variant="success"
-          delta={`${metrics?.taxaRetencao ?? 0}% do bruto`}
+          delta={`${metrics?.quantidadeEntregues ?? 0} entregues · ${metrics?.taxaRetencao ?? 0}% do bruto`}
         />
       </div>
 

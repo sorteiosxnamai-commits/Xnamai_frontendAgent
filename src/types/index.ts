@@ -76,6 +76,7 @@ export interface SalesFunnelStep {
   quantidade: number;
   valor: number;
   conversaoPct: number;
+  quedaPct?: number;
   tipo: string;
 }
 
@@ -94,7 +95,10 @@ export interface SalesDayPoint {
 
 export interface SalesMetrics {
   quantidadeVendas: number;
+  quantidadeConcluidas: number;
+  quantidadeEntregues: number;
   valorTotalVendido: number;
+  valorConcluido: number;
   volumeBruto: number;
   valorRetido: number;
   valorPipeline: number;
