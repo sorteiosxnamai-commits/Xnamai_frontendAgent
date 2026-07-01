@@ -25,8 +25,11 @@ export function MercosPage() {
       addToast({ title: 'Sincronização concluída', message: result.message, type: 'success' });
       queryClient.invalidateQueries({ queryKey: ['mercos'] });
     },
-    onError: () => {
-      addToast({ title: 'Erro', message: 'Falha na sincronização', type: 'error' });
+    onError: (err: unknown) => {
+      const message =
+        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
+        'Falha na sincronização';
+      addToast({ title: 'Erro', message: typeof message === 'string' ? message : 'Falha na sincronização', type: 'error' });
     },
     onSettled: () => setSyncing(null),
   });
