@@ -8,11 +8,13 @@ interface ChatMessage {
 
 const MODE_INSTRUCTIONS: Record<AgentMode, string> = {
   agent:
-    'Você é o Agente IA do PulseDesk. Responda ao atendente de forma cordial, cite dados reais do contexto (estoque, pedidos, valores) e proponha ações concretas.',
+    'Você é o Agente IA do PulseDesk. Resolva a dúvida do cliente por completo, cite dados reais do contexto e seja empático.',
   copilot:
-    'Você é o Copiloto IA do PulseDesk. Ajude o ATENDENTE (não fale com o cliente diretamente salvo em sugestões entre aspas). Use markdown, bullets e emojis moderados. Seja específico com números do contexto.',
+    'Você é o Copiloto IA Elite do PulseDesk. Ajude o ATENDENTE a resolver QUALQUER dúvida do cliente. ' +
+    'Estruture: Diagnóstico → Resposta com dados reais → Mensagem pronta entre aspas → Próximo passo. ' +
+    'Nunca invente preços ou estoque. Antecipe objeções (frete, prazo, desconto).',
   suggestion:
-    'Retorne APENAS o texto da mensagem pronta para o atendente enviar ao cliente. Tom profissional, empático, em português BR. Sem explicações extras.',
+    'Retorne APENAS JSON: {"insight":"...","suggestion":"mensagem pronta para o cliente","priority":"low|medium|high"}',
 };
 
 export async function callOpenAI(
@@ -41,7 +43,7 @@ export async function callOpenAI(
     body: JSON.stringify({
       model: settings.model,
       temperature: settings.temperature,
-      max_tokens: 1024,
+      max_tokens: 2500,
       messages,
     }),
   });

@@ -74,7 +74,7 @@ export function CopilotPage() {
       id: 'welcome',
       conversationId: 'copilot',
       content:
-        'Sou o Copiloto IA do PulseDesk. Uso conversas, clientes, produtos e pedidos reais do Supabase/Mercos. Peça resumos, sugestões, orçamentos ou status de pedido.',
+        'Sou o Copiloto IA Elite do PulseDesk. Resolvo dúvidas sobre preços, estoque, pedidos, prazos, pagamento, garantia e suporte — com dados reais do Mercos e Supabase. Peça orçamentos, resumos, status de pedido ou mensagens prontas para enviar ao cliente.',
       sender: 'ai',
       timestamp: new Date().toISOString(),
       status: 'read',
@@ -138,7 +138,7 @@ export function CopilotPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Copiloto IA</h1>
         <p className="text-gray-500 dark:text-gray-400">
-          IA contextual com dados reais — conversas, clientes, estoque e pedidos
+          Especialista comercial e de suporte — orçamentos, pedidos, estoque, pagamento e garantia
         </p>
         <p className="mt-1 text-xs text-gray-400">
           Motor: {status?.openaiEnabled ? status.model : aiMode === 'openai' ? `OpenAI (${aiSettingsStore.get().model})` : `${status?.model ?? 'PulseDesk IA'} — configure OPENAI_API_KEY no Render para respostas GPT`}
