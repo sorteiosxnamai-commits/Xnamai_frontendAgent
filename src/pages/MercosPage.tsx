@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, StatCard } from '@/components/ui/Card';
+import { DemoNotice } from '@/components/ui/DemoNotice';
 import { Loading } from '@/components/ui/EmptyState';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useMercosLogs, useMercosStatus } from '@/hooks/useQueries';
@@ -42,6 +43,8 @@ export function MercosPage() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Mercos</h1>
         <p className="text-gray-500 dark:text-gray-400">Integração com a plataforma Mercos</p>
       </div>
+
+      <DemoNotice variant="sandbox" />
 
       <Card title="Status da Conexão">
         <div className="flex items-center gap-4">

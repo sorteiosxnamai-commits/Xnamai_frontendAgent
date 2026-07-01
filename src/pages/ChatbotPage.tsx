@@ -2,6 +2,7 @@ import { ChannelBadge } from '@/components/ui/ChannelBadge';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, StatCard } from '@/components/ui/Card';
+import { DemoNotice, PageBetaBadge } from '@/components/ui/DemoNotice';
 import { Input } from '@/components/ui/Input';
 import { Loading } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
@@ -67,13 +68,17 @@ export function ChatbotPage() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Robô de Atendimento</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
+            Robô de Atendimento <PageBetaBadge />
+          </h1>
           <p className="text-gray-500 dark:text-gray-400">Automatize o atendimento 24/7 com triagem inteligente</p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4" /> Novo fluxo
         </Button>
       </div>
+
+      <DemoNotice />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Fluxos ativos" value={(flows ?? []).filter((f) => f.active).length} icon={Bot} variant="primary" />

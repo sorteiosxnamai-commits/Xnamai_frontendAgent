@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { DemoNotice, PageBetaBadge } from '@/components/ui/DemoNotice';
 import { Loading } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { useNotification } from '@/contexts/NotificationContext';
@@ -49,9 +50,13 @@ export function IntegrationsPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Integrações</h1>
+        <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
+          Integrações <PageBetaBadge />
+        </h1>
         <p className="text-gray-500 dark:text-gray-400">Conecte CRMs, ERPs e plataformas de e-commerce</p>
       </div>
+
+      <DemoNotice />
 
       <Card>
         <div className="flex items-center gap-4">

@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { DemoNotice } from '@/components/ui/DemoNotice';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -118,6 +119,7 @@ export function SettingsPage() {
 
             {activeTab === 'usuarios' && (
               <div className="space-y-3">
+                <DemoNotice variant="mock" />
                 {mockUsers.map((u) => (
                   <div key={u.id} className="flex items-center justify-between rounded-lg border border-gray-100 p-3 dark:border-gray-800">
                     <div>

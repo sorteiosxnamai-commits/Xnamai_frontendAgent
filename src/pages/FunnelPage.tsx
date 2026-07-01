@@ -1,6 +1,7 @@
 import { ChannelBadge } from '@/components/ui/ChannelBadge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { DemoNotice, PageBetaBadge } from '@/components/ui/DemoNotice';
 import { Loading } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
@@ -44,7 +45,9 @@ export function FunnelPage() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Funil de Vendas</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
+            Funil de Vendas <PageBetaBadge />
+          </h1>
           <p className="text-gray-500 dark:text-gray-400">
             Visualize oportunidades, mova leads e aumente sua taxa de conversão
           </p>
@@ -59,6 +62,8 @@ export function FunnelPage() {
           </div>
         </Card>
       </div>
+
+      <DemoNotice />
 
       <div className="flex gap-4 overflow-x-auto pb-4">
         {(stages ?? []).map((stage) => (

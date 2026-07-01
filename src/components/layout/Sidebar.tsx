@@ -1,4 +1,5 @@
 import { Logo } from '@/components/layout/Logo';
+import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -27,24 +28,24 @@ const navSections = [
     items: [
       { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { to: '/atendimento', icon: Headphones, label: 'Central de Atendimento' },
-      { to: '/canais', icon: Radio, label: 'Canais' },
+      { to: '/canais', icon: Radio, label: 'Canais', beta: true },
       { to: '/contatos', icon: Users, label: 'Contatos' },
     ],
   },
   {
     title: 'Automação & Vendas',
     items: [
-      { to: '/robo', icon: Bot, label: 'Robô de Atendimento' },
-      { to: '/copiloto', icon: Sparkles, label: 'Copiloto IA' },
-      { to: '/funil', icon: GitBranch, label: 'Funil de Vendas' },
-      { to: '/campanhas', icon: Megaphone, label: 'Campanhas' },
+      { to: '/robo', icon: Bot, label: 'Robô de Atendimento', beta: true },
+      { to: '/copiloto', icon: Sparkles, label: 'Copiloto IA', beta: true },
+      { to: '/funil', icon: GitBranch, label: 'Funil de Vendas', beta: true },
+      { to: '/campanhas', icon: Megaphone, label: 'Campanhas', beta: true },
     ],
   },
   {
     title: 'Gestão',
     items: [
       { to: '/relatorios', icon: BarChart3, label: 'Relatórios' },
-      { to: '/integracoes', icon: Link2, label: 'Integrações' },
+      { to: '/integracoes', icon: Link2, label: 'Integrações', beta: true },
       { to: '/configuracoes', icon: Settings, label: 'Configurações' },
       { to: '/perfil', icon: UserCircle, label: 'Perfil' },
     ],
@@ -100,7 +101,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
               </p>
             )}
             <ul className="space-y-0.5 px-3">
-              {section.items.map(({ to, icon: Icon, label }) => (
+              {section.items.map(({ to, icon: Icon, label, beta }) => (
                 <li key={to}>
                   <NavLink
                     to={to}
@@ -117,7 +118,16 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
                     title={collapsed ? label : undefined}
                   >
                     <Icon className="h-5 w-5 shrink-0" />
-                    {!collapsed && <span>{label}</span>}
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1">{label}</span>
+                        {beta && (
+                          <Badge variant="warning" className="px-1.5 py-0 text-[10px]">
+                            Beta
+                          </Badge>
+                        )}
+                      </>
+                    )}
                   </NavLink>
                 </li>
               ))}

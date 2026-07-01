@@ -3,6 +3,7 @@ import { MessageInput } from '@/components/chat/MessageInput';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, StatCard } from '@/components/ui/Card';
+import { DemoNotice, PageBetaBadge } from '@/components/ui/DemoNotice';
 import { Loading } from '@/components/ui/EmptyState';
 import { useAgentStatus } from '@/hooks/useQueries';
 import { agentService } from '@/services/agent.service';
@@ -93,7 +94,9 @@ export function CopilotPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Copiloto IA</h1>
+        <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
+          Copiloto IA <PageBetaBadge />
+        </h1>
         <p className="text-gray-500 dark:text-gray-400">
           IA generativa que trabalha junto com seu time — resumos, transcrições e sugestões
         </p>
@@ -101,6 +104,8 @@ export function CopilotPage() {
           Motor: {aiMode === 'openai' ? `OpenAI (${aiSettingsStore.get().model})` : 'IA contextual PulseDesk (dados do app)'}
         </p>
       </div>
+
+      <DemoNotice variant="ai" />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Status" value={status?.online ? 'Online' : 'Offline'} icon={Bot} variant={status?.online ? 'success' : 'warning'} />

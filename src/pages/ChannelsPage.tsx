@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { DemoNotice, PageBetaBadge } from '@/components/ui/DemoNotice';
 import { Input } from '@/components/ui/Input';
 import { Loading } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
@@ -84,7 +85,9 @@ export function ChannelsPage() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Canais</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
+            Canais <PageBetaBadge />
+          </h1>
           <p className="text-gray-500 dark:text-gray-400">
             Todos os seus canais em uma só tela — WhatsApp, Instagram, Facebook e mais
           </p>
@@ -98,6 +101,8 @@ export function ChannelsPage() {
           </Button>
         </div>
       </div>
+
+      <DemoNotice />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {(channels ?? []).map((channel) => {
