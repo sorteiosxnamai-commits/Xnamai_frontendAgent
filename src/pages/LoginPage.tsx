@@ -43,9 +43,15 @@ export function LoginPage() {
       await login(data);
       navigate('/dashboard');
     } catch (error) {
+      const isTimeout = (error as { code?: string })?.code === 'ECONNABORTED';
+      const isNetwork = !(error as { response?: unknown })?.response;
       addToast({
         title: 'Login inválido',
-        message: error instanceof Error ? error.message : 'E-mail ou senha incorretos',
+        message: isTimeout || isNetwork
+          ? 'Servidor demorou para responder (Render free). Aguarde ~1 min e tente de novo.'
+          : error instanceof Error
+            ? error.message
+            : 'E-mail ou senha incorretos',
         type: 'error',
       });
     }

@@ -3,8 +3,11 @@ import type { AuthResponse, LoginCredentials, RegisterCredentials, User } from '
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
 
+const AUTH_PATHS = ['/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password'];
+
 export const api = axios.create({
   baseURL: API_URL,
+  timeout: 120_000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -21,7 +24,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+    const url = String(error.config?.url ?? '');
+
+    if (status === 401 && !AUTH_PATHS.some((path) => url.includes(path))) {
       localStorage.removeItem('pulsedesk_token');
       localStorage.removeItem('pulsedesk_user');
       window.location.href = '/login';
