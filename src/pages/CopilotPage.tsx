@@ -141,7 +141,7 @@ export function CopilotPage() {
           IA contextual com dados reais — conversas, clientes, estoque e pedidos
         </p>
         <p className="mt-1 text-xs text-gray-400">
-          Motor: {aiMode === 'openai' ? `OpenAI (${aiSettingsStore.get().model})` : 'PulseDesk IA (Supabase + Mercos)'}
+          Motor: {status?.openaiEnabled ? status.model : aiMode === 'openai' ? `OpenAI (${aiSettingsStore.get().model})` : `${status?.model ?? 'PulseDesk IA'} — configure OPENAI_API_KEY no Render para respostas GPT`}
         </p>
       </div>
 

@@ -201,6 +201,7 @@ export interface AgentStatus {
   model: string;
   avgResponseTime: string;
   questionsAnswered: number;
+  openaiEnabled?: boolean;
 }
 
 export interface AgentChatMessage {
