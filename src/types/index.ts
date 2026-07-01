@@ -70,6 +70,45 @@ export interface DashboardData {
   responseTimeChart: ChartDataPoint[];
 }
 
+export interface SalesFunnelStep {
+  id: string;
+  label: string;
+  quantidade: number;
+  valor: number;
+  conversaoPct: number;
+  tipo: string;
+}
+
+export interface SalesStatusBreakdown {
+  status: string;
+  label: string;
+  quantidade: number;
+  valor: number;
+}
+
+export interface SalesDayPoint {
+  name: string;
+  vendas: number;
+  valor: number;
+}
+
+export interface SalesMetrics {
+  quantidadeVendas: number;
+  valorTotalVendido: number;
+  volumeBruto: number;
+  valorRetido: number;
+  valorPipeline: number;
+  valorCancelado: number;
+  ticketMedio: number;
+  taxaConversao: number;
+  taxaRetencao: number;
+  pipelineNegocios: number;
+  pipelineValor: number;
+  funil: SalesFunnelStep[];
+  porStatus: SalesStatusBreakdown[];
+  vendasPorDia: SalesDayPoint[];
+}
+
 export type MessageSender = 'customer' | 'agent' | 'ai';
 export type MessageStatus = 'sent' | 'delivered' | 'read';
 export type ConversationStatus = 'active' | 'waiting' | 'closed';

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService } from '@/services/dashboard.service';
+import { salesService } from '@/services/sales.service';
 import { customersService, productsService, ordersService } from '@/services/data.service';
 import { mercosService } from '@/services/mercos.service';
 import { agentService } from '@/services/agent.service';
@@ -10,6 +11,13 @@ export function useDashboard() {
   return useQuery({
     queryKey: ['dashboard'],
     queryFn: dashboardService.getDashboard,
+  });
+}
+
+export function useSalesMetrics() {
+  return useQuery({
+    queryKey: ['sales-metrics'],
+    queryFn: salesService.getMetrics,
   });
 }
 
