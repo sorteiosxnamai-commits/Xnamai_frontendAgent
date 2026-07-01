@@ -28,24 +28,24 @@ const navSections = [
     items: [
       { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { to: '/atendimento', icon: Headphones, label: 'Central de Atendimento' },
-      { to: '/canais', icon: Radio, label: 'Canais', beta: true },
+      { to: '/canais', icon: Radio, label: 'Canais' },
       { to: '/contatos', icon: Users, label: 'Contatos' },
     ],
   },
   {
     title: 'Automação & Vendas',
     items: [
-      { to: '/robo', icon: Bot, label: 'Robô de Atendimento', beta: true },
+      { to: '/robo', icon: Bot, label: 'Robô de Atendimento' },
       { to: '/copiloto', icon: Sparkles, label: 'Copiloto IA', beta: true },
-      { to: '/funil', icon: GitBranch, label: 'Funil de Vendas', beta: true },
-      { to: '/campanhas', icon: Megaphone, label: 'Campanhas', beta: true },
+      { to: '/funil', icon: GitBranch, label: 'Funil de Vendas' },
+      { to: '/campanhas', icon: Megaphone, label: 'Campanhas' },
     ],
   },
   {
     title: 'Gestão',
     items: [
       { to: '/relatorios', icon: BarChart3, label: 'Relatórios' },
-      { to: '/integracoes', icon: Link2, label: 'Integrações', beta: true },
+      { to: '/integracoes', icon: Link2, label: 'Integrações' },
       { to: '/configuracoes', icon: Settings, label: 'Configurações' },
       { to: '/perfil', icon: UserCircle, label: 'Perfil' },
     ],

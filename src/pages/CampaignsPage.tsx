@@ -2,7 +2,6 @@ import { ChannelBadge } from '@/components/ui/ChannelBadge';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { DemoNotice, PageBetaBadge } from '@/components/ui/DemoNotice';
 import { Input } from '@/components/ui/Input';
 import { Loading } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
@@ -78,17 +77,13 @@ export function CampaignsPage() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
-            Campanhas <PageBetaBadge />
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Campanhas</h1>
           <p className="text-gray-500 dark:text-gray-400">Dispare mensagens em massa com WhatsApp API Oficial e outros canais</p>
         </div>
         <Button onClick={() => setModalOpen(true)}>
           <Plus className="h-4 w-4" /> Nova campanha
         </Button>
       </div>
-
-      <DemoNotice />
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="!p-4">
