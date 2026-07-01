@@ -1,5 +1,4 @@
 import { Logo } from '@/components/layout/Logo';
-import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -36,7 +35,7 @@ const navSections = [
     title: 'Automação & Vendas',
     items: [
       { to: '/robo', icon: Bot, label: 'Robô de Atendimento' },
-      { to: '/copiloto', icon: Sparkles, label: 'Copiloto IA', beta: true },
+      { to: '/copiloto', icon: Sparkles, label: 'Copiloto IA' },
       { to: '/funil', icon: GitBranch, label: 'Funil de Vendas' },
       { to: '/campanhas', icon: Megaphone, label: 'Campanhas' },
     ],
@@ -101,7 +100,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
               </p>
             )}
             <ul className="space-y-0.5 px-3">
-              {section.items.map(({ to, icon: Icon, label, beta }) => (
+              {section.items.map(({ to, icon: Icon, label }) => (
                 <li key={to}>
                   <NavLink
                     to={to}
@@ -118,16 +117,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
                     title={collapsed ? label : undefined}
                   >
                     <Icon className="h-5 w-5 shrink-0" />
-                    {!collapsed && (
-                      <>
-                        <span className="flex-1">{label}</span>
-                        {beta && (
-                          <Badge variant="warning" className="px-1.5 py-0 text-[10px]">
-                            Beta
-                          </Badge>
-                        )}
-                      </>
-                    )}
+                    {!collapsed && <span className="flex-1">{label}</span>}
                   </NavLink>
                 </li>
               ))}
