@@ -130,6 +130,30 @@ export const chatbotService = {
       await api.patch(`/chatbot/fluxos/${id}`, patch);
     }
   },
+
+  test: async (
+    id: string,
+    payload?: { conversationId?: string; message?: string },
+  ): Promise<{
+    success: boolean;
+    conversationId: string;
+    reply?: string;
+    source?: string;
+    flowName?: string;
+    message?: string;
+  }> => {
+    if (USE_MOCK) {
+      await delay(600);
+      return {
+        success: true,
+        conversationId: payload?.conversationId ?? 'conv-mock',
+        reply: 'Olá! Sou o robô de atendimento. Como posso ajudar?',
+        source: 'intelligent',
+      };
+    }
+    const { data } = await api.post(`/chatbot/fluxos/${id}/testar`, payload ?? {});
+    return data;
+  },
 };
 
 export const integrationsService = {

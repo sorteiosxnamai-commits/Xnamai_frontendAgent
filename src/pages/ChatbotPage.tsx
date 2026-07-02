@@ -9,14 +9,17 @@ import { Select } from '@/components/ui/Select';
 import { useNotification } from '@/contexts/NotificationContext';
 import { usePlatformMutations } from '@/hooks/usePlatformMutations';
 import { useChatbots } from '@/hooks/usePlatform';
+import { chatbotService } from '@/services/platform.service';
 import type { ChannelType, ChatbotFlow } from '@/types';
 import { motion } from 'framer-motion';
 import { Bot, Clock, MessageSquare, Plus, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 export function ChatbotPage() {
   const { data: flows, isLoading } = useChatbots();
+  const queryClient = useQueryClient();
   const { createChatbot, updateChatbot, toggleChatbot } = usePlatformMutations();
   const { addToast } = useNotification();
   const navigate = useNavigate();
@@ -24,6 +27,7 @@ export function ChatbotPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editFlow, setEditFlow] = useState<ChatbotFlow | null>(null);
   const [form, setForm] = useState({ name: '', channel: 'whatsapp' as ChannelType, active: true });
+  const [testingId, setTestingId] = useState<string | null>(null);
 
   const totalResolved = (flows ?? []).reduce((s, f) => s + f.resolved, 0);
   const totalTriggers = (flows ?? []).reduce((s, f) => s + f.triggers, 0);
@@ -47,9 +51,40 @@ export function ChatbotPage() {
     setEditFlow(null);
   };
 
-  const handleTest = (flow: ChatbotFlow) => {
-    addToast({ title: 'Teste iniciado', message: `Simulando fluxo "${flow.name}"`, type: 'info' });
-    navigate('/atendimento');
+  const handleTest = async (flow: ChatbotFlow) => {
+    if (!flow.active) {
+      addToast({
+        title: 'Fluxo inativo',
+        message: 'Ative o fluxo antes de testar',
+        type: 'warning',
+      });
+      return;
+    }
+    setTestingId(flow.id);
+    try {
+      const result = await chatbotService.test(flow.id, {
+        message: 'Olá, preciso de ajuda com meu pedido',
+      });
+      if (result.success) {
+        await queryClient.invalidateQueries({ queryKey: ['chatbots'] });
+        addToast({
+          title: 'Robô respondeu',
+          message: result.reply?.slice(0, 120) ?? 'Resposta gerada com sucesso',
+          type: 'success',
+        });
+        navigate(`/atendimento?conversa=${result.conversationId}`);
+      } else {
+        addToast({
+          title: 'Robô não respondeu',
+          message: result.message ?? 'Verifique se há atendente humano na conversa',
+          type: 'warning',
+        });
+      }
+    } catch {
+      addToast({ title: 'Erro no teste', message: 'Não foi possível executar o fluxo', type: 'error' });
+    } finally {
+      setTestingId(null);
+    }
   };
 
   const handleToggle = async (flow: ChatbotFlow) => {
@@ -68,7 +103,9 @@ export function ChatbotPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Robô de Atendimento</h1>
-          <p className="text-gray-500 dark:text-gray-400">Automatize o atendimento 24/7 com triagem inteligente</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            Respostas automáticas com IA quando o cliente envia mensagem — WhatsApp e simulação
+          </p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4" /> Novo fluxo
@@ -123,7 +160,14 @@ export function ChatbotPage() {
               >
                 Editar fluxo
               </Button>
-              <Button variant="outline" size="sm" className="flex-1" onClick={() => handleTest(flow)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => handleTest(flow)}
+                loading={testingId === flow.id}
+                disabled={!flow.active}
+              >
                 Testar
               </Button>
             </div>

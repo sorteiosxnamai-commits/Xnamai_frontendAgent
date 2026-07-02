@@ -31,7 +31,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const STATUS_LABELS = {
   active: 'Ativa',
@@ -76,6 +76,7 @@ export function ConversationsPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { addToast } = useNotification();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [transferOpen, setTransferOpen] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
@@ -144,10 +145,15 @@ export function ConversationsPage() {
   };
 
   useEffect(() => {
+    const fromQuery = searchParams.get('conversa');
+    if (fromQuery) {
+      setActiveConversationId(fromQuery);
+      return;
+    }
     if (conversations?.length && !activeConversationId) {
       setActiveConversationId(conversations[0].id);
     }
-  }, [conversations, activeConversationId, setActiveConversationId]);
+  }, [conversations, activeConversationId, setActiveConversationId, searchParams]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
