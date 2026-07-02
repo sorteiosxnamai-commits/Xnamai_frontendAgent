@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { MercosSettingsPanel } from '@/components/settings/MercosSettingsPanel';
 import { DemoNotice } from '@/components/ui/DemoNotice';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -204,16 +205,7 @@ export function SettingsPage() {
               </div>
             )}
 
-            {activeTab === 'mercos' && (
-              <div className="space-y-4">
-                <Input label="Application Token" type="password" placeholder="Token da API Mercos" />
-                <Input label="Company Token" type="password" placeholder="Token da empresa" />
-                <Input label="URL da API" defaultValue="https://api.mercos.com/v1" />
-                <Button variant="outline" onClick={() => addToast({ title: 'Conexão testada', message: 'Mercos respondeu com sucesso', type: 'success' })}>
-                  Testar conexão
-                </Button>
-              </div>
-            )}
+            {activeTab === 'mercos' && <MercosSettingsPanel />}
 
             {activeTab === 'integracoes' && (
               <div className="space-y-4">
@@ -271,9 +263,11 @@ export function SettingsPage() {
               </div>
             )}
 
-            <div className="mt-6 flex justify-end">
-              <Button onClick={handleSave}>Salvar alterações</Button>
-            </div>
+            {activeTab !== 'mercos' && (
+              <div className="mt-6 flex justify-end">
+                <Button onClick={handleSave}>Salvar alterações</Button>
+              </div>
+            )}
           </Card>
         </div>
       </div>

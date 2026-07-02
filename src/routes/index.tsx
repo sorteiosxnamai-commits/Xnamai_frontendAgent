@@ -13,6 +13,8 @@ import { LegalPage } from '@/pages/LegalPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
+import { OrdersPage } from '@/pages/OrdersPage';
+import { ProductsPage } from '@/pages/ProductsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { ReportsPage } from '@/pages/ReportsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
@@ -39,6 +41,8 @@ export function AppRoutes() {
           <Route path="/canais" element={<ChannelsPage />} />
           <Route path="/contatos" element={<CustomersPage />} />
           <Route path="/clientes" element={<Navigate to="/contatos" replace />} />
+          <Route path="/produtos" element={<ProductsPage />} />
+          <Route path="/pedidos" element={<OrdersPage />} />
           <Route path="/robo" element={<ChatbotPage />} />
           <Route path="/copiloto" element={<CopilotPage />} />
           <Route path="/agente-ia" element={<Navigate to="/copiloto" replace />} />

@@ -40,4 +40,13 @@ export const mercosService = {
     const { data } = await api.post('/mercos/sincronizar', { type });
     return data;
   },
+
+  testConnection: async (): Promise<{ ok: boolean; message: string; clientes?: number }> => {
+    if (USE_MOCK) {
+      await delay(800);
+      return { ok: false, message: 'Modo mock ativo — configure VITE_USE_MOCK=false e o backend real' };
+    }
+    const { data } = await api.post<{ ok: boolean; message: string; clientes?: number }>('/mercos/testar-conexao');
+    return data;
+  },
 };
