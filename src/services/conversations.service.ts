@@ -55,4 +55,75 @@ export const conversationsService = {
     );
     return data;
   },
+
+  transfer: async (conversationId: string, assigneeId: string): Promise<Conversation> => {
+    if (USE_MOCK) {
+      await delay(200);
+      const conv = mockConversations.find((c) => c.id === conversationId);
+      if (!conv) throw new Error('Conversa não encontrada');
+      return { ...conv, assignedTo: assigneeId, status: 'active' };
+    }
+    const { data } = await api.patch<Conversation>(
+      `/conversas/${conversationId}/transferir`,
+      { assigneeId },
+    );
+    return data;
+  },
+
+  assume: async (conversationId: string): Promise<Conversation> => {
+    if (USE_MOCK) {
+      await delay(200);
+      const conv = mockConversations.find((c) => c.id === conversationId);
+      if (!conv) throw new Error('Conversa não encontrada');
+      return { ...conv, status: 'active' };
+    }
+    const { data } = await api.patch<Conversation>(
+      `/conversas/${conversationId}/assumir`,
+    );
+    return data;
+  },
+
+  close: async (conversationId: string, note?: string): Promise<Conversation> => {
+    if (USE_MOCK) {
+      await delay(200);
+      const conv = mockConversations.find((c) => c.id === conversationId);
+      if (!conv) throw new Error('Conversa não encontrada');
+      return { ...conv, status: 'closed' };
+    }
+    const { data } = await api.patch<Conversation>(
+      `/conversas/${conversationId}/encerrar`,
+      note ? { note } : {},
+    );
+    return data;
+  },
+
+  reopen: async (conversationId: string): Promise<Conversation> => {
+    if (USE_MOCK) {
+      await delay(200);
+      const conv = mockConversations.find((c) => c.id === conversationId);
+      if (!conv) throw new Error('Conversa não encontrada');
+      return { ...conv, status: 'active' };
+    }
+    const { data } = await api.patch<Conversation>(
+      `/conversas/${conversationId}/reativar`,
+    );
+    return data;
+  },
+
+  reserveProduct: async (
+    conversationId: string,
+    payload: { productId: string; productName?: string; quantity?: number },
+  ): Promise<Conversation> => {
+    if (USE_MOCK) {
+      await delay(200);
+      const conv = mockConversations.find((c) => c.id === conversationId);
+      if (!conv) throw new Error('Conversa não encontrada');
+      return conv;
+    }
+    const { data } = await api.post<Conversation>(
+      `/conversas/${conversationId}/reserva`,
+      payload,
+    );
+    return data;
+  },
 };

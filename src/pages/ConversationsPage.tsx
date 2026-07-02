@@ -5,39 +5,45 @@ import { MessageInput } from '@/components/chat/MessageInput';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { EmptyState, Loading } from '@/components/ui/EmptyState';
+import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Search } from '@/components/ui/Search';
 import { Select } from '@/components/ui/Select';
+import { useAuth } from '@/contexts/AuthContext';
 import { useChat } from '@/contexts/ChatContext';
 import { useNotification } from '@/contexts/NotificationContext';
-import { useConversations, useCustomerDetail, useMessages } from '@/hooks/useQueries';
+import { useConversations, useCustomerDetail, useMessages, useProducts } from '@/hooks/useQueries';
 import { useConversationSuggestion } from '@/hooks/useConversationSuggestion';
 import { conversationsService } from '@/services/conversations.service';
+import { roleLabel, usersService } from '@/services/users.service';
 import { formatCurrency, formatDateTime } from '@/utils';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  CheckCircle2,
   MessageSquare,
   Package,
   RefreshCw,
   ShoppingCart,
   Sparkles,
   User,
+  UserCheck,
   Wand2,
+  XCircle,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const AGENTS = [
-  { value: 'ana', label: 'Ana Silva — Vendas' },
-  { value: 'carlos', label: 'Carlos Mendes — Suporte' },
-  { value: 'julia', label: 'Julia Santos — Comercial' },
-];
+const STATUS_LABELS = {
+  active: 'Ativa',
+  waiting: 'Aguardando',
+  closed: 'Encerrada',
+} as const;
 
-const PRODUCTS = [
-  { value: 'p1', label: 'Sensor PT100 Industrial' },
-  { value: 'p2', label: 'Controlador CLP-200' },
-  { value: 'p3', label: 'Módulo I/O 16 canais' },
-];
+const STATUS_VARIANTS = {
+  active: 'success' as const,
+  waiting: 'warning' as const,
+  closed: 'default' as const,
+};
 
 export function ConversationsPage() {
   const {
@@ -56,10 +62,16 @@ export function ConversationsPage() {
     setSearchQuery,
   } = useChat();
 
+  const { user } = useAuth();
   const { data: conversations, isLoading } = useConversations();
   const { data: messages, isLoading: messagesLoading } = useMessages(activeConversationId);
   const activeConversation = conversations?.find((c) => c.id === activeConversationId);
   const { data: customerDetail } = useCustomerDetail(activeConversation?.customerId);
+  const { data: teamUsers, isLoading: teamLoading } = useQuery({
+    queryKey: ['usuarios'],
+    queryFn: usersService.list,
+  });
+  const { data: productsData } = useProducts({ page: 1, pageSize: 50 });
   const queryClient = useQueryClient();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { addToast } = useNotification();
@@ -67,8 +79,42 @@ export function ConversationsPage() {
 
   const [transferOpen, setTransferOpen] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
-  const [transferAgent, setTransferAgent] = useState('ana');
-  const [reserveProduct, setReserveProduct] = useState('p1');
+  const [closeOpen, setCloseOpen] = useState(false);
+  const [transferAgent, setTransferAgent] = useState('');
+  const [reserveProduct, setReserveProduct] = useState('');
+  const [closeNote, setCloseNote] = useState('');
+
+  const agentOptions = useMemo(
+    () =>
+      (teamUsers ?? [])
+        .filter((u) => u.active)
+        .map((u) => ({
+          value: u.id,
+          label: `${u.name} — ${roleLabel(u.role)}`,
+        })),
+    [teamUsers],
+  );
+
+  const productOptions = useMemo(
+    () =>
+      (productsData?.data ?? []).map((p) => ({
+        value: p.id,
+        label: `${p.name}${p.code ? ` (${p.code})` : ''}`,
+      })),
+    [productsData],
+  );
+
+  useEffect(() => {
+    if (agentOptions.length && !transferAgent) {
+      setTransferAgent(agentOptions[0].value);
+    }
+  }, [agentOptions, transferAgent]);
+
+  useEffect(() => {
+    if (productOptions.length && !reserveProduct) {
+      setReserveProduct(productOptions[0].value);
+    }
+  }, [productOptions, reserveProduct]);
 
   const mergedForAi = useMemo(() => {
     if (!activeConversationId) return [];
@@ -87,6 +133,15 @@ export function ConversationsPage() {
   );
 
   const filtered = conversations ? filterConversations(conversations) : [];
+  const isClosed = activeConversation?.status === 'closed';
+  const isAssignedToMe = !!user?.id && activeConversation?.assignedTo === user.id;
+
+  const invalidateConversation = () => {
+    queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    if (activeConversationId) {
+      queryClient.invalidateQueries({ queryKey: ['messages', activeConversationId] });
+    }
+  };
 
   useEffect(() => {
     if (conversations?.length && !activeConversationId) {
@@ -103,13 +158,95 @@ export function ConversationsPage() {
       conversationsService.sendMessage(activeConversationId!, content),
     onSuccess: (message) => {
       addLocalMessage(activeConversationId!, message);
-      queryClient.invalidateQueries({ queryKey: ['messages', activeConversationId] });
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      invalidateConversation();
+    },
+    onError: () => {
+      addToast({
+        title: 'Erro ao enviar',
+        message: 'Não foi possível enviar a mensagem. Verifique se a conversa está aberta.',
+        type: 'error',
+      });
+    },
+  });
+
+  const transferMutation = useMutation({
+    mutationFn: () =>
+      conversationsService.transfer(activeConversationId!, transferAgent),
+    onSuccess: (conv) => {
+      addToast({
+        title: 'Atendimento transferido',
+        message: `Conversa atribuída a ${conv.assignedName ?? 'novo atendente'}`,
+        type: 'success',
+      });
+      setTransferOpen(false);
+      invalidateConversation();
+    },
+    onError: () => {
+      addToast({ title: 'Erro', message: 'Não foi possível transferir', type: 'error' });
+    },
+  });
+
+  const assumeMutation = useMutation({
+    mutationFn: () => conversationsService.assume(activeConversationId!),
+    onSuccess: () => {
+      addToast({ title: 'Atendimento assumido', message: 'Você é o responsável agora', type: 'success' });
+      invalidateConversation();
+    },
+    onError: () => {
+      addToast({ title: 'Erro', message: 'Não foi possível assumir', type: 'error' });
+    },
+  });
+
+  const closeMutation = useMutation({
+    mutationFn: () =>
+      conversationsService.close(activeConversationId!, closeNote || undefined),
+    onSuccess: () => {
+      addToast({ title: 'Atendimento encerrado', message: 'Conversa marcada como encerrada', type: 'success' });
+      setCloseOpen(false);
+      setCloseNote('');
+      invalidateConversation();
+    },
+    onError: () => {
+      addToast({ title: 'Erro', message: 'Não foi possível encerrar', type: 'error' });
+    },
+  });
+
+  const reopenMutation = useMutation({
+    mutationFn: () => conversationsService.reopen(activeConversationId!),
+    onSuccess: () => {
+      addToast({ title: 'Atendimento reaberto', message: 'Conversa ativa novamente', type: 'success' });
+      invalidateConversation();
+    },
+    onError: () => {
+      addToast({ title: 'Erro', message: 'Não foi possível reabrir', type: 'error' });
+    },
+  });
+
+  const reserveMutation = useMutation({
+    mutationFn: () => {
+      const product = productOptions.find((p) => p.value === reserveProduct);
+      return conversationsService.reserveProduct(activeConversationId!, {
+        productId: reserveProduct,
+        productName: product?.label,
+      });
+    },
+    onSuccess: () => {
+      const product = productOptions.find((p) => p.value === reserveProduct);
+      addToast({
+        title: 'Produto reservado',
+        message: `${product?.label ?? 'Produto'} reservado por 48h`,
+        type: 'success',
+      });
+      setReserveOpen(false);
+      invalidateConversation();
+    },
+    onError: () => {
+      addToast({ title: 'Erro', message: 'Não foi possível registrar a reserva', type: 'error' });
     },
   });
 
   const handleSend = (content: string) => {
-    if (!activeConversationId) return;
+    if (!activeConversationId || isClosed) return;
     sendMutation.mutate(content);
     setIsTyping(true);
     setTimeout(() => setIsTyping(false), 2000);
@@ -125,29 +262,9 @@ export function ConversationsPage() {
     addToast({ title: 'Sugestão enviada', message: 'Mensagem contextual inserida no chat', type: 'success' });
   };
 
-  const handleTransfer = () => {
-    const agent = AGENTS.find((a) => a.value === transferAgent);
-    addToast({
-      title: 'Atendimento transferido',
-      message: `Conversa encaminhada para ${agent?.label}`,
-      type: 'success',
-    });
-    setTransferOpen(false);
-  };
-
   const handleOpenFunnel = () => {
     addToast({ title: 'Funil aberto', message: 'Oportunidade vinculada ao cliente', type: 'info' });
     navigate('/funil');
-  };
-
-  const handleReserve = () => {
-    const product = PRODUCTS.find((p) => p.value === reserveProduct);
-    addToast({
-      title: 'Produto reservado',
-      message: `${product?.label} reservado por 48h`,
-      type: 'success',
-    });
-    setReserveOpen(false);
   };
 
   const allMessages = mergedForAi;
@@ -159,7 +276,7 @@ export function ConversationsPage() {
       <div className="mb-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Central de Atendimento</h1>
         <p className="text-gray-500 dark:text-gray-400">
-          Todos os canais em uma só tela — sem abas, sem conversas perdidas
+          Transferência, encerramento e reservas persistidos no Supabase
         </p>
       </div>
 
@@ -214,24 +331,65 @@ export function ConversationsPage() {
         <div className="hidden flex-1 flex-col md:flex">
           {activeConversation ? (
             <>
-              <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
-                <div>
+              <div className="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+                <div className="min-w-0">
                   <h3 className="font-semibold text-gray-900 dark:text-white">
                     {activeConversation.customerName}
                   </h3>
-                  <div className="mt-1 flex items-center gap-2">
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
                     <ChannelBadge channel={activeConversation.channel} />
                     {activeConversation.protocol && (
                       <span className="text-xs text-gray-400">{activeConversation.protocol}</span>
                     )}
+                    {activeConversation.assignedName && (
+                      <span className="text-xs text-gray-500">
+                        · {activeConversation.assignedName}
+                        {activeConversation.department ? ` (${activeConversation.department})` : ''}
+                      </span>
+                    )}
                   </div>
                 </div>
-                <Badge variant={activeConversation.status === 'active' ? 'success' : 'default'}>
-                  {activeConversation.status === 'active' ? 'Online' : activeConversation.status}
-                </Badge>
+                <div className="flex shrink-0 items-center gap-2">
+                  {!isClosed && !isAssignedToMe && user && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => assumeMutation.mutate()}
+                      disabled={assumeMutation.isPending}
+                    >
+                      <UserCheck className="h-4 w-4" /> Assumir
+                    </Button>
+                  )}
+                  {isClosed ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => reopenMutation.mutate()}
+                      disabled={reopenMutation.isPending}
+                    >
+                      <RefreshCw className="h-4 w-4" /> Reabrir
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCloseOpen(true)}
+                    >
+                      <XCircle className="h-4 w-4" /> Encerrar
+                    </Button>
+                  )}
+                  <Badge variant={STATUS_VARIANTS[activeConversation.status]}>
+                    {STATUS_LABELS[activeConversation.status]}
+                  </Badge>
+                </div>
               </div>
 
               <div className="flex-1 space-y-4 overflow-y-auto bg-gray-50 p-4 dark:bg-gray-950">
+                {isClosed && (
+                  <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                    Conversa encerrada. Reabra para enviar novas mensagens.
+                  </div>
+                )}
                 {messagesLoading ? (
                   <Loading text="Carregando mensagens..." />
                 ) : (
@@ -251,7 +409,11 @@ export function ConversationsPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              <MessageInput onSend={handleSend} disabled={sendMutation.isPending} />
+              <MessageInput
+                onSend={handleSend}
+                disabled={sendMutation.isPending || isClosed}
+                placeholder={isClosed ? 'Conversa encerrada' : 'Digite sua mensagem...'}
+              />
             </>
           ) : (
             <EmptyState
@@ -340,20 +502,42 @@ export function ConversationsPage() {
                     size="sm"
                     className="mt-2 w-full text-xs"
                     onClick={handleUseSuggestion}
-                    disabled={aiLoading || !aiSuggestion?.suggestion}
+                    disabled={aiLoading || !aiSuggestion?.suggestion || isClosed}
                   >
                     <Wand2 className="h-3 w-3" /> Usar sugestão
                   </Button>
                 </div>
-                <Button variant="outline" className="w-full justify-start" size="sm" onClick={() => setTransferOpen(true)}>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  size="sm"
+                  onClick={() => setTransferOpen(true)}
+                  disabled={isClosed || teamLoading || agentOptions.length === 0}
+                >
                   <RefreshCw className="h-4 w-4" /> Transferir atendimento
                 </Button>
                 <Button variant="outline" className="w-full justify-start" size="sm" onClick={handleOpenFunnel}>
                   <ShoppingCart className="h-4 w-4" /> Abrir no funil
                 </Button>
-                <Button variant="outline" className="w-full justify-start" size="sm" onClick={() => setReserveOpen(true)}>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  size="sm"
+                  onClick={() => setReserveOpen(true)}
+                  disabled={isClosed || productOptions.length === 0}
+                >
                   <Package className="h-4 w-4" /> Reservar produto
                 </Button>
+                {!isClosed && (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    size="sm"
+                    onClick={() => setCloseOpen(true)}
+                  >
+                    <CheckCircle2 className="h-4 w-4" /> Encerrar atendimento
+                  </Button>
+                )}
               </div>
             </div>
           ) : (
@@ -362,33 +546,78 @@ export function ConversationsPage() {
         </div>
       </div>
 
-      <Modal open={transferOpen} onClose={() => setTransferOpen(false)} title="Transferir atendimento" footer={
-        <>
-          <Button variant="outline" onClick={() => setTransferOpen(false)}>Cancelar</Button>
-          <Button onClick={handleTransfer}>Transferir</Button>
-        </>
-      }>
-        <Select
-          label="Atendente"
-          options={AGENTS}
-          value={transferAgent}
-          onChange={(e) => setTransferAgent(e.target.value)}
+      <Modal
+        open={transferOpen}
+        onClose={() => setTransferOpen(false)}
+        title="Transferir atendimento"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setTransferOpen(false)}>Cancelar</Button>
+            <Button onClick={() => transferMutation.mutate()} disabled={transferMutation.isPending || !transferAgent}>
+              Transferir
+            </Button>
+          </>
+        }
+      >
+        {agentOptions.length === 0 ? (
+          <p className="text-sm text-gray-500">Cadastre usuários em Configurações → Usuários.</p>
+        ) : (
+          <Select
+            label="Atendente"
+            options={agentOptions}
+            value={transferAgent}
+            onChange={(e) => setTransferAgent(e.target.value)}
+          />
+        )}
+      </Modal>
+
+      <Modal
+        open={closeOpen}
+        onClose={() => setCloseOpen(false)}
+        title="Encerrar atendimento"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setCloseOpen(false)}>Cancelar</Button>
+            <Button onClick={() => closeMutation.mutate()} disabled={closeMutation.isPending}>
+              Encerrar
+            </Button>
+          </>
+        }
+      >
+        <Input
+          label="Motivo (opcional)"
+          value={closeNote}
+          onChange={(e) => setCloseNote(e.target.value)}
+          placeholder="Ex.: Cliente satisfeito, pedido concluído"
         />
       </Modal>
 
-      <Modal open={reserveOpen} onClose={() => setReserveOpen(false)} title="Reservar produto" footer={
-        <>
-          <Button variant="outline" onClick={() => setReserveOpen(false)}>Cancelar</Button>
-          <Button onClick={handleReserve}>Confirmar reserva</Button>
-        </>
-      }>
-        <Select
-          label="Produto"
-          options={PRODUCTS}
-          value={reserveProduct}
-          onChange={(e) => setReserveProduct(e.target.value)}
-        />
-        <p className="mt-3 text-xs text-gray-500">A reserva expira automaticamente em 48 horas.</p>
+      <Modal
+        open={reserveOpen}
+        onClose={() => setReserveOpen(false)}
+        title="Reservar produto"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setReserveOpen(false)}>Cancelar</Button>
+            <Button onClick={() => reserveMutation.mutate()} disabled={reserveMutation.isPending || !reserveProduct}>
+              Confirmar reserva
+            </Button>
+          </>
+        }
+      >
+        {productOptions.length === 0 ? (
+          <p className="text-sm text-gray-500">Sincronize produtos no Mercos primeiro.</p>
+        ) : (
+          <>
+            <Select
+              label="Produto"
+              options={productOptions}
+              value={reserveProduct}
+              onChange={(e) => setReserveProduct(e.target.value)}
+            />
+            <p className="mt-3 text-xs text-gray-500">A reserva expira automaticamente em 48 horas.</p>
+          </>
+        )}
       </Modal>
     </div>
   );

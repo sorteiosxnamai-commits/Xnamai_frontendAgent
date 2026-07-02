@@ -20,7 +20,6 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { Select } from '@/components/ui/Select';
 import { useNotification } from '@/contexts/NotificationContext';
-import { aiSettingsStore } from '@/store/aiSettingsStore';
 
 function buildQuickTools(conversations: Conversation[], contextConvId: string) {
   const selected =
@@ -142,7 +141,6 @@ export function CopilotPage() {
     },
   });
 
-  const aiMode = agentService.getAiMode();
   const primaryConv = contextConv ?? conversations?.[0];
   const trackingConv = conversations?.find((c) =>
     c.lastMessage.toLowerCase().match(/pedido|entrega|chega/),

@@ -51,6 +51,9 @@ export function ConversationCard({ conversation, active, onClick }: Conversation
             {statusLabel[conversation.status]}
           </Badge>
           <span className="text-xs text-gray-400">{conversation.department}</span>
+          {conversation.assignedName && (
+            <span className="truncate text-xs text-gray-400">· {conversation.assignedName}</span>
+          )}
           <ChannelBadge channel={conversation.channel} showLabel={false} />
           {conversation.unreadCount > 0 && (
             <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-600 px-1.5 text-xs font-medium text-white">

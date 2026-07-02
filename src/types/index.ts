@@ -144,6 +144,7 @@ export interface Conversation {
   department?: string;
   protocol?: string;
   assignedTo?: string;
+  assignedName?: string;
 }
 
 export interface FunnelStage {
