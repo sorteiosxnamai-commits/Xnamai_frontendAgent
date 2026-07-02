@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { MercosSettingsPanel } from '@/components/settings/MercosSettingsPanel';
-import { DemoNotice } from '@/components/ui/DemoNotice';
+import { UsersSettingsPanel } from '@/components/settings/UsersSettingsPanel';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -32,12 +32,6 @@ const tabs = [
   { id: 'notificacoes', label: 'Notificações', icon: Bell },
   { id: 'seguranca', label: 'Segurança', icon: Key },
   { id: 'tema', label: 'Tema', icon: Palette },
-];
-
-const mockUsers = [
-  { id: '1', name: 'Ana Silva', email: 'ana@empresa.com', role: 'Admin' },
-  { id: '2', name: 'Carlos Mendes', email: 'carlos@empresa.com', role: 'Atendente' },
-  { id: '3', name: 'Julia Santos', email: 'julia@empresa.com', role: 'Supervisor' },
 ];
 
 export function SettingsPage() {
@@ -118,23 +112,7 @@ export function SettingsPage() {
               </div>
             )}
 
-            {activeTab === 'usuarios' && (
-              <div className="space-y-3">
-                <DemoNotice variant="mock" />
-                {mockUsers.map((u) => (
-                  <div key={u.id} className="flex items-center justify-between rounded-lg border border-gray-100 p-3 dark:border-gray-800">
-                    <div>
-                      <p className="font-medium">{u.name}</p>
-                      <p className="text-xs text-gray-500">{u.email}</p>
-                    </div>
-                    <Badge variant="default">{u.role}</Badge>
-                  </div>
-                ))}
-                <Button variant="outline" onClick={() => addToast({ title: 'Convite enviado', message: 'Link de convite copiado', type: 'info' })}>
-                  Convidar usuário
-                </Button>
-              </div>
-            )}
+            {activeTab === 'usuarios' && <UsersSettingsPanel />}
 
             {activeTab === 'permissoes' && (
               <div className="space-y-3">
@@ -263,7 +241,7 @@ export function SettingsPage() {
               </div>
             )}
 
-            {activeTab !== 'mercos' && (
+            {activeTab !== 'mercos' && activeTab !== 'usuarios' && (
               <div className="mt-6 flex justify-end">
                 <Button onClick={handleSave}>Salvar alterações</Button>
               </div>
