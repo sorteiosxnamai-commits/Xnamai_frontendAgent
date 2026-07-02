@@ -6,9 +6,9 @@ import { Loading } from '@/components/ui/EmptyState';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useMercosLogs, useMercosStatus } from '@/hooks/useQueries';
 import { mercosService, type MercosSyncType } from '@/services/mercos.service';
-import { formatDateTime } from '@/utils';
+import { formatCurrency, formatDateTime } from '@/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle, Package, RefreshCw, ShoppingCart, Users, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Package, RefreshCw, ShoppingCart, Users, XCircle } from 'lucide-react';
 import { useState } from 'react';
 
 export function MercosSettingsPanel() {
@@ -45,6 +45,9 @@ export function MercosSettingsPanel() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['funnel'] });
+      queryClient.invalidateQueries({ queryKey: ['sales-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
     onError: (err: unknown) => {
       const message =
@@ -60,6 +63,53 @@ export function MercosSettingsPanel() {
   return (
     <div className="space-y-6">
       <DemoNotice variant="sandbox" />
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
+        <p className="font-medium">Pedidos permanentes (Etapa 4)</p>
+        <ol className="mt-2 list-decimal space-y-1 pl-4 text-amber-800 dark:text-amber-200/90">
+          <li>No sandbox Mercos, abra <strong>Pedidos</strong> e marque alguns como <strong>Enviado</strong> ou <strong>Entregue</strong>.</li>
+          <li>Volte aqui e clique em <strong>Sincronizar Pedidos</strong> (ou Tudo).</li>
+          <li>O funil e Relatórios passam a usar esses status — re-sync não apaga dados do Mercos.</li>
+        </ol>
+        <p className="mt-2 text-xs text-amber-700 dark:text-amber-300/80">
+          Evite o script <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">demo_pedidos_status.py</code> — ele só patcha o Supabase e é sobrescrito no próximo sync.
+        </p>
+      </div>
+
+      {status?.allOrdersProcessing && (status.syncedOrders ?? 0) > 0 && (
+        <div className="flex items-start gap-3 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-900/50 dark:bg-orange-950/20">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-orange-600" />
+          <div className="text-sm text-orange-900 dark:text-orange-100">
+            <p className="font-medium">Todos os pedidos estão em Processando</p>
+            <p className="mt-1 text-orange-800 dark:text-orange-200/90">
+              Relatórios e receita retida ficam zerados até você alterar status no Mercos sandbox e sincronizar de novo.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {(status?.orderStatusBreakdown?.length ?? 0) > 0 && (
+        <div>
+          <p className="mb-3 text-sm font-medium text-gray-900 dark:text-white">Status dos pedidos (Supabase)</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {status?.orderStatusBreakdown?.map((item) => (
+              <div
+                key={item.code}
+                className="rounded-lg border border-gray-100 p-3 dark:border-gray-800"
+              >
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{item.label}</p>
+                <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{item.count}</p>
+                <p className="text-xs text-gray-500">{formatCurrency(item.value)}</p>
+              </div>
+            ))}
+          </div>
+          {(status?.retainedRevenue ?? 0) > 0 && (
+            <p className="mt-3 text-sm text-green-700 dark:text-green-400">
+              Receita retida (enviado + entregue): <strong>{formatCurrency(status?.retainedRevenue ?? 0)}</strong>
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900/40 dark:text-gray-400">
         <p className="font-medium text-gray-900 dark:text-gray-200">Tokens configurados no servidor</p>

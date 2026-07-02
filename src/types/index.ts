@@ -226,18 +226,28 @@ export interface Order {
   items: number;
 }
 
+export interface MercosOrderStatusBreakdown {
+  code: string;
+  label: string;
+  count: number;
+  value: number;
+}
+
 export interface MercosStatus {
   connected: boolean;
   lastSync: string;
   syncedProducts: number;
   syncedCustomers: number;
   syncedOrders: number;
+  orderStatusBreakdown?: MercosOrderStatusBreakdown[];
+  allOrdersProcessing?: boolean;
+  retainedRevenue?: number;
 }
 
 export interface MercosLog {
   id: string;
   type: 'products' | 'customers' | 'orders' | 'all';
-  status: 'success' | 'error' | 'running';
+  status: 'success' | 'error' | 'running' | 'info';
   message: string;
   timestamp: string;
 }
