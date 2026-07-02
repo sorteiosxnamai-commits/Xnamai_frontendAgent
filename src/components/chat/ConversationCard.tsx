@@ -7,6 +7,7 @@ import type { Conversation } from '@/types';
 interface ConversationCardProps {
   conversation: Conversation;
   active?: boolean;
+  pinned?: boolean;
   onClick: () => void;
 }
 
@@ -22,7 +23,7 @@ const statusLabel = {
   closed: 'Encerrada',
 };
 
-export function ConversationCard({ conversation, active, onClick }: ConversationCardProps) {
+export function ConversationCard({ conversation, active, pinned, onClick }: ConversationCardProps) {
   return (
     <button
       onClick={onClick}
@@ -31,6 +32,7 @@ export function ConversationCard({ conversation, active, onClick }: Conversation
         active
           ? 'bg-primary-50 dark:bg-primary-900/20'
           : 'hover:bg-gray-50 dark:hover:bg-gray-800/50',
+        pinned && !active && 'border-l-2 border-l-amber-400 bg-amber-50/50 dark:bg-amber-900/10',
       )}
     >
       <Avatar name={conversation.customerName} size="md" />

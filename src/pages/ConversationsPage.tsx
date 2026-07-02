@@ -17,8 +17,10 @@ import { useConversationSuggestion } from '@/hooks/useConversationSuggestion';
 import { conversationsService } from '@/services/conversations.service';
 import { roleLabel, usersService } from '@/services/users.service';
 import { formatCurrency, formatDateTime } from '@/utils';
+import type { Conversation } from '@/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  ArrowLeft,
   CheckCircle2,
   MessageSquare,
   Package,
@@ -134,6 +136,12 @@ export function ConversationsPage() {
   );
 
   const filtered = conversations ? filterConversations(conversations) : [];
+  const displayList = useMemo(() => {
+    if (!activeConversationId || !conversations?.length) return filtered;
+    if (filtered.some((c) => c.id === activeConversationId)) return filtered;
+    const selected = conversations.find((c) => c.id === activeConversationId);
+    return selected ? [selected, ...filtered] : filtered;
+  }, [filtered, conversations, activeConversationId]);
   const isClosed = activeConversation?.status === 'closed';
   const isAssignedToMe = !!user?.id && activeConversation?.assignedTo === user.id;
 
@@ -142,6 +150,12 @@ export function ConversationsPage() {
     if (activeConversationId) {
       queryClient.invalidateQueries({ queryKey: ['messages', activeConversationId] });
     }
+  };
+
+  const patchConversationCache = (updated: Conversation) => {
+    queryClient.setQueryData<Conversation[]>(['conversations'], (old) =>
+      old?.map((c) => (c.id === updated.id ? { ...c, ...updated } : c)) ?? [updated],
+    );
   };
 
   useEffect(() => {
@@ -206,7 +220,9 @@ export function ConversationsPage() {
   const closeMutation = useMutation({
     mutationFn: () =>
       conversationsService.close(activeConversationId!, closeNote || undefined),
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      patchConversationCache(updated);
+      setStatusFilter('all');
       addToast({ title: 'Atendimento encerrado', message: 'Conversa marcada como encerrada', type: 'success' });
       setCloseOpen(false);
       setCloseNote('');
@@ -219,7 +235,9 @@ export function ConversationsPage() {
 
   const reopenMutation = useMutation({
     mutationFn: () => conversationsService.reopen(activeConversationId!),
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      patchConversationCache(updated);
+      setStatusFilter('all');
       addToast({ title: 'Atendimento reaberto', message: 'Conversa ativa novamente', type: 'success' });
       invalidateConversation();
     },
@@ -287,7 +305,11 @@ export function ConversationsPage() {
       </div>
 
       <div className="flex flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-        <div className="flex w-full flex-col border-r border-gray-200 md:w-80 lg:w-96 dark:border-gray-700">
+        <div
+          className={`flex w-full flex-col border-r border-gray-200 md:w-80 lg:w-96 dark:border-gray-700 ${
+            activeConversationId ? 'hidden md:flex' : 'flex'
+          }`}
+        >
           <div className="space-y-3 border-b border-gray-200 p-3 dark:border-gray-700">
             <Search
               placeholder="Buscar conversas..."
@@ -319,14 +341,15 @@ export function ConversationsPage() {
             />
           </div>
           <div className="flex-1 overflow-y-auto">
-            {filtered.length === 0 ? (
+            {displayList.length === 0 ? (
               <EmptyState icon={MessageSquare} title="Nenhuma conversa" description="Não há conversas com os filtros aplicados" />
             ) : (
-              filtered.map((conv) => (
+              displayList.map((conv) => (
                 <ConversationCard
                   key={conv.id}
                   conversation={conv}
                   active={conv.id === activeConversationId}
+                  pinned={conv.id === activeConversationId && !filtered.some((c) => c.id === conv.id)}
                   onClick={() => setActiveConversationId(conv.id)}
                 />
               ))
@@ -334,25 +357,41 @@ export function ConversationsPage() {
           </div>
         </div>
 
-        <div className="hidden flex-1 flex-col md:flex">
+        <div className={`flex-1 flex-col ${activeConversationId ? 'flex' : 'hidden md:flex'}`}>
           {activeConversation ? (
             <>
               <div className="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-700">
-                <div className="min-w-0">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                    {activeConversation.customerName}
-                  </h3>
-                  <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <ChannelBadge channel={activeConversation.channel} />
-                    {activeConversation.protocol && (
-                      <span className="text-xs text-gray-400">{activeConversation.protocol}</span>
-                    )}
-                    {activeConversation.assignedName && (
-                      <span className="text-xs text-gray-500">
-                        · {activeConversation.assignedName}
-                        {activeConversation.department ? ` (${activeConversation.department})` : ''}
-                      </span>
-                    )}
+                <div className="flex min-w-0 items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 md:hidden"
+                    onClick={() => {
+                      setActiveConversationId(null);
+                      if (searchParams.get('conversa')) {
+                        navigate('/atendimento', { replace: true });
+                      }
+                    }}
+                    title="Voltar para lista"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      {activeConversation.customerName}
+                    </h3>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <ChannelBadge channel={activeConversation.channel} />
+                      {activeConversation.protocol && (
+                        <span className="text-xs text-gray-400">{activeConversation.protocol}</span>
+                      )}
+                      {activeConversation.assignedName && (
+                        <span className="text-xs text-gray-500">
+                          · {activeConversation.assignedName}
+                          {activeConversation.department ? ` (${activeConversation.department})` : ''}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
