@@ -1,6 +1,12 @@
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import {
+  CompanySettingsPanel,
+  NotificationsSettingsPanel,
+  PermissionsSettingsPanel,
+  SecuritySettingsPanel,
+} from '@/components/settings/GeneralSettingsPanels';
 import { MercosSettingsPanel } from '@/components/settings/MercosSettingsPanel';
 import { UsersSettingsPanel } from '@/components/settings/UsersSettingsPanel';
 import { WhatsAppSettingsPanel } from '@/components/settings/WhatsAppSettingsPanel';
@@ -42,48 +48,24 @@ export function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { addToast } = useNotification();
   const navigate = useNavigate();
-
   const [aiSettings, setAiSettings] = useState(() => aiSettingsStore.get());
 
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    newMessage: true,
-    newLead: false,
-    dailyReport: true,
-  });
-
-  const [permissions, setPermissions] = useState({
-    viewReports: true,
-    manageUsers: false,
-    manageIntegrations: true,
-    exportData: false,
-  });
-
-  const handleSave = () => {
+  const handleSaveOpenAi = () => {
     aiSettingsStore.save(aiSettings);
     addToast({
-      title: 'Configurações salvas',
-      message: aiSettings.enabled && aiSettings.apiKey.startsWith('sk-')
-        ? 'OpenAI ativada — Copiloto usará GPT'
-        : 'Alterações aplicadas com sucesso',
+      title: 'Preferências OpenAI salvas',
+      message: 'Em produção o Copiloto usa OPENAI_API_KEY do Render (backend).',
       type: 'success',
     });
-  };
-
-  const toggleNotification = (key: keyof typeof notifications) => {
-    setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const togglePermission = (key: keyof typeof permissions) => {
-    setPermissions((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Configurações</h1>
-        <p className="text-gray-500 dark:text-gray-400">Gerencie as configurações da plataforma</p>
+        <p className="text-gray-500 dark:text-gray-400">
+          Empresa, notificações e segurança persistidos no Supabase
+        </p>
       </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
@@ -106,46 +88,17 @@ export function SettingsPage() {
 
         <div className="flex-1">
           <Card title={tabs.find((t) => t.id === activeTab)?.label ?? 'Configurações'}>
-            {activeTab === 'empresa' && (
-              <div className="space-y-4">
-                <Input label="Nome da empresa" defaultValue="Tironitech Ltda" />
-                <Input label="CNPJ" defaultValue="00.000.000/0001-00" />
-                <Input label="Email" defaultValue="contato@tironitech.com" />
-                <Input label="Telefone" defaultValue="(11) 3000-0000" />
-              </div>
-            )}
-
+            {activeTab === 'empresa' && <CompanySettingsPanel />}
             {activeTab === 'usuarios' && <UsersSettingsPanel />}
-
-            {activeTab === 'permissoes' && (
-              <div className="space-y-3">
-                {([
-                  ['viewReports', 'Visualizar relatórios'],
-                  ['manageUsers', 'Gerenciar usuários'],
-                  ['manageIntegrations', 'Gerenciar integrações'],
-                  ['exportData', 'Exportar dados'],
-                ] as const).map(([key, label]) => (
-                  <label key={key} className="flex cursor-pointer items-center justify-between rounded-lg border border-gray-100 p-3 dark:border-gray-800">
-                    <span className="text-sm">{label}</span>
-                    <input
-                      type="checkbox"
-                      checked={permissions[key]}
-                      onChange={() => togglePermission(key)}
-                      className="rounded border-gray-300"
-                    />
-                  </label>
-                ))}
-              </div>
-            )}
-
+            {activeTab === 'permissoes' && <PermissionsSettingsPanel />}
             {activeTab === 'openai' && (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 dark:border-violet-800 dark:bg-violet-900/20">
                   <Badge variant={aiSettings.enabled && aiSettings.apiKey.startsWith('sk-') ? 'success' : 'default'}>
-                    {aiSettings.enabled && aiSettings.apiKey.startsWith('sk-') ? 'OpenAI ativa' : 'Modo IA local'}
+                    {aiSettings.enabled && aiSettings.apiKey.startsWith('sk-') ? 'OpenAI local' : 'Backend Render'}
                   </Badge>
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    Com API Key, o Copiloto usa GPT com contexto de clientes, produtos e conversas.
+                    Em produção o Copiloto usa a chave configurada no Render, não esta tela.
                   </p>
                 </div>
                 <label className="flex cursor-pointer items-center gap-2 text-sm">
@@ -155,7 +108,7 @@ export function SettingsPage() {
                     onChange={(e) => setAiSettings({ ...aiSettings, enabled: e.target.checked })}
                     className="rounded border-gray-300"
                   />
-                  Ativar OpenAI (desmarque para usar IA contextual local)
+                  Ativar OpenAI local (dev / fallback)
                 </label>
                 <Input
                   label="API Key"
@@ -168,28 +121,18 @@ export function SettingsPage() {
                   label="Modelo"
                   options={[
                     { value: 'gpt-4o', label: 'GPT-4o' },
-                    { value: 'gpt-4o-mini', label: 'GPT-4o Mini (recomendado)' },
-                    { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
+                    { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
                   ]}
                   value={aiSettings.model}
                   onChange={(e) => setAiSettings({ ...aiSettings, model: e.target.value })}
                 />
-                <Input
-                  label="Temperatura"
-                  type="number"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={String(aiSettings.temperature)}
-                  onChange={(e) => setAiSettings({ ...aiSettings, temperature: parseFloat(e.target.value) || 0.7 })}
-                />
+                <div className="flex justify-end">
+                  <Button onClick={handleSaveOpenAi}>Salvar OpenAI local</Button>
+                </div>
               </div>
             )}
-
             {activeTab === 'mercos' && <MercosSettingsPanel />}
-
             {activeTab === 'whatsapp' && <WhatsAppSettingsPanel />}
-
             {activeTab === 'integracoes' && (
               <div className="space-y-4">
                 <p className="text-sm text-gray-500">Gerencie integrações conectadas na página dedicada.</p>
@@ -198,40 +141,8 @@ export function SettingsPage() {
                 </Button>
               </div>
             )}
-
-            {activeTab === 'notificacoes' && (
-              <div className="space-y-3">
-                {([
-                  ['email', 'Notificações por e-mail'],
-                  ['push', 'Notificações push no navegador'],
-                  ['newMessage', 'Nova mensagem recebida'],
-                  ['newLead', 'Novo lead no funil'],
-                  ['dailyReport', 'Relatório diário'],
-                ] as const).map(([key, label]) => (
-                  <label key={key} className="flex cursor-pointer items-center justify-between rounded-lg border border-gray-100 p-3 dark:border-gray-800">
-                    <span className="text-sm">{label}</span>
-                    <input
-                      type="checkbox"
-                      checked={notifications[key]}
-                      onChange={() => toggleNotification(key)}
-                      className="rounded border-gray-300"
-                    />
-                  </label>
-                ))}
-              </div>
-            )}
-
-            {activeTab === 'seguranca' && (
-              <div className="space-y-4">
-                <Input label="Senha atual" type="password" placeholder="••••••••" />
-                <Input label="Nova senha" type="password" placeholder="••••••••" />
-                <Input label="Confirmar nova senha" type="password" placeholder="••••••••" />
-                <Button variant="outline" onClick={() => addToast({ title: '2FA', message: 'Autenticação em duas etapas configurada', type: 'success' })}>
-                  Ativar autenticação 2FA
-                </Button>
-              </div>
-            )}
-
+            {activeTab === 'notificacoes' && <NotificationsSettingsPanel />}
+            {activeTab === 'seguranca' && <SecuritySettingsPanel />}
             {activeTab === 'tema' && (
               <div className="space-y-4">
                 <Select
@@ -243,12 +154,7 @@ export function SettingsPage() {
                   value={theme}
                   onChange={(e) => setTheme(e.target.value as 'light' | 'dark')}
                 />
-              </div>
-            )}
-
-            {activeTab !== 'mercos' && activeTab !== 'usuarios' && activeTab !== 'whatsapp' && (
-              <div className="mt-6 flex justify-end">
-                <Button onClick={handleSave}>Salvar alterações</Button>
+                <p className="text-xs text-gray-500">Tema salvo no navegador (localStorage).</p>
               </div>
             )}
           </Card>
