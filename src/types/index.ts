@@ -241,6 +241,10 @@ export interface MercosStatus {
   syncedProducts: number;
   syncedCustomers: number;
   syncedOrders: number;
+  environment?: 'sandbox' | 'production' | 'unknown';
+  isProduction?: boolean;
+  isSandbox?: boolean;
+  baseUrlHost?: string;
   orderStatusBreakdown?: MercosOrderStatusBreakdown[];
   allOrdersProcessing?: boolean;
   retainedRevenue?: number;

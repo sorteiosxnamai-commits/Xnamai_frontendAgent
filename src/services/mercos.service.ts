@@ -26,7 +26,10 @@ export const mercosService = {
     return data;
   },
 
-  sync: async (type: MercosSyncType): Promise<{ success: boolean; message: string }> => {
+  sync: async (
+    type: MercosSyncType,
+    options?: { confirmProduction?: boolean },
+  ): Promise<{ success: boolean; message: string }> => {
     if (USE_MOCK) {
       await delay(2000);
       const labels: Record<MercosSyncType, string> = {
@@ -37,7 +40,10 @@ export const mercosService = {
       };
       return { success: true, message: `Sincronização de ${labels[type]} concluída com sucesso` };
     }
-    const { data } = await api.post('/mercos/sincronizar', { type });
+    const { data } = await api.post('/mercos/sincronizar', {
+      type,
+      confirmProduction: options?.confirmProduction ?? false,
+    });
     return data;
   },
 
