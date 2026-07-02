@@ -58,5 +58,12 @@ export function usePlatformMutations() {
         funnelService.moveDeal(dealId, stageId),
       onSuccess: invalidate.funnel,
     }),
+    syncFunnel: useMutation({
+      mutationFn: funnelService.syncFromMercos,
+      onSuccess: () => {
+        invalidate.funnel();
+        qc.invalidateQueries({ queryKey: ['sales-metrics'] });
+      },
+    }),
   };
 }

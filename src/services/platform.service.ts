@@ -62,6 +62,16 @@ export const funnelService = {
       await api.post('/funil/mover', { dealId, stageId });
     }
   },
+
+  syncFromMercos: async (): Promise<{
+    success: boolean;
+    dealsCreated: number;
+    pipelineValor: number;
+    message: string;
+  }> => {
+    const { data } = await api.post('/funil/sincronizar');
+    return data;
+  },
 };
 
 export const campaignsService = {

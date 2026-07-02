@@ -13,13 +13,13 @@ import { useSalesMetrics } from '@/hooks/useQueries';
 import { formatCurrency } from '@/utils';
 import type { FunnelDeal } from '@/types';
 import { motion } from 'framer-motion';
-import { DollarSign, GitBranch, ShoppingCart } from 'lucide-react';
+import { DollarSign, GitBranch, RefreshCw, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
 
 export function FunnelPage() {
   const { data: stages, isLoading: loadingFunnel } = useFunnel();
   const { data: metrics, isLoading: loadingMetrics } = useSalesMetrics();
-  const { moveDeal } = usePlatformMutations();
+  const { moveDeal, syncFunnel } = usePlatformMutations();
   const { addToast } = useNotification();
   const [selectedDeal, setSelectedDeal] = useState<FunnelDeal | null>(null);
   const [targetStage, setTargetStage] = useState('');
@@ -39,10 +39,31 @@ export function FunnelPage() {
 
   if (loadingFunnel || loadingMetrics) return <Loading />;
 
-  const totalValue = (stages ?? []).reduce(
-    (sum, stage) => sum + stage.deals.reduce((s, d) => s + d.value, 0),
+  const closedStageIds = new Set(
+    (stages ?? []).filter((s) => /fechado/i.test(s.name)).map((s) => s.id),
+  );
+  if (closedStageIds.size === 0) closedStageIds.add('s5');
+
+  const openPipelineValue = (stages ?? []).reduce(
+    (sum, stage) =>
+      closedStageIds.has(stage.id)
+        ? sum
+        : sum + stage.deals.reduce((s, d) => s + d.value, 0),
     0,
   );
+
+  const handleSync = async () => {
+    try {
+      const result = await syncFunnel.mutateAsync();
+      addToast({ title: 'Funil sincronizado', message: result.message, type: 'success' });
+    } catch {
+      addToast({
+        title: 'Falha ao sincronizar',
+        message: 'Verifique pedidos Mercos e tente novamente.',
+        type: 'error',
+      });
+    }
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
@@ -53,15 +74,25 @@ export function FunnelPage() {
             Acompanhe a conversão e gerencie oportunidades no pipeline comercial
           </p>
         </div>
-        <Card className="!p-4">
-          <div className="flex items-center gap-3">
-            <DollarSign className="h-8 w-8 text-primary-600" />
-            <div>
-              <p className="text-sm text-gray-500">Pipeline comercial</p>
-              <p className="text-xl font-bold">{formatCurrency(totalValue)}</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Button
+            variant="outline"
+            onClick={handleSync}
+            loading={syncFunnel.isPending}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Sincronizar com Mercos
+          </Button>
+          <Card className="!p-4">
+            <div className="flex items-center gap-3">
+              <DollarSign className="h-8 w-8 text-primary-600" />
+              <div>
+                <p className="text-sm text-gray-500">Pipeline em aberto</p>
+                <p className="text-xl font-bold">{formatCurrency(openPipelineValue)}</p>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -100,7 +131,7 @@ export function FunnelPage() {
       <div>
         <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Pipeline operacional</h2>
         <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-          Mova negócios entre estágios — clique em um card para alterar a etapa
+          Negócios gerados a partir de pedidos e conversas reais — clique em um card para mover de estágio
         </p>
         <div className="flex gap-4 overflow-x-auto pb-4">
           {(stages ?? []).map((stage) => (
