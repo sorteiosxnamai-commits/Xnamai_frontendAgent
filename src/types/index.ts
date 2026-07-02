@@ -290,6 +290,12 @@ export interface AgentContext {
   messages: Message[];
   lastCustomerMessage?: string;
   productsCatalog: string;
+  products?: Product[];
+  orders?: Order[];
+  relatedOrders?: Order[];
+  recentOrders?: Order[];
+  salesMetrics?: Record<string, unknown>;
+  platformStats?: Record<string, unknown>;
 }
 
 export interface ConversationSuggestion {

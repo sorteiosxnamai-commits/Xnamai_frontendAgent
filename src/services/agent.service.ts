@@ -22,9 +22,10 @@ const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 async function fetchAgentContext(
   conversationId?: string,
   customerId?: string,
+  message?: string,
 ): Promise<AgentContext> {
   const { data } = await api.get<AgentContext>('/agent/context', {
-    params: { conversationId, customerId },
+    params: { conversationId, customerId, message },
   });
   return {
     ...data,
@@ -109,29 +110,6 @@ export const agentService = {
     extraMessages?: Message[],
   ): Promise<ConversationSuggestion & { source: 'openai' | 'intelligent' }> => {
     if (!USE_MOCK) {
-      if (aiSettingsStore.isConfigured()) {
-        try {
-          const ctx = await fetchAgentContext(conversationId, customerId);
-          if (extraMessages?.length) {
-            ctx.messages = extraMessages;
-            ctx.lastCustomerMessage = [...extraMessages]
-              .reverse()
-              .find((m) => m.sender === 'customer')?.content;
-          }
-          const prompt = `Com base no contexto, retorne JSON exatamente neste formato:
-{"insight":"1 frase de análise","suggestion":"mensagem pronta para enviar ao cliente","priority":"low|medium|high"}
-
-Última mensagem do cliente: ${ctx.lastCustomerMessage ?? ''}`;
-          const raw = await callOpenAI(prompt, contextToPrompt(ctx), [], 'suggestion');
-          const jsonMatch = raw.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]) as ConversationSuggestion;
-            return { ...parsed, source: 'openai' };
-          }
-        } catch {
-          // fallback
-        }
-      }
       const { data } = await api.post<ConversationSuggestion & { source: 'openai' | 'intelligent' }>(
         '/agent/suggest',
         { conversationId, customerId },

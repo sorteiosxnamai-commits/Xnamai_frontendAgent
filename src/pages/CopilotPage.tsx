@@ -22,47 +22,41 @@ import { Select } from '@/components/ui/Select';
 import { useNotification } from '@/contexts/NotificationContext';
 import { aiSettingsStore } from '@/store/aiSettingsStore';
 
-function buildQuickTools(conversations: Conversation[]) {
-  const first = conversations[0];
-  const second = conversations[1];
-  const third = conversations[2];
+function buildQuickTools(conversations: Conversation[], contextConvId: string) {
+  const selected =
+    conversations.find((c) => c.id === contextConvId) ?? conversations[0];
+  const name = selected?.customerName ?? 'o cliente';
 
   return [
     {
       icon: FileText,
       title: 'Resumo inteligente',
       desc: 'Resume a conversa ativa com dados reais',
-      prompt: first
-        ? `Resuma a conversa de ${first.customerName}`
-        : 'Resuma a conversa mais recente',
-      conversationId: first?.id,
+      prompt: selected ? `Resuma a conversa de ${name}` : 'Resuma a conversa mais recente',
+      conversationId: selected?.id,
     },
     {
       icon: Mic,
       title: 'Transcrição de áudio',
       desc: 'Analisa a última mensagem do cliente',
-      prompt: second
-        ? `Transcreva e analise a mensagem de ${second.customerName}`
+      prompt: selected
+        ? `Transcreva e analise a mensagem de ${name}`
         : 'Transcreva a última mensagem do cliente',
-      conversationId: second?.id ?? first?.id,
+      conversationId: selected?.id,
     },
     {
       icon: Wand2,
       title: 'Texto mágico',
       desc: 'Gera resposta profissional com contexto real',
-      prompt: first
-        ? `Gere texto profissional para responder ${first.customerName}`
-        : 'Gere texto profissional para o cliente',
-      conversationId: first?.id,
+      prompt: selected ? `Gere texto profissional para responder ${name}` : 'Gere texto profissional para o cliente',
+      conversationId: selected?.id,
     },
     {
       icon: Sparkles,
       title: 'Sugestões',
       desc: 'Sugere respostas com base na conversa',
-      prompt: third
-        ? `Sugira resposta para ${third.customerName}`
-        : 'Sugira resposta para o cliente',
-      conversationId: third?.id ?? first?.id,
+      prompt: selected ? `Sugira resposta para ${name}` : 'Sugira resposta para o cliente',
+      conversationId: selected?.id,
     },
   ];
 }
@@ -97,8 +91,8 @@ export function CopilotPage() {
   );
 
   const quickTools = useMemo(
-    () => buildQuickTools(conversations ?? []),
-    [conversations],
+    () => buildQuickTools(conversations ?? [], contextConvId),
+    [conversations, contextConvId],
   );
 
   const chatMutation = useMutation({
@@ -152,7 +146,8 @@ export function CopilotPage() {
   const primaryConv = contextConv ?? conversations?.[0];
   const trackingConv = conversations?.find((c) =>
     c.lastMessage.toLowerCase().match(/pedido|entrega|chega/),
-  ) ?? conversations?.[1];
+  ) ?? primaryConv;
+  const activeConvId = contextConvId || primaryConv?.id;
 
   if (statusLoading || convLoading) return <Loading />;
 
@@ -258,7 +253,12 @@ export function CopilotPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => chatMutation.mutate({ message: 'Quantas vendas tivemos e qual o valor total vendido?' })}
+            onClick={() =>
+              chatMutation.mutate({
+                message: 'Quantas vendas tivemos e qual o valor total vendido?',
+                conversationId: activeConvId,
+              })
+            }
           >
             <BarChart3 className="mr-1.5 h-4 w-4" />
             Métricas de venda
@@ -269,6 +269,7 @@ export function CopilotPage() {
             onClick={() =>
               chatMutation.mutate({
                 message: 'Quanto passou de dinheiro e quanto retemos na receita?',
+                conversationId: activeConvId,
               })
             }
           >
@@ -277,14 +278,24 @@ export function CopilotPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => chatMutation.mutate({ message: 'Como está o funil de vendas?' })}
+            onClick={() =>
+              chatMutation.mutate({
+                message: 'Como está o funil de vendas?',
+                conversationId: activeConvId,
+              })
+            }
           >
             Funil de vendas
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => chatMutation.mutate({ message: 'Liste produtos disponíveis no catálogo' })}
+            onClick={() =>
+              chatMutation.mutate({
+                message: 'Liste produtos disponíveis no catálogo',
+                conversationId: activeConvId,
+              })
+            }
           >
             Catálogo
           </Button>
