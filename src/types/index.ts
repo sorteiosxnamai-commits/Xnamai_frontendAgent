@@ -49,11 +49,13 @@ export interface DashboardStats {
   closedConversations: number;
   waitingQueue: number;
   avgResponseTime: string;
-  nps: number;
-  csat: number;
   aiOnline: boolean;
   campaignsSent: number;
   botResolved: number;
+  totalCustomers: number;
+  totalProducts: number;
+  totalOrders: number;
+  totalMessages: number;
 }
 
 export interface ChartDataPoint {

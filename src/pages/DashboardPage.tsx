@@ -22,16 +22,13 @@ import {
   Calendar,
   Clock,
   Headphones,
-  Megaphone,
   MessageSquare,
   RefreshCw,
   ShoppingCart,
   Sparkles,
-  Star,
-  ThumbsUp,
-  TrendingUp,
   Users,
   Zap,
+  Package,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -140,8 +137,31 @@ export function DashboardPage() {
     .filter((c) => c.status === 'waiting' || c.status === 'active')
     .slice(0, 4);
   const conversasSpark = conversationsChart.map((c) => c.conversas);
-  const pedidosSpark = ordersChart.map((c) => c.pedidos);
+  const pedidosMensais = ordersChart.map((c) => c.pedidos);
   const channelVolume = buildChannelVolume(channels, conversations);
+
+  const retentionPct = salesMetrics ? Math.round(salesMetrics.taxaRetencao) : 0;
+  const entreguesPct =
+    salesMetrics && salesMetrics.quantidadeVendas > 0
+      ? Math.round((salesMetrics.quantidadeEntregues / salesMetrics.quantidadeVendas) * 100)
+      : 0;
+
+  const responseWithData = responseTimeChart.filter((p) => p.conversas > 0);
+  const bestResponseSlot = responseWithData.length
+    ? responseWithData.reduce((best, point) => (point.conversas < best.conversas ? point : best))
+    : null;
+
+  const copilotTitle =
+    stats.waitingQueue > 0
+      ? `${stats.waitingQueue} conversa(s) aguardando na fila`
+      : stats.botResolved > 0
+        ? `${stats.botResolved}% das mensagens respondidas pela IA`
+        : 'Copiloto IA pronto para ajudar';
+
+  const copilotDescription =
+    stats.waitingQueue > 0
+      ? 'Abra a Central de Atendimento ou use o Copiloto para sugerir respostas com dados reais do Mercos.'
+      : 'Consulte vendas, estoque, pedidos e métricas com contexto do Supabase e Mercos.';
 
   const atendimentoResumo = [
     { label: 'Ativas', value: stats.activeConversations, color: 'bg-teal-500' },
@@ -235,48 +255,50 @@ export function DashboardPage() {
                 </div>
                 <p className="mt-4 text-5xl font-bold tabular-nums tracking-tight">{stats.avgResponseTime}</p>
                 <p className="mt-1 text-sm text-teal-100/90">tempo médio de resposta</p>
-                <p className="mt-4 inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-2.5 py-1 text-xs font-semibold text-emerald-100">
-                  ↓ 18% vs. ontem
-                </p>
+                {bestResponseSlot && (
+                  <p className="mt-4 inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1 text-xs font-semibold text-teal-100">
+                    Melhor faixa: {bestResponseSlot.name} · {bestResponseSlot.conversas} min
+                  </p>
+                )}
               </div>
               <div className="border-white/10 sm:border-l sm:pl-8">
                 <div className="flex items-center gap-2 text-teal-100">
-                  <Star className="h-4 w-4" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">Qualidade</span>
+                  <ShoppingCart className="h-4 w-4" />
+                  <span className="text-xs font-semibold uppercase tracking-wider">Vendas</span>
                 </div>
                 <p className="mt-4 text-5xl font-bold tabular-nums tracking-tight">
-                  {stats.csat}
-                  <span className="text-2xl font-normal text-white/50">/5</span>
+                  {salesMetrics ? formatCurrency(salesMetrics.valorRetido) : formatCurrency(0)}
                 </p>
-                <p className="mt-1 text-sm text-teal-100/90">CSAT · NPS {stats.nps}</p>
-                <div className="mt-4 flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className={cn(
-                        'h-4 w-4 transition-colors',
-                        i < Math.floor(stats.csat) ? 'fill-amber-300 text-amber-300 drop-shadow-sm' : 'text-white/20',
-                      )}
-                    />
-                  ))}
-                </div>
+                <p className="mt-1 text-sm text-teal-100/90">
+                  receita retida
+                  {salesMetrics ? ` · ${salesMetrics.quantidadeEntregues} entregues` : ''}
+                </p>
+                {salesMetrics && (
+                  <p className="mt-4 inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 px-2.5 py-1 text-xs font-semibold text-emerald-100">
+                    {formatCurrency(salesMetrics.valorTotalVendido)} vendido · {retentionPct}% retenção
+                  </p>
+                )}
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4 rounded-3xl border border-gray-200/70 bg-white/90 p-6 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90 lg:col-span-4">
-            <ProgressRing value={stats.botResolved} max={100} label="Bot" color="violet" />
-            <ProgressRing value={stats.nps} max={100} label="NPS" color="teal" />
-            <ProgressRing value={stats.csat * 20} max={100} label="CSAT" color="emerald" />
+            <ProgressRing value={stats.botResolved} max={100} label="IA" color="violet" />
+            <ProgressRing value={retentionPct} max={100} label="Retenção" color="teal" />
+            <ProgressRing value={entreguesPct} max={100} label="Entregues" color="emerald" />
             <div className="col-span-3 mt-2 border-t border-gray-100 pt-4 dark:border-gray-800">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Meta mensal</span>
-                <span className="font-semibold text-gray-900 dark:text-white">847 / 1.000</span>
+                <span className="text-gray-500">Pedidos vs clientes</span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {stats.totalOrders} / {stats.totalCustomers}
+                </span>
               </div>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-teal-500 to-violet-500 transition-all duration-1000"
-                  style={{ width: '84.7%' }}
+                  style={{
+                    width: `${stats.totalCustomers > 0 ? Math.min(100, (stats.totalOrders / stats.totalCustomers) * 100) : 0}%`,
+                  }}
                 />
               </div>
             </div>
@@ -304,8 +326,8 @@ export function DashboardPage() {
         {/* AI Insight */}
         <InsightBanner
           icon={Sparkles}
-          title="Copiloto IA identificou 12 conversas que podem ser resolvidas automaticamente"
-          description="Sugestão: ative o fluxo de FAQ para reduzir a fila em até 23% nas próximas 2 horas."
+          title={copilotTitle}
+          description={copilotDescription}
           delay={0.1}
           action={
             <Link
@@ -321,15 +343,15 @@ export function DashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <DashboardStatCard title="Conversas ativas" value={stats.activeConversations} icon={MessageSquare} variant="primary" delay={0.12} sparkline={conversasSpark.length ? conversasSpark : undefined} />
           <DashboardStatCard title="Encerradas" value={stats.closedConversations} icon={Users} delay={0.16} sparkline={conversasSpark.length ? conversasSpark : undefined} />
-          <DashboardStatCard title="NPS" value={stats.nps} icon={TrendingUp} deltaUp={stats.nps >= 70} variant="success" delay={0.2} />
-          <DashboardStatCard title="Resolvidos pelo bot" value={`${stats.botResolved}%`} icon={Bot} variant="violet" delay={0.24} sparkline={conversasSpark.length ? conversasSpark : undefined} />
+          <DashboardStatCard title="Clientes" value={stats.totalCustomers} icon={Users} variant="success" delay={0.2} />
+          <DashboardStatCard title="Resolvidos pela IA" value={`${stats.botResolved}%`} icon={Bot} variant="violet" delay={0.24} sparkline={conversasSpark.length ? conversasSpark : undefined} />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <DashboardStatCard title="Na fila" value={stats.waitingQueue} icon={Headphones} variant="warning" delay={0.28} sparkline={conversasSpark.length ? conversasSpark : undefined} />
-          <DashboardStatCard title="Pedidos sync" value={pedidosSpark.reduce((a, b) => a + b, 0)} icon={Megaphone} delay={0.32} sparkline={pedidosSpark.length ? pedidosSpark : undefined} />
-          <DashboardStatCard title="CSAT" value={stats.csat ? `${stats.csat}/5` : '—'} icon={ThumbsUp} variant="success" delay={0.36} />
-          <DashboardStatCard title="Copiloto IA" value={stats.aiOnline ? 'Online' : 'Offline'} icon={Sparkles} variant={stats.aiOnline ? 'success' : 'warning'} delay={0.4} />
+          <DashboardStatCard title="Pedidos" value={stats.totalOrders} icon={ShoppingCart} delay={0.32} sparkline={pedidosMensais.length ? pedidosMensais : undefined} />
+          <DashboardStatCard title="Produtos" value={stats.totalProducts} icon={Package} variant="success" delay={0.36} />
+          <DashboardStatCard title="Copiloto IA" value={stats.aiOnline ? 'OpenAI' : 'Local'} icon={Sparkles} variant={stats.aiOnline ? 'success' : 'primary'} delay={0.4} />
         </div>
 
         {/* Main charts bento */}
@@ -411,14 +433,14 @@ export function DashboardPage() {
 
         {/* Bottom bento */}
         <div className="grid gap-6 lg:grid-cols-3">
-          <ChartPanel title="Volume mensal" subtitle="Interações totais" delay={0.52} accent="teal">
+          <ChartPanel title="Pedidos por mês" subtitle="Volume sincronizado do Mercos" delay={0.52} accent="teal">
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={ordersChart} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="4 4" stroke="currentColor" className="text-gray-100 dark:text-gray-800/80" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="pedidos" fill="url(#barGrad)" radius={[8, 8, 0, 0]} name="Interações" />
+                <Bar dataKey="pedidos" fill="url(#barGrad)" radius={[8, 8, 0, 0]} name="Pedidos" />
                 <defs>
                   <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#14b8a6" />
@@ -494,9 +516,11 @@ export function DashboardPage() {
           delay={0.64}
           accent="teal"
           action={
-            <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
-              <Zap className="h-3.5 w-3.5" /> Melhor: 08h · 1.2 min
-            </span>
+            bestResponseSlot ? (
+              <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400">
+                <Zap className="h-3.5 w-3.5" /> Melhor: {bestResponseSlot.name} · {bestResponseSlot.conversas} min
+              </span>
+            ) : undefined
           }
         >
           <ResponsiveContainer width="100%" height={280}>
