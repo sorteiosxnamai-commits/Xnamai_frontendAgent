@@ -11,6 +11,7 @@ import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
   Bot,
+  BarChart3,
   FileText,
   Mic,
   Sparkles,
@@ -74,7 +75,7 @@ export function CopilotPage() {
       id: 'welcome',
       conversationId: 'copilot',
       content:
-        'Sou o Copiloto IA Elite do PulseDesk. Resolvo dúvidas sobre preços, estoque, pedidos, prazos, pagamento, garantia e suporte — com dados reais do Mercos e Supabase. Peça orçamentos, resumos, status de pedido ou mensagens prontas para enviar ao cliente.',
+        'Sou o Copiloto IA Elite do PulseDesk. Resolvo dúvidas sobre preços, estoque, pedidos, prazos, pagamento, garantia, **métricas de venda** e suporte — com dados reais do Mercos e Supabase. Peça orçamentos, resumos, status de pedido, funil de vendas ou mensagens prontas para enviar ao cliente.',
       sender: 'ai',
       timestamp: new Date().toISOString(),
       status: 'read',
@@ -145,7 +146,7 @@ export function CopilotPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Copiloto IA</h1>
         <p className="text-gray-500 dark:text-gray-400">
-          Especialista comercial e de suporte — orçamentos, pedidos, estoque, pagamento e garantia
+          Especialista comercial e de suporte — orçamentos, pedidos, estoque, pagamento, métricas de venda e garantia
         </p>
         <p className="mt-1 text-xs text-gray-400">
           Motor: {status?.openaiEnabled ? status.model : aiMode === 'openai' ? `OpenAI (${aiSettingsStore.get().model})` : `${status?.model ?? 'PulseDesk IA'} — configure OPENAI_API_KEY no Render para respostas GPT`}
@@ -208,11 +209,46 @@ export function CopilotPage() {
           <MessageInput
             onSend={(c) => chatMutation.mutate({ message: c, conversationId: primaryConv?.id })}
             disabled={chatMutation.isPending}
-            placeholder="Peça um resumo, status de pedido ou sugestão..."
+            placeholder="Peça métricas de venda, resumo, status de pedido ou sugestão..."
           />
         </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => chatMutation.mutate({ message: 'Quantas vendas tivemos e qual o valor total vendido?' })}
+          >
+            <BarChart3 className="mr-1.5 h-4 w-4" />
+            Métricas de venda
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              chatMutation.mutate({
+                message: 'Quanto passou de dinheiro e quanto retemos na receita?',
+              })
+            }
+          >
+            Receita retida
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => chatMutation.mutate({ message: 'Como está o funil de vendas?' })}
+          >
+            Funil de vendas
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => chatMutation.mutate({ message: 'Liste produtos disponíveis no catálogo' })}
+          >
+            Catálogo
+          </Button>
+        </div>
         {primaryConv && (
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-2 flex flex-wrap gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -239,13 +275,6 @@ export function CopilotPage() {
                 Rastrear pedido
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => chatMutation.mutate({ message: 'Liste produtos disponíveis no catálogo' })}
-            >
-              Catálogo
-            </Button>
             <Button
               variant="outline"
               size="sm"
