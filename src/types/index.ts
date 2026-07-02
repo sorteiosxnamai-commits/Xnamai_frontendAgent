@@ -264,6 +264,8 @@ export interface AgentStatus {
   avgResponseTime: string;
   questionsAnswered: number;
   openaiEnabled?: boolean;
+  gptOnly?: boolean;
+  intelligenceMode?: 'gpt' | 'local';
 }
 
 export interface AgentChatMessage {

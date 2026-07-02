@@ -158,9 +158,19 @@ export function CopilotPage() {
         <p className="text-gray-500 dark:text-gray-400">
           Especialista comercial e de suporte — orçamentos, pedidos, estoque, pagamento, métricas de venda e garantia
         </p>
-        <p className="mt-1 text-xs text-gray-400">
-          Motor: {status?.openaiEnabled ? status.model : aiMode === 'openai' ? `OpenAI (${aiSettingsStore.get().model})` : `${status?.model ?? 'PulseDesk IA'} — configure OPENAI_API_KEY no Render para respostas GPT`}
-        </p>
+        {status?.openaiEnabled && status.gptOnly ? (
+          <p className="mt-2 text-sm text-green-600 dark:text-green-400">
+            Modo 100% GPT ativo — {status.model}
+          </p>
+        ) : status?.openaiEnabled ? (
+          <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+            OpenAI ativo com fallback local — defina COPILOT_GPT_ONLY=true no Render para 100% GPT
+          </p>
+        ) : (
+          <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+            Modo local (limitado) — configure OPENAI_API_KEY no Render para Copiloto 100% inteligente com GPT-4o
+          </p>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -236,7 +246,7 @@ export function CopilotPage() {
                 <ChatBubble message={msg} />
                 {msg.sender === 'ai' && msg.aiSource && msg.id !== 'welcome' && (
                   <p className="mt-0.5 text-right text-[10px] text-gray-400">
-                    {msg.aiSource === 'openai' ? 'GPT' : 'Modo local'}
+                    {msg.aiSource === 'openai' ? 'GPT · dados reais' : 'Modo local'}
                   </p>
                 )}
               </div>
