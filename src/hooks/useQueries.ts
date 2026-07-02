@@ -75,6 +75,7 @@ export function useConversations() {
   return useQuery({
     queryKey: ['conversations'],
     queryFn: conversationsService.getConversations,
+    refetchInterval: 5000,
   });
 }
 
@@ -83,5 +84,6 @@ export function useMessages(conversationId: string | null) {
     queryKey: ['messages', conversationId],
     queryFn: () => conversationsService.getMessages(conversationId!),
     enabled: !!conversationId,
+    refetchInterval: conversationId ? 4000 : false,
   });
 }

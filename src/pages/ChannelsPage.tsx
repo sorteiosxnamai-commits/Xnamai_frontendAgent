@@ -117,6 +117,11 @@ export function ChannelsPage() {
               </div>
               <h3 className="mt-4 font-semibold text-gray-900 dark:text-white">{channel.name}</h3>
               <ChannelBadge channel={channel.type} className="mt-2" />
+              {channel.type === 'whatsapp' && channel.providerStatus && (
+                <p className="mt-1 text-xs text-gray-400">
+                  API Meta · {channel.providerStatus}
+                </p>
+              )}
               {channel.phone && <p className="mt-2 text-sm text-gray-500">{channel.phone}</p>}
               <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
                 <div>

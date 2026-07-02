@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { MercosSettingsPanel } from '@/components/settings/MercosSettingsPanel';
 import { UsersSettingsPanel } from '@/components/settings/UsersSettingsPanel';
+import { WhatsAppSettingsPanel } from '@/components/settings/WhatsAppSettingsPanel';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -14,6 +15,7 @@ import {
   Building2,
   Key,
   Link,
+  MessageCircle,
   Palette,
   Shield,
   Sparkles,
@@ -27,6 +29,7 @@ const tabs = [
   { id: 'usuarios', label: 'Usuários', icon: Users },
   { id: 'permissoes', label: 'Permissões', icon: Shield },
   { id: 'mercos', label: 'Mercos', icon: Link },
+  { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
   { id: 'openai', label: 'OpenAI', icon: Sparkles },
   { id: 'integracoes', label: 'Integrações', icon: Link },
   { id: 'notificacoes', label: 'Notificações', icon: Bell },
@@ -185,6 +188,8 @@ export function SettingsPage() {
 
             {activeTab === 'mercos' && <MercosSettingsPanel />}
 
+            {activeTab === 'whatsapp' && <WhatsAppSettingsPanel />}
+
             {activeTab === 'integracoes' && (
               <div className="space-y-4">
                 <p className="text-sm text-gray-500">Gerencie integrações conectadas na página dedicada.</p>
@@ -241,7 +246,7 @@ export function SettingsPage() {
               </div>
             )}
 
-            {activeTab !== 'mercos' && activeTab !== 'usuarios' && (
+            {activeTab !== 'mercos' && activeTab !== 'usuarios' && activeTab !== 'whatsapp' && (
               <div className="mt-6 flex justify-end">
                 <Button onClick={handleSave}>Salvar alterações</Button>
               </div>

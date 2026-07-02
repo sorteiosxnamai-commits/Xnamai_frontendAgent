@@ -42,6 +42,8 @@ export interface Channel {
   messagesToday: number;
   lastActivity?: string;
   phone?: string;
+  provider?: string;
+  providerStatus?: string;
 }
 
 export interface DashboardStats {
