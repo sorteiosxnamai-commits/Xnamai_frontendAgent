@@ -126,6 +126,7 @@ export interface Message {
   sender: MessageSender;
   timestamp: string;
   status: MessageStatus;
+  aiSource?: 'openai' | 'intelligent';
 }
 
 export interface Conversation {

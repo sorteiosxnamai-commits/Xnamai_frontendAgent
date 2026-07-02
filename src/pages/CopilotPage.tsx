@@ -17,7 +17,8 @@ import {
   Sparkles,
   Wand2,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Select } from '@/components/ui/Select';
 import { useNotification } from '@/contexts/NotificationContext';
 import { aiSettingsStore } from '@/store/aiSettingsStore';
 
@@ -82,6 +83,19 @@ export function CopilotPage() {
     },
   ]);
 
+  const [contextConvId, setContextConvId] = useState<string>('');
+
+  useEffect(() => {
+    if (conversations?.[0]?.id && !contextConvId) {
+      setContextConvId(conversations[0].id);
+    }
+  }, [conversations, contextConvId]);
+
+  const contextConv = useMemo(
+    () => (conversations ?? []).find((c) => c.id === contextConvId),
+    [conversations, contextConvId],
+  );
+
   const quickTools = useMemo(
     () => buildQuickTools(conversations ?? []),
     [conversations],
@@ -121,6 +135,7 @@ export function CopilotPage() {
           sender: 'ai',
           timestamp: new Date().toISOString(),
           status: 'read',
+          aiSource: response.source,
         },
       ]);
     },
@@ -134,7 +149,7 @@ export function CopilotPage() {
   });
 
   const aiMode = agentService.getAiMode();
-  const primaryConv = conversations?.[0];
+  const primaryConv = contextConv ?? conversations?.[0];
   const trackingConv = conversations?.find((c) =>
     c.lastMessage.toLowerCase().match(/pedido|entrega|chega/),
   ) ?? conversations?.[1];
@@ -193,21 +208,48 @@ export function CopilotPage() {
       </div>
 
       <Card title="Testar Copiloto" subtitle="Converse com a IA usando dados reais da plataforma">
+        {conversations && conversations.length > 0 && (
+          <div className="mb-4 max-w-md">
+            <Select
+              label="Contexto da conversa (cliente + histórico real)"
+              value={contextConvId}
+              onChange={(e) => setContextConvId(e.target.value)}
+              options={conversations.map((c) => ({
+                value: c.id,
+                label: `${c.customerName} (${c.channel})`,
+              }))}
+            />
+          </div>
+        )}
         <div className="flex h-[380px] flex-col rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2 dark:border-gray-700">
             <span className="text-sm font-medium">Chat com Copiloto</span>
-            <Badge variant={status?.online ? 'success' : 'danger'}>
-              {status?.online ? 'IA Ativa' : 'Offline'}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {contextConv && (
+                <span className="hidden text-xs text-gray-400 sm:inline">
+                  Contexto: {contextConv.customerName}
+                </span>
+              )}
+              <Badge variant={status?.online ? 'success' : 'danger'}>
+                {status?.online ? 'IA Ativa' : 'Offline'}
+              </Badge>
+            </div>
           </div>
           <div className="flex-1 space-y-3 overflow-y-auto bg-gray-50 p-4 dark:bg-gray-950">
             {messages.map((msg) => (
-              <ChatBubble key={msg.id} message={msg} />
+              <div key={msg.id}>
+                <ChatBubble message={msg} />
+                {msg.sender === 'ai' && msg.aiSource && msg.id !== 'welcome' && (
+                  <p className="mt-0.5 text-right text-[10px] text-gray-400">
+                    {msg.aiSource === 'openai' ? 'GPT' : 'Modo local'}
+                  </p>
+                )}
+              </div>
             ))}
             {chatMutation.isPending && <p className="text-sm text-gray-400">Processando...</p>}
           </div>
           <MessageInput
-            onSend={(c) => chatMutation.mutate({ message: c, conversationId: primaryConv?.id })}
+            onSend={(c) => chatMutation.mutate({ message: c, conversationId: contextConvId || primaryConv?.id })}
             disabled={chatMutation.isPending}
             placeholder="Peça métricas de venda, resumo, status de pedido ou sugestão..."
           />
