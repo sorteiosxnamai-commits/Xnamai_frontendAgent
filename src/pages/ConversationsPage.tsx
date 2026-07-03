@@ -5,6 +5,7 @@ import { MessageInput } from '@/components/chat/MessageInput';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { EmptyState, Loading } from '@/components/ui/EmptyState';
+import { ConversationsEmptyState, ConversationsSelectPrompt } from '@/components/ui/GuidedEmptyState';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Search } from '@/components/ui/Search';
@@ -22,7 +23,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
   CheckCircle2,
-  MessageSquare,
   Package,
   RefreshCw,
   ShoppingCart,
@@ -136,6 +136,9 @@ export function ConversationsPage() {
   );
 
   const filtered = conversations ? filterConversations(conversations) : [];
+  const hasActiveFilters =
+    filter !== 'all' || statusFilter !== 'all' || Boolean(searchQuery.trim());
+  const isInboxEmpty = (conversations?.length ?? 0) === 0;
   const displayList = useMemo(() => {
     if (!activeConversationId || !conversations?.length) return filtered;
     if (filtered.some((c) => c.id === activeConversationId)) return filtered;
@@ -342,7 +345,7 @@ export function ConversationsPage() {
           </div>
           <div className="flex-1 overflow-y-auto">
             {displayList.length === 0 ? (
-              <EmptyState icon={MessageSquare} title="Nenhuma conversa" description="Não há conversas com os filtros aplicados" />
+              <ConversationsEmptyState filtered={!isInboxEmpty || hasActiveFilters} />
             ) : (
               displayList.map((conv) => (
                 <ConversationCard
@@ -461,11 +464,7 @@ export function ConversationsPage() {
               />
             </>
           ) : (
-            <EmptyState
-              icon={MessageSquare}
-              title="Selecione uma conversa"
-              description="Escolha uma conversa na lista para visualizar as mensagens"
-            />
+            <ConversationsSelectPrompt />
           )}
         </div>
 

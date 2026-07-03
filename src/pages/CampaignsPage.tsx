@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Loading } from '@/components/ui/EmptyState';
+import { CampaignsEmptyState } from '@/components/ui/GuidedEmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { Table } from '@/components/ui/Table';
@@ -15,7 +16,7 @@ import { extractApiErrorMessage } from '@/utils/apiErrors';
 import { formatDateTime } from '@/utils';
 import type { Campaign, ChannelType } from '@/types';
 import { motion } from 'framer-motion';
-import { Megaphone, Plus, Send } from 'lucide-react';
+import { Plus, Send } from 'lucide-react';
 import { useState } from 'react';
 
 const statusLabels: Record<Campaign['status'], string> = {
@@ -177,11 +178,7 @@ export function CampaignsPage() {
 
       <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
         {list.length === 0 ? (
-          <div className="flex flex-col items-center py-16">
-            <Megaphone className="h-12 w-12 text-gray-300" />
-            <p className="mt-4 text-gray-500">Nenhuma campanha criada</p>
-            <Button className="mt-4" onClick={() => setModalOpen(true)}>Criar primeira campanha</Button>
-          </div>
+          <CampaignsEmptyState onCreate={() => setModalOpen(true)} />
         ) : (
           <Table columns={columns} data={list} keyExtractor={(c) => c.id} onRowClick={setSelected} />
         )}

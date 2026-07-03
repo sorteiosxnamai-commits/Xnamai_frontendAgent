@@ -6,6 +6,7 @@ import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { ComingSoonBadge, DemoNotice } from '@/components/ui/DemoNotice';
 import { Input } from '@/components/ui/Input';
 import { Loading } from '@/components/ui/EmptyState';
+import { ChannelsEmptyState } from '@/components/ui/GuidedEmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { useNotification } from '@/contexts/NotificationContext';
@@ -113,8 +114,10 @@ export function ChannelsPage() {
 
   if (isLoading) return <Loading />;
 
-  const liveChannels = (channels ?? []).filter((c) => isChannelLive(c.type));
-  const previewChannels = (channels ?? []).filter((c) => !isChannelLive(c.type));
+  const allChannels = channels ?? [];
+  const liveChannels = allChannels.filter((c) => isChannelLive(c.type));
+  const previewChannels = allChannels.filter((c) => !isChannelLive(c.type));
+  const isEmpty = allChannels.length === 0;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
@@ -151,6 +154,10 @@ export function ChannelsPage() {
         </div>
       </Card>
 
+      {isEmpty ? (
+        <ChannelsEmptyState />
+      ) : (
+        <>
       {liveChannels.length > 0 && (
         <div>
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Ativos</h2>
@@ -228,6 +235,8 @@ export function ChannelsPage() {
             })}
           </div>
         </div>
+      )}
+        </>
       )}
 
       <Modal

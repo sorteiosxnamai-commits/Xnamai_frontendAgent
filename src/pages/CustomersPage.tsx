@@ -2,6 +2,7 @@ import { CustomerCard } from '@/components/cards/CustomerCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Loading, SkeletonTable } from '@/components/ui/EmptyState';
+import { CustomersEmptyState, CustomersMercosHint } from '@/components/ui/GuidedEmptyState';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Pagination } from '@/components/ui/Pagination';
@@ -136,6 +137,10 @@ export function CustomersPage() {
     return edits ? { ...c, ...edits } : c;
   };
 
+  const customers = data?.data ?? [];
+  const isEmpty = (data?.total ?? 0) === 0;
+  const hasSearch = Boolean(search.trim());
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -161,6 +166,8 @@ export function CustomersPage() {
         </div>
       </div>
 
+      <CustomersMercosHint />
+
       <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
         <div className="border-b border-gray-200 p-4 dark:border-gray-700">
           <Search
@@ -171,22 +178,24 @@ export function CustomersPage() {
           />
         </div>
 
-        {viewMode === 'table' ? (
+        {isEmpty ? (
+          <CustomersEmptyState searched={hasSearch} />
+        ) : viewMode === 'table' ? (
           <Table
             columns={columns}
-            data={data?.data ?? []}
+            data={customers}
             keyExtractor={(c) => c.id}
             onRowClick={setSelectedCustomer}
           />
         ) : (
           <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
-            {(data?.data ?? []).map((c) => (
+            {customers.map((c) => (
               <CustomerCard key={c.id} customer={displayCustomer(c)} onClick={() => setSelectedCustomer(c)} />
             ))}
           </div>
         )}
 
-        {data && (
+        {data && !isEmpty && (
           <Pagination
             page={data.page}
             totalPages={data.totalPages}
