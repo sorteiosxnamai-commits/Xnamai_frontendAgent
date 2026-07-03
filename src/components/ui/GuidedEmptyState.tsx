@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Headphones, Link, Megaphone, MessageSquare, Radio, Users } from 'lucide-react';
+import { Headphones, Link, Megaphone, MessageSquare, Package, Radio, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function ConversationsEmptyState({ filtered }: { filtered: boolean }) {
@@ -118,6 +118,55 @@ export function ChannelsEmptyState() {
         </div>
       }
     />
+  );
+}
+
+export function ProductsEmptyState({ searched }: { searched: boolean }) {
+  const navigate = useNavigate();
+
+  if (searched) {
+    return (
+      <EmptyState
+        icon={Package}
+        title="Nenhum produto encontrado"
+        description="Não há itens que correspondam à busca ou categoria. Tente outro termo ou limpe os filtros."
+      />
+    );
+  }
+
+  return (
+    <EmptyState
+      icon={Package}
+      title="Catálogo vazio"
+      description="Os produtos vêm da API Mercos. Configure os tokens e sincronize para o robô, copiloto e atendimento consultarem preço e estoque reais."
+      action={
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button size="sm" onClick={() => navigate('/configuracoes?tab=mercos')}>
+            Ir para Mercos
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate('/configuracoes?tab=sistema')}>
+            Ver status do sistema
+          </Button>
+        </div>
+      }
+    />
+  );
+}
+
+export function ProductsMercosHint() {
+  const navigate = useNavigate();
+
+  return (
+    <button
+      type="button"
+      onClick={() => navigate('/configuracoes?tab=mercos')}
+      className="flex w-full items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-left text-sm text-teal-900 transition-colors hover:bg-teal-100/80 dark:border-teal-900/40 dark:bg-teal-950/30 dark:text-teal-100 dark:hover:bg-teal-950/50"
+    >
+      <Link className="h-4 w-4 shrink-0" />
+      <p>
+        Catálogo do <strong>Mercos</strong> — use Sincronizar para atualizar preços e estoque via API.
+      </p>
+    </button>
   );
 }
 

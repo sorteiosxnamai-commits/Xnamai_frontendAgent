@@ -2,12 +2,14 @@ import { ProductCard } from '@/components/cards/ProductCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Loading, SkeletonTable } from '@/components/ui/EmptyState';
+import { ProductsEmptyState, ProductsMercosHint } from '@/components/ui/GuidedEmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { Pagination } from '@/components/ui/Pagination';
 import { Search } from '@/components/ui/Search';
 import { Select } from '@/components/ui/Select';
 import { Table } from '@/components/ui/Table';
-import { useNotification } from '@/contexts/NotificationContext';
+import { useMercosSync } from '@/hooks/useMercosSync';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useProducts } from '@/hooks/useQueries';
 import { formatCurrency } from '@/utils';
 import type { Product } from '@/types';
@@ -30,18 +32,15 @@ export function ProductsPage() {
   const [category, setCategory] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [selected, setSelected] = useState<Product | null>(null);
-  const [syncing, setSyncing] = useState(false);
-  const { addToast } = useNotification();
+  const { can } = usePermissions();
+  const canSync = can('manageIntegrations');
+  const syncMutation = useMercosSync();
 
-  const { data, isLoading, refetch } = useProducts({ page, pageSize: 6, search, category: category || undefined });
+  const { data, isLoading } = useProducts({ page, pageSize: 6, search, category: category || undefined });
 
-  const handleSync = async () => {
-    setSyncing(true);
-    addToast({ title: 'Sincronização', message: 'Produtos sendo sincronizados com Mercos...', type: 'info' });
-    await new Promise((r) => setTimeout(r, 2000));
-    await refetch();
-    setSyncing(false);
-    addToast({ title: 'Sincronização concluída', message: 'Catálogo atualizado', type: 'success' });
+  const handleSync = () => {
+    if (!canSync) return;
+    syncMutation.mutate('products');
   };
 
   if (isLoading) {
@@ -52,6 +51,10 @@ export function ProductsPage() {
       </div>
     );
   }
+
+  const products = data?.data ?? [];
+  const isEmpty = (data?.total ?? 0) === 0;
+  const hasFilters = Boolean(search.trim() || category);
 
   const columns = [
     {
@@ -97,12 +100,14 @@ export function ProductsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Produtos</h1>
-          <p className="text-gray-500 dark:text-gray-400">Catálogo de produtos sincronizados</p>
+          <p className="text-gray-500 dark:text-gray-400">Catálogo sincronizado da API Mercos</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleSync} loading={syncing}>
-            <RefreshCw className="h-4 w-4" /> Sincronizar
-          </Button>
+          {canSync && (
+            <Button onClick={handleSync} loading={syncMutation.isPending}>
+              <RefreshCw className="h-4 w-4" /> Sincronizar Mercos
+            </Button>
+          )}
           <Button variant={viewMode === 'table' ? 'primary' : 'outline'} size="icon" onClick={() => setViewMode('table')}>
             <List className="h-4 w-4" />
           </Button>
@@ -111,6 +116,8 @@ export function ProductsPage() {
           </Button>
         </div>
       </div>
+
+      <ProductsMercosHint />
 
       <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
         <div className="flex flex-col gap-3 border-b border-gray-200 p-4 sm:flex-row dark:border-gray-700">
@@ -128,17 +135,19 @@ export function ProductsPage() {
           />
         </div>
 
-        {viewMode === 'table' ? (
-          <Table columns={columns} data={data?.data ?? []} keyExtractor={(p) => p.id} onRowClick={setSelected} />
+        {isEmpty ? (
+          <ProductsEmptyState searched={hasFilters} />
+        ) : viewMode === 'table' ? (
+          <Table columns={columns} data={products} keyExtractor={(p) => p.id} onRowClick={setSelected} />
         ) : (
           <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
-            {(data?.data ?? []).map((p) => (
+            {products.map((p) => (
               <ProductCard key={p.id} product={p} onClick={() => setSelected(p)} />
             ))}
           </div>
         )}
 
-        {data && (
+        {data && !isEmpty && (
           <Pagination page={data.page} totalPages={data.totalPages} total={data.total} onPageChange={setPage} />
         )}
       </div>

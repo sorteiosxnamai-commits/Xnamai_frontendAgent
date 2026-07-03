@@ -9,6 +9,8 @@ import { Pagination } from '@/components/ui/Pagination';
 import { Search } from '@/components/ui/Search';
 import { Table } from '@/components/ui/Table';
 import { useNotification } from '@/contexts/NotificationContext';
+import { useMercosSync } from '@/hooks/useMercosSync';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useCustomers } from '@/hooks/useQueries';
 import { customerEditStore, customerStore } from '@/store/customerStore';
 import { formatCurrency, formatDate } from '@/utils';
@@ -23,27 +25,16 @@ export function CustomersPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
   const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', company: '', city: '', notes: '' });
-  const [syncingId, setSyncingId] = useState<string | null>(null);
   const { addToast } = useNotification();
+  const { can } = usePermissions();
+  const canSync = can('manageIntegrations');
+  const syncMutation = useMercosSync();
 
-  const { data, isLoading, refetch } = useCustomers({ page, pageSize: 6, search });
+  const { data, isLoading } = useCustomers({ page, pageSize: 6, search });
 
-  const handleSync = async (customer: Customer) => {
-    setSyncingId(customer.id);
-    addToast({
-      title: 'Sincronização iniciada',
-      message: `Sincronizando ${customer.name} com Mercos...`,
-      type: 'info',
-    });
-    await new Promise((r) => setTimeout(r, 1500));
-    customerStore.markSynced(customer.id);
-    setSyncingId(null);
-    addToast({
-      title: 'Sincronização concluída',
-      message: `${customer.name} atualizado`,
-      type: 'success',
-    });
-    refetch();
+  const handleSyncAll = () => {
+    if (!canSync) return;
+    syncMutation.mutate('customers');
   };
 
   const openEdit = (customer: Customer) => {
@@ -68,7 +59,6 @@ export function CustomersPage() {
     customerEditStore.save(editCustomer.id, editForm);
     addToast({ title: 'Cliente atualizado', message: editForm.name, type: 'success' });
     setEditCustomer(null);
-    refetch();
   };
 
   if (isLoading) {
@@ -124,9 +114,6 @@ export function CustomersPage() {
           <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEdit(c); }}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" loading={syncingId === c.id} onClick={(e) => { e.stopPropagation(); handleSync(c); }}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
         </div>
       ),
     },
@@ -149,6 +136,11 @@ export function CustomersPage() {
           <p className="text-gray-500 dark:text-gray-400">Base unificada de clientes e leads multicanal</p>
         </div>
         <div className="flex gap-2">
+          {canSync && (
+            <Button onClick={handleSyncAll} loading={syncMutation.isPending}>
+              <RefreshCw className="h-4 w-4" /> Sincronizar Mercos
+            </Button>
+          )}
           <Button
             variant={viewMode === 'table' ? 'primary' : 'outline'}
             size="icon"
@@ -213,9 +205,6 @@ export function CustomersPage() {
           <>
             <Button variant="outline" onClick={() => setSelectedCustomer(null)}>Fechar</Button>
             <Button onClick={() => selectedCustomer && openEdit(selectedCustomer)}>Editar</Button>
-            <Button loading={!!selectedCustomer && syncingId === selectedCustomer.id} onClick={() => selectedCustomer && handleSync(selectedCustomer)}>
-              <RefreshCw className="h-4 w-4" /> Sincronizar
-            </Button>
           </>
         }
       >
