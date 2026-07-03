@@ -63,7 +63,7 @@ api.interceptors.response.use(
     }
 
     const refreshToken = localStorage.getItem(REFRESH_KEY);
-    if (!refreshToken) {
+    if (!refreshToken || refreshToken === 'undefined') {
       clearAuthStorage();
       window.location.href = '/login';
       return Promise.reject(error);
