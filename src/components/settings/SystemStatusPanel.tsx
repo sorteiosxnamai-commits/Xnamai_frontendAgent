@@ -1,11 +1,14 @@
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Loading } from '@/components/ui/EmptyState';
+import { useNotification } from '@/contexts/NotificationContext';
 import { useSystemStatus } from '@/hooks/useQueries';
 import { usePermissions } from '@/hooks/usePermissions';
 import { canAccessSettingsTab } from '@/utils/navPermissions';
+import { systemService } from '@/services/system.service';
 import { formatDateTime } from '@/utils';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   CheckCircle2,
   Database,
@@ -14,8 +17,10 @@ import {
   RefreshCw,
   Server,
   Sparkles,
+  Trash2,
   XCircle,
 } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function StatusRow({
@@ -56,8 +61,37 @@ function StatusRow({
 export function SystemStatusPanel() {
   const { data, isLoading, isFetching, refetch } = useSystemStatus();
   const { can, role } = usePermissions();
+  const { addToast } = useNotification();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [confirmDemo, setConfirmDemo] = useState(false);
+  const [confirmMercos, setConfirmMercos] = useState(false);
+
+  const clearDemoMutation = useMutation({
+    mutationFn: (incluirMercos: boolean) => systemService.clearDemo(incluirMercos),
+    onSuccess: (result) => {
+      addToast({ title: 'Limpeza concluída', message: result.message, type: 'success' });
+      setConfirmDemo(false);
+      setConfirmMercos(false);
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['channels'] });
+      queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+      queryClient.invalidateQueries({ queryKey: ['chatbots'] });
+      queryClient.invalidateQueries({ queryKey: ['integrations'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['funnel'] });
+    },
+    onError: (err: unknown) => {
+      const message =
+        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
+        'Não foi possível limpar os dados de demonstração';
+      addToast({ title: 'Erro', message: String(message), type: 'error' });
+    },
+  });
 
   const goToTab = (tab: string) => {
     if (!canAccessSettingsTab(tab, can, role)) {
@@ -200,6 +234,52 @@ export function SystemStatusPanel() {
           <li>Banco: <code>SUPABASE_URL</code>, <code>SUPABASE_KEY</code></li>
         </ul>
       </div>
+
+      {role === 'admin' && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/50 dark:bg-amber-950/20">
+          <p className="flex items-center gap-2 font-medium text-amber-900 dark:text-amber-100">
+            <Trash2 className="h-4 w-4" />
+            Preparar ambiente só Mercos
+          </p>
+          <p className="mt-2 text-sm text-amber-800 dark:text-amber-200/90">
+            Remove conversas demo, campanhas fictícias, canais/robôs do seed e integrações fake.
+            Depois sincronize o Mercos para carregar dados reais do cliente.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => setConfirmDemo(true)}>
+              Limpar demonstração
+            </Button>
+            <Button variant="outline" onClick={() => setConfirmMercos(true)}>
+              Limpar demo + dados Mercos
+            </Button>
+            <Button variant="outline" onClick={() => goToTab('mercos')}>
+              Ir para Mercos
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <ConfirmModal
+        open={confirmDemo}
+        onClose={() => setConfirmDemo(false)}
+        onConfirm={() => clearDemoMutation.mutate(false)}
+        title="Limpar dados de demonstração?"
+        message="Remove conversas Carlos/Mariana, campanhas Black Friday, canais fake e métricas inventadas do robô. Usuários e configurações são mantidos."
+        confirmLabel="Limpar demo"
+        loading={clearDemoMutation.isPending}
+        variant="danger"
+      />
+
+      <ConfirmModal
+        open={confirmMercos}
+        onClose={() => setConfirmMercos(false)}
+        onConfirm={() => clearDemoMutation.mutate(true)}
+        title="Limpar demo e dados Mercos?"
+        message="Além da demonstração, apaga clientes, produtos e pedidos no Supabase. Use antes de sincronizar uma conta Mercos nova."
+        confirmLabel="Limpar tudo"
+        loading={clearDemoMutation.isPending}
+        variant="danger"
+      />
     </div>
   );
 }
