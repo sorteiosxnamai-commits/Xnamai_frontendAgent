@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/utils';
 import { FlaskConical } from 'lucide-react';
 
-export type DemoNoticeVariant = 'memory' | 'ai' | 'sandbox' | 'mock';
+export type DemoNoticeVariant = 'memory' | 'ai' | 'sandbox' | 'mock' | 'comingSoon';
 
 const copy: Record<DemoNoticeVariant, string> = {
   memory:
@@ -11,6 +11,8 @@ const copy: Record<DemoNoticeVariant, string> = {
   sandbox:
     'Integração Mercos em sandbox — dados de teste até o ambiente de produção estar disponível.',
   mock: 'Conteúdo demonstrativo — esta seção ainda não está conectada aos dados reais da sua conta.',
+  comingSoon:
+    'Alguns itens abaixo ainda não estão disponíveis — estão marcados como Em breve. O que está ativo hoje funciona de verdade.',
 };
 
 interface DemoNoticeProps {
@@ -37,6 +39,14 @@ export function PageBetaBadge() {
   return (
     <Badge variant="warning" className="align-middle text-[10px] uppercase tracking-wide">
       Beta
+    </Badge>
+  );
+}
+
+export function ComingSoonBadge({ className }: { className?: string }) {
+  return (
+    <Badge variant="default" className={cn('text-[10px] uppercase tracking-wide', className)}>
+      Em breve
     </Badge>
   );
 }

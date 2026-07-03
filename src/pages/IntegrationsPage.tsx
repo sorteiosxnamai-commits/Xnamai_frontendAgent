@@ -1,16 +1,17 @@
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { ComingSoonBadge, DemoNotice } from '@/components/ui/DemoNotice';
 import { Loading } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { useNotification } from '@/contexts/NotificationContext';
-import { usePlatformMutations } from '@/hooks/usePlatformMutations';
 import { useIntegrations } from '@/hooks/usePlatform';
+import { isIntegrationLive } from '@/utils/featureAvailability';
 import type { Integration } from '@/types';
 import { motion } from 'framer-motion';
-import { ExternalLink, Link2, Plug } from 'lucide-react';
+import { ExternalLink, Link2, Plug, Settings } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const categoryLabels = {
   crm: 'CRM',
@@ -20,38 +21,107 @@ const categoryLabels = {
 };
 
 export function IntegrationsPage() {
+  const navigate = useNavigate();
   const { data: integrations, isLoading } = useIntegrations();
-  const { toggleIntegration } = usePlatformMutations();
   const { addToast } = useNotification();
   const [selected, setSelected] = useState<Integration | null>(null);
-  const [confirm, setConfirm] = useState<Integration | null>(null);
 
-  const handleToggle = async () => {
-    if (!confirm) return;
-    await toggleIntegration.mutateAsync(confirm.id);
+  const showComingSoon = (name: string) => {
     addToast({
-      title: confirm.connected ? 'Integração desconectada' : 'Integração conectada',
-      message: confirm.name,
-      type: 'success',
+      title: 'Em breve',
+      message: `${name} ainda não está integrado. Hoje apenas Mercos está ativo.`,
+      type: 'info',
     });
-    setConfirm(null);
-    setSelected(null);
+  };
+
+  const handleCardAction = (integration: Integration) => {
+    if (!isIntegrationLive(integration.id, integration.name)) {
+      showComingSoon(integration.name);
+      return;
+    }
+    if (integration.connected) {
+      setSelected(integration);
+      return;
+    }
+    navigate('/configuracoes');
   };
 
   if (isLoading) return <Loading />;
 
-  const grouped = (integrations ?? []).reduce<Record<string, Integration[]>>((acc, item) => {
+  const items = integrations ?? [];
+  const liveItems = items.filter((i) => isIntegrationLive(i.id, i.name));
+  const previewItems = items.filter((i) => !isIntegrationLive(i.id, i.name));
+
+  const groupedLive = liveItems.reduce<Record<string, Integration[]>>((acc, item) => {
     if (!acc[item.category]) acc[item.category] = [];
     acc[item.category].push(item);
     return acc;
   }, {});
 
+  const groupedPreview = previewItems.reduce<Record<string, Integration[]>>((acc, item) => {
+    if (!acc[item.category]) acc[item.category] = [];
+    acc[item.category].push(item);
+    return acc;
+  }, {});
+
+  const renderGroup = (title: string, grouped: Record<string, Integration[]>, live: boolean) => (
+    Object.entries(grouped).map(([category, categoryItems]) => (
+      <div key={`${title}-${category}`}>
+        <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">
+          {categoryLabels[category as keyof typeof categoryLabels] ?? category}
+          {!live && <span className="ml-2 text-sm font-normal text-gray-500">— Em breve</span>}
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {categoryItems?.map((integration) => (
+            <Card key={integration.id} className={!live ? '!p-4 opacity-75' : '!p-4'}>
+              <div className="flex items-center justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 font-bold text-gray-600 dark:bg-gray-800">
+                  {integration.name.slice(0, 2).toUpperCase()}
+                </div>
+                {live ? (
+                  <Badge variant={integration.connected ? 'success' : 'default'}>
+                    {integration.connected ? 'Ativo' : 'Configurar'}
+                  </Badge>
+                ) : (
+                  <ComingSoonBadge />
+                )}
+              </div>
+              <h3 className="mt-3 font-medium">{integration.name}</h3>
+              <Button
+                variant={live && integration.connected ? 'outline' : 'primary'}
+                size="sm"
+                className="mt-3 w-full"
+                onClick={() => handleCardAction(integration)}
+              >
+                {live ? (
+                  <>
+                    {integration.connected ? <Settings className="h-4 w-4" /> : <Plug className="h-4 w-4" />}
+                    {integration.connected ? 'Gerenciar' : 'Configurar Mercos'}
+                  </>
+                ) : (
+                  <>
+                    <Plug className="h-4 w-4" />
+                    Em breve
+                  </>
+                )}
+              </Button>
+            </Card>
+          ))}
+        </div>
+      </div>
+    ))
+  );
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Integrações</h1>
-        <p className="text-gray-500 dark:text-gray-400">Conecte CRMs, ERPs e plataformas de e-commerce</p>
+        <p className="text-gray-500 dark:text-gray-400">
+          Mercos ativo hoje — demais CRMs e ERPs em desenvolvimento
+        </p>
       </div>
+
+      <DemoNotice variant="comingSoon" />
 
       <Card>
         <div className="flex items-center gap-4">
@@ -60,9 +130,11 @@ export function IntegrationsPage() {
           </div>
           <div>
             <p className="font-semibold">
-              {(integrations ?? []).filter((i) => i.connected).length} de {(integrations ?? []).length} integrações ativas
+              {liveItems.filter((i) => i.connected).length} integração ativa (Mercos)
             </p>
-            <p className="text-sm text-gray-500">Não encontrou seu sistema? Integramos para você.</p>
+            <p className="text-sm text-gray-500">
+              Tokens e sincronização em Configurações → Mercos.
+            </p>
           </div>
           <Button
             variant="outline"
@@ -74,65 +146,40 @@ export function IntegrationsPage() {
         </div>
       </Card>
 
-      {Object.entries(grouped).map(([category, items]) => (
-        <div key={category}>
-          <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">
-            {categoryLabels[category as keyof typeof categoryLabels] ?? category}
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {items?.map((integration) => (
-              <Card key={integration.id} className="!p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 font-bold text-gray-600 dark:bg-gray-800">
-                    {integration.name.slice(0, 2).toUpperCase()}
-                  </div>
-                  <Badge variant={integration.connected ? 'success' : 'default'}>
-                    {integration.connected ? 'Conectado' : 'Disponível'}
-                  </Badge>
-                </div>
-                <h3 className="mt-3 font-medium">{integration.name}</h3>
-                <Button
-                  variant={integration.connected ? 'outline' : 'primary'}
-                  size="sm"
-                  className="mt-3 w-full"
-                  onClick={() => (integration.connected ? setSelected(integration) : setConfirm(integration))}
-                >
-                  <Plug className="h-4 w-4" />
-                  {integration.connected ? 'Gerenciar' : 'Conectar'}
-                </Button>
-              </Card>
-            ))}
-          </div>
+      {liveItems.length > 0 && (
+        <div className="space-y-6">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Disponíveis agora</h2>
+          {renderGroup('live', groupedLive, true)}
         </div>
-      ))}
+      )}
 
-      <Modal open={!!selected} onClose={() => setSelected(null)} title={`Gerenciar ${selected?.name}`} footer={
-        <>
-          <Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button>
-          <Button variant="danger" onClick={() => selected && setConfirm(selected)}>Desconectar</Button>
-        </>
-      }>
+      {previewItems.length > 0 && (
+        <div className="space-y-6">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Roadmap</h2>
+          {renderGroup('preview', groupedPreview, false)}
+        </div>
+      )}
+
+      <Modal
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        title={`Gerenciar ${selected?.name}`}
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button>
+            <Button onClick={() => navigate('/configuracoes')}>Abrir configurações</Button>
+          </>
+        }
+      >
         {selected && (
           <div className="space-y-3 text-sm">
-            <p>Integração <strong>{selected.name}</strong> está ativa e sincronizando dados.</p>
-            <p className="text-gray-500">Última sincronização: há 5 minutos</p>
-            <Button variant="outline" className="w-full" onClick={() => addToast({ title: 'Sincronização manual', message: 'Dados atualizados', type: 'success' })}>
-              Sincronizar agora
-            </Button>
+            <p>
+              A integração <strong>{selected.name}</strong> é configurada em Configurações (tokens, sync e logs).
+            </p>
+            <p className="text-gray-500">Use o painel Mercos para sincronizar clientes, produtos e pedidos.</p>
           </div>
         )}
       </Modal>
-
-      <ConfirmModal
-        open={!!confirm}
-        onClose={() => setConfirm(null)}
-        onConfirm={handleToggle}
-        loading={toggleIntegration.isPending}
-        title={confirm?.connected ? 'Desconectar integração?' : 'Conectar integração?'}
-        message={`Deseja ${confirm?.connected ? 'desconectar' : 'conectar'} ${confirm?.name}?`}
-        confirmLabel={confirm?.connected ? 'Desconectar' : 'Conectar'}
-        variant={confirm?.connected ? 'danger' : 'primary'}
-      />
     </motion.div>
   );
 }
