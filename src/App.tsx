@@ -2,6 +2,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ChatProvider } from '@/contexts/ChatContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ToastContainer } from '@/components/ui/Toast';
 import { AppRoutes } from '@/routes';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
@@ -25,6 +26,7 @@ export default function App() {
             <ChatProvider>
               <BrowserRouter>
                 <AppRoutes />
+                <ToastContainer />
               </BrowserRouter>
             </ChatProvider>
           </NotificationProvider>

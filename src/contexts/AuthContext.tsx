@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { mockUser } from '@/data/mocks';
 import { authService, REFRESH_KEY, TOKEN_KEY, USER_KEY } from '@/services/api';
+import { extractApiErrorMessage } from '@/utils/apiErrors';
 import type { LoginCredentials, RegisterCredentials, User } from '@/types';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
@@ -62,10 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       persistSession(data.token, data.refreshToken, data.user);
       setUser(data.user);
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-        (error instanceof Error ? error.message : 'Não foi possível entrar');
-      throw new Error(typeof message === 'string' ? message : 'Não foi possível entrar');
+      throw new Error(extractApiErrorMessage(error, 'Não foi possível entrar'));
     } finally {
       setIsLoading(false);
     }
@@ -96,10 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       persistSession(data.token, data.refreshToken, data.user);
       setUser(data.user);
     } catch (error: unknown) {
-      const message =
-        (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-        (error instanceof Error ? error.message : 'Não foi possível criar a conta');
-      throw new Error(typeof message === 'string' ? message : 'Não foi possível criar a conta');
+      throw new Error(extractApiErrorMessage(error, 'Não foi possível criar a conta'));
     } finally {
       setIsLoading(false);
     }

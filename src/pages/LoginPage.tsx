@@ -5,6 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { authService } from '@/services/api';
+import { extractApiErrorMessage } from '@/utils/apiErrors';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Lock, Mail } from 'lucide-react';
@@ -27,6 +28,7 @@ export function LoginPage() {
   const { addToast } = useNotification();
   const [forgotOpen, setForgotOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const {
     register,
@@ -39,19 +41,16 @@ export function LoginPage() {
   });
 
   const onSubmit = async (data: LoginForm) => {
+    setLoginError(null);
     try {
       await login(data);
       navigate('/dashboard');
     } catch (error) {
-      const isTimeout = (error as { code?: string })?.code === 'ECONNABORTED';
-      const isNetwork = !(error as { response?: unknown })?.response;
+      const message = extractApiErrorMessage(error, 'E-mail ou senha incorretos');
+      setLoginError(message);
       addToast({
         title: 'Login inválido',
-        message: isTimeout || isNetwork
-          ? 'Servidor demorou para responder (Render free). Aguarde ~1 min e tente de novo.'
-          : error instanceof Error
-            ? error.message
-            : 'E-mail ou senha incorretos',
+        message,
         type: 'error',
       });
     }
@@ -124,6 +123,14 @@ export function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {loginError && (
+              <div
+                role="alert"
+                className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+              >
+                {loginError}
+              </div>
+            )}
             <Input
               label="Email"
               type="email"

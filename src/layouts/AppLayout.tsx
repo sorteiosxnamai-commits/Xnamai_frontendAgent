@@ -1,6 +1,5 @@
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
-import { ToastContainer } from '@/components/ui/Toast';
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
@@ -22,7 +21,6 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
-      <ToastContainer />
     </div>
   );
 }
