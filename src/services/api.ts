@@ -1,9 +1,25 @@
-import axios from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import type { AuthResponse, LoginCredentials, RegisterCredentials, User } from '@/types';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
 
-const AUTH_PATHS = ['/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password'];
+export const TOKEN_KEY = 'pulsedesk_token';
+export const REFRESH_KEY = 'pulsedesk_refresh';
+export const USER_KEY = 'pulsedesk_user';
+
+const AUTH_PATHS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/auth/refresh',
+];
+
+function clearAuthStorage() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_KEY);
+  localStorage.removeItem(USER_KEY);
+}
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -14,25 +30,78 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('pulsedesk_token');
+  const token = localStorage.getItem(TOKEN_KEY);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
+let isRefreshing = false;
+let refreshQueue: Array<(token: string) => void> = [];
+
+type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error: AxiosError) => {
     const status = error.response?.status;
-    const url = String(error.config?.url ?? '');
+    const original = error.config as RetryConfig | undefined;
+    const url = String(original?.url ?? '');
 
-    if (status === 401 && !AUTH_PATHS.some((path) => url.includes(path))) {
-      localStorage.removeItem('pulsedesk_token');
-      localStorage.removeItem('pulsedesk_user');
-      window.location.href = '/login';
+    if (
+      status !== 401
+      || !original
+      || original._retry
+      || AUTH_PATHS.some((path) => url.includes(path))
+    ) {
+      if (status === 401 && !AUTH_PATHS.some((path) => url.includes(path))) {
+        clearAuthStorage();
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+
+    const refreshToken = localStorage.getItem(REFRESH_KEY);
+    if (!refreshToken) {
+      clearAuthStorage();
+      window.location.href = '/login';
+      return Promise.reject(error);
+    }
+
+    if (isRefreshing) {
+      return new Promise((resolve) => {
+        refreshQueue.push((token) => {
+          original.headers.Authorization = `Bearer ${token}`;
+          resolve(api(original));
+        });
+      });
+    }
+
+    original._retry = true;
+    isRefreshing = true;
+
+    try {
+      const { data } = await axios.post<AuthResponse>(`${API_URL}/auth/refresh`, {
+        refreshToken,
+      });
+      localStorage.setItem(TOKEN_KEY, data.token);
+      localStorage.setItem(REFRESH_KEY, data.refreshToken);
+      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+
+      refreshQueue.forEach((callback) => callback(data.token));
+      refreshQueue = [];
+
+      original.headers.Authorization = `Bearer ${data.token}`;
+      return api(original);
+    } catch (refreshError) {
+      refreshQueue = [];
+      clearAuthStorage();
+      window.location.href = '/login';
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
   },
 );
 
@@ -41,6 +110,8 @@ export const authService = {
     api.post<AuthResponse>('/auth/login', credentials),
   register: (credentials: RegisterCredentials) =>
     api.post<AuthResponse>('/auth/register', credentials),
+  refresh: (refreshToken: string) =>
+    api.post<AuthResponse>('/auth/refresh', { refreshToken }),
   forgotPassword: (email: string) =>
     api.post<{ success: boolean; message: string; resetUrl?: string }>(
       '/auth/forgot-password',
@@ -53,5 +124,6 @@ export const authService = {
     }),
   updateProfile: (patch: { name?: string; company?: string }) =>
     api.patch<User>('/auth/profile', patch),
-  logout: () => api.post('/auth/logout'),
+  logout: (refreshToken?: string) =>
+    api.post('/auth/logout', refreshToken ? { refreshToken } : {}),
 };

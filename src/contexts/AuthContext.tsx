@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 import { mockUser } from '@/data/mocks';
-import { authService } from '@/services/api';
+import { authService, REFRESH_KEY, TOKEN_KEY, USER_KEY } from '@/services/api';
 import type { LoginCredentials, RegisterCredentials, User } from '@/types';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
@@ -24,8 +24,17 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const TOKEN_KEY = 'pulsedesk_token';
-const USER_KEY = 'pulsedesk_user';
+function persistSession(token: string, refreshToken: string, authUser: User) {
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(REFRESH_KEY, refreshToken);
+  localStorage.setItem(USER_KEY, JSON.stringify(authUser));
+}
+
+function clearSession() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_KEY);
+  localStorage.removeItem(USER_KEY);
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
@@ -44,15 +53,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (USE_MOCK) {
         await new Promise((r) => setTimeout(r, 800));
         const authUser = { ...mockUser, email: credentials.email };
-        localStorage.setItem(TOKEN_KEY, 'mock-jwt-token');
-        localStorage.setItem(USER_KEY, JSON.stringify(authUser));
+        persistSession('mock-jwt-token', 'mock-refresh-token', authUser);
         setUser(authUser);
         return;
       }
 
       const { data } = await authService.login(credentials);
-      localStorage.setItem(TOKEN_KEY, data.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+      persistSession(data.token, data.refreshToken, data.user);
       setUser(data.user);
     } catch (error: unknown) {
       const message =
@@ -80,15 +87,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: 'user',
           company: credentials.company || 'PulseDesk',
         };
-        localStorage.setItem(TOKEN_KEY, 'mock-jwt-token');
-        localStorage.setItem(USER_KEY, JSON.stringify(authUser));
+        persistSession('mock-jwt-token', 'mock-refresh-token', authUser);
         setUser(authUser);
         return;
       }
 
       const { data } = await authService.register(credentials);
-      localStorage.setItem(TOKEN_KEY, data.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+      persistSession(data.token, data.refreshToken, data.user);
       setUser(data.user);
     } catch (error: unknown) {
       const message =
@@ -102,10 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     if (!USE_MOCK) {
-      authService.logout().catch(() => undefined);
+      const refreshToken = localStorage.getItem(REFRESH_KEY) ?? undefined;
+      authService.logout(refreshToken).catch(() => undefined);
     }
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    clearSession();
     setUser(null);
   }, []);
 
