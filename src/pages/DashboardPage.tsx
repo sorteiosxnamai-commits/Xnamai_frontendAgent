@@ -7,6 +7,7 @@ import {
   InsightBanner,
   ProgressRing,
 } from '@/components/dashboard/DashboardWidgets';
+import { SetupChecklist } from '@/components/dashboard/SetupChecklist';
 import { Loading, Skeleton } from '@/components/ui/EmptyState';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChannels } from '@/hooks/usePlatform';
@@ -179,6 +180,8 @@ export function DashboardPage() {
       </div>
 
       <div className="relative space-y-8">
+        <SetupChecklist />
+
         {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: -12 }}

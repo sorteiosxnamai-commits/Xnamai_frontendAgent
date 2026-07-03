@@ -349,3 +349,53 @@ export interface CustomerDetail extends Customer {
   purchasedProducts: Product[];
   lastService: string;
 }
+
+export interface SystemChecklistItem {
+  id: string;
+  title: string;
+  description: string;
+  done: boolean;
+  settingsTab: string;
+}
+
+export interface SystemStatus {
+  supabase: {
+    ok: boolean;
+    message: string;
+    users?: number;
+    error?: string;
+  };
+  mercos: {
+    configured: boolean;
+    environment?: string;
+    isProduction?: boolean;
+    baseUrlHost?: string;
+    lastSync?: string;
+    syncedProducts: number;
+    syncedCustomers: number;
+    syncedOrders: number;
+  };
+  whatsapp: {
+    configured: boolean;
+    connected: boolean;
+    provider?: string;
+    webhookUrl?: string;
+    displayPhone?: string;
+    message?: string;
+  };
+  openai: {
+    configured: boolean;
+    mode: 'gpt' | 'local';
+    model?: string;
+    gptOnly?: boolean;
+  };
+  data: {
+    customersWithPhone: number;
+  };
+  readiness: {
+    completed: number;
+    total: number;
+    percent: number;
+  };
+  checklist: SystemChecklistItem[];
+}

@@ -8,6 +8,7 @@ import {
   SecuritySettingsPanel,
 } from '@/components/settings/GeneralSettingsPanels';
 import { MercosSettingsPanel } from '@/components/settings/MercosSettingsPanel';
+import { SystemStatusPanel } from '@/components/settings/SystemStatusPanel';
 import { UsersSettingsPanel } from '@/components/settings/UsersSettingsPanel';
 import { WhatsAppSettingsPanel } from '@/components/settings/WhatsAppSettingsPanel';
 import { Input } from '@/components/ui/Input';
@@ -25,15 +26,17 @@ import {
   Link,
   MessageCircle,
   Palette,
+  Server,
   Shield,
   Sparkles,
   Users,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const tabs = [
   { id: 'empresa', label: 'Empresa', icon: Building2 },
+  { id: 'sistema', label: 'Status do sistema', icon: Server },
   { id: 'usuarios', label: 'Usuários', icon: Users },
   { id: 'permissoes', label: 'Permissões', icon: Shield },
   { id: 'mercos', label: 'Mercos', icon: Link },
@@ -46,7 +49,9 @@ const tabs = [
 ];
 
 export function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('empresa');
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(() => tabFromUrl ?? 'empresa');
   const { theme, setTheme } = useTheme();
   const { addToast } = useNotification();
   const { can, role } = usePermissions();
@@ -57,6 +62,12 @@ export function SettingsPage() {
     () => tabs.filter((tab) => canAccessSettingsTab(tab.id, can, role)),
     [can, role],
   );
+
+  useEffect(() => {
+    if (tabFromUrl && visibleTabs.some((tab) => tab.id === tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl, visibleTabs]);
 
   useEffect(() => {
     if (!visibleTabs.some((tab) => tab.id === activeTab) && visibleTabs[0]) {
@@ -103,6 +114,7 @@ export function SettingsPage() {
         <div className="flex-1">
           <Card title={visibleTabs.find((t) => t.id === activeTab)?.label ?? 'Configurações'}>
             {activeTab === 'empresa' && <CompanySettingsPanel />}
+            {activeTab === 'sistema' && <SystemStatusPanel />}
             {activeTab === 'usuarios' && <UsersSettingsPanel />}
             {activeTab === 'permissoes' && <PermissionsSettingsPanel />}
             {activeTab === 'openai' && (

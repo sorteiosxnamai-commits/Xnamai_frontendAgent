@@ -4,6 +4,7 @@ import { salesService } from '@/services/sales.service';
 import { customersService, productsService, ordersService } from '@/services/data.service';
 import { mercosService } from '@/services/mercos.service';
 import { agentService } from '@/services/agent.service';
+import { systemService } from '@/services/system.service';
 import { conversationsService } from '@/services/conversations.service';
 import type { ListParams } from '@/types';
 
@@ -68,6 +69,14 @@ export function useAgentStatus() {
   return useQuery({
     queryKey: ['agent', 'status'],
     queryFn: agentService.getStatus,
+  });
+}
+
+export function useSystemStatus() {
+  return useQuery({
+    queryKey: ['system', 'status'],
+    queryFn: systemService.getStatus,
+    staleTime: 60_000,
   });
 }
 

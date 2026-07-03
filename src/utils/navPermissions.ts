@@ -28,6 +28,7 @@ export function filterNavSections(
 
 export const SETTINGS_TAB_PERMISSIONS: Record<string, NavPermission | 'admin' | undefined> = {
   empresa: undefined,
+  sistema: undefined,
   usuarios: 'manageUsers',
   permissoes: undefined,
   mercos: 'manageIntegrations',
