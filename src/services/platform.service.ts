@@ -84,12 +84,25 @@ export const campaignsService = {
     return data;
   },
 
-  create: async (campaign: Omit<Campaign, 'id' | 'sent' | 'opened'>) => {
+  create: async (campaign: Omit<Campaign, 'id' | 'sent' | 'opened' | 'failed'>) => {
     if (USE_MOCK) {
       await delay(600);
       return platformStore.addCampaign(campaign);
     }
     const { data } = await api.post<Campaign>('/campanhas', campaign);
+    return data;
+  },
+
+  dispatch: async (id: string): Promise<{
+    success: boolean;
+    campaignId: string;
+    recipients: number;
+    sent: number;
+    failed: number;
+    status: string;
+    message: string;
+  }> => {
+    const { data } = await api.post(`/campanhas/${id}/disparar`);
     return data;
   },
 };

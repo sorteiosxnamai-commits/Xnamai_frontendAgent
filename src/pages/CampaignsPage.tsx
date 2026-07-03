@@ -2,7 +2,6 @@ import { ChannelBadge } from '@/components/ui/ChannelBadge';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { ComingSoonBadge, DemoNotice } from '@/components/ui/DemoNotice';
 import { Input } from '@/components/ui/Input';
 import { Loading } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
@@ -12,10 +11,11 @@ import { useNotification } from '@/contexts/NotificationContext';
 import { usePlatformMutations } from '@/hooks/usePlatformMutations';
 import { useCampaigns } from '@/hooks/usePlatform';
 import { CAMPAIGNS_DISPATCH_LIVE } from '@/utils/featureAvailability';
+import { extractApiErrorMessage } from '@/utils/apiErrors';
 import { formatDateTime } from '@/utils';
 import type { Campaign, ChannelType } from '@/types';
 import { motion } from 'framer-motion';
-import { Megaphone, Plus } from 'lucide-react';
+import { Megaphone, Plus, Send } from 'lucide-react';
 import { useState } from 'react';
 
 const statusLabels: Record<Campaign['status'], string> = {
@@ -34,7 +34,7 @@ const statusVariant: Record<Campaign['status'], 'default' | 'info' | 'success' |
 
 export function CampaignsPage() {
   const { data: campaigns, isLoading } = useCampaigns();
-  const { createCampaign } = usePlatformMutations();
+  const { createCampaign, dispatchCampaign } = usePlatformMutations();
   const { addToast } = useNotification();
   const [modalOpen, setModalOpen] = useState(false);
   const [selected, setSelected] = useState<Campaign | null>(null);
@@ -43,6 +43,7 @@ export function CampaignsPage() {
     channel: 'whatsapp' as ChannelType,
     status: 'draft' as Campaign['status'],
     recipients: 100,
+    message: '',
     scheduledAt: '',
   });
 
@@ -51,33 +52,55 @@ export function CampaignsPage() {
       addToast({ title: 'Nome obrigatório', type: 'warning' });
       return;
     }
-    if (!CAMPAIGNS_DISPATCH_LIVE && form.status !== 'draft') {
+    if (!form.message.trim()) {
+      addToast({ title: 'Mensagem obrigatória', message: 'Escreva o texto que será enviado via WhatsApp.', type: 'warning' });
+      return;
+    }
+    try {
+      await createCampaign.mutateAsync({
+        name: form.name.trim(),
+        channel: form.channel,
+        status: form.status,
+        recipients: form.recipients,
+        message: form.message.trim(),
+        scheduledAt: form.scheduledAt || undefined,
+      });
+      addToast({ title: 'Campanha criada', message: form.name, type: 'success' });
+      setModalOpen(false);
+      setForm({ name: '', channel: 'whatsapp', status: 'draft', recipients: 100, message: '', scheduledAt: '' });
+    } catch (err) {
+      addToast({ title: 'Erro ao criar campanha', message: extractApiErrorMessage(err), type: 'error' });
+    }
+  };
+
+  const handleDispatch = async (campaign: Campaign) => {
+    if (!campaign.message?.trim()) {
       addToast({
-        title: 'Em breve',
-        message: 'Agendamento e disparo de campanhas ainda não estão disponíveis. Salve como rascunho.',
-        type: 'info',
+        title: 'Sem mensagem',
+        message: 'Esta campanha não tem texto. Crie uma nova com a mensagem preenchida.',
+        type: 'warning',
       });
       return;
     }
-    await createCampaign.mutateAsync({
-      name: form.name.trim(),
-      channel: form.channel,
-      status: CAMPAIGNS_DISPATCH_LIVE ? form.status : 'draft',
-      recipients: form.recipients,
-      scheduledAt: CAMPAIGNS_DISPATCH_LIVE ? form.scheduledAt || undefined : undefined,
-    });
-    addToast({
-      title: 'Rascunho salvo',
-      message: CAMPAIGNS_DISPATCH_LIVE
-        ? form.name
-        : `${form.name} — o envio em massa será habilitado em breve.`,
-      type: 'success',
-    });
-    setModalOpen(false);
-    setForm({ name: '', channel: 'whatsapp', status: 'draft', recipients: 100, scheduledAt: '' });
+    try {
+      const result = await dispatchCampaign.mutateAsync(campaign.id);
+      addToast({
+        title: result.success ? 'Disparo concluído' : 'Disparo falhou',
+        message: result.message,
+        type: result.success ? 'success' : 'error',
+      });
+      setSelected(null);
+    } catch (err) {
+      addToast({ title: 'Erro no disparo', message: extractApiErrorMessage(err), type: 'error' });
+    }
   };
 
   if (isLoading) return <Loading />;
+
+  const list = campaigns ?? [];
+  const drafts = list.filter((c) => c.status === 'draft').length;
+  const running = list.filter((c) => c.status === 'running').length;
+  const totalSent = list.reduce((acc, c) => acc + c.sent, 0);
 
   const columns = [
     { key: 'name', header: 'Campanha' },
@@ -86,37 +109,41 @@ export function CampaignsPage() {
       key: 'status',
       header: 'Status',
       render: (c: Campaign) => (
-        <div className="flex items-center gap-2">
-          <Badge variant={statusVariant[c.status]}>{statusLabels[c.status]}</Badge>
-          {!CAMPAIGNS_DISPATCH_LIVE && c.status !== 'draft' && <ComingSoonBadge />}
-        </div>
+        <Badge variant={statusVariant[c.status]}>{statusLabels[c.status]}</Badge>
       ),
     },
     { key: 'recipients', header: 'Destinatários', render: (c: Campaign) => c.recipients.toLocaleString('pt-BR') },
     {
       key: 'sent',
       header: 'Enviadas',
-      render: (c: Campaign) => (CAMPAIGNS_DISPATCH_LIVE ? c.sent.toLocaleString('pt-BR') : '—'),
+      render: (c: Campaign) => c.sent.toLocaleString('pt-BR'),
+    },
+    {
+      key: 'failed',
+      header: 'Falhas',
+      render: (c: Campaign) => (c.failed ? c.failed.toLocaleString('pt-BR') : '—'),
     },
     {
       key: 'opened',
-      header: 'Taxa abertura',
+      header: 'Lidas',
       render: (c: Campaign) =>
-        CAMPAIGNS_DISPATCH_LIVE && c.sent > 0 ? `${Math.round((c.opened / c.sent) * 100)}%` : '—',
+        c.sent > 0 && c.opened > 0 ? `${Math.round((c.opened / c.sent) * 100)}%` : '—',
     },
     { key: 'scheduledAt', header: 'Agendamento', render: (c: Campaign) => (c.scheduledAt ? formatDateTime(c.scheduledAt) : '-') },
   ];
+
+  const canDispatch = (c: Campaign) =>
+    CAMPAIGNS_DISPATCH_LIVE &&
+    c.channel === 'whatsapp' &&
+    (c.status === 'draft' || c.status === 'scheduled');
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Campanhas</h1>
-            {!CAMPAIGNS_DISPATCH_LIVE && <ComingSoonBadge />}
-          </div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Campanhas</h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Planeje campanhas em rascunho — disparo em massa via WhatsApp em breve
+            Crie campanhas WhatsApp e dispare para clientes sincronizados do Mercos
           </p>
         </div>
         <Button onClick={() => setModalOpen(true)}>
@@ -124,54 +151,50 @@ export function CampaignsPage() {
         </Button>
       </div>
 
-      <DemoNotice variant="comingSoon" />
-
       <Card className="!p-4 text-sm text-gray-600 dark:text-gray-300">
         <p>
-          <strong>Hoje:</strong> criar e listar rascunhos de campanha.
+          <strong>Destinatários:</strong> clientes com celular/telefone no Mercos (limite pelo campo &quot;Destinatários&quot;; 0 = todos).
         </p>
         <p className="mt-1 text-gray-500">
-          <strong>Em breve:</strong> agendamento, envio em massa e métricas reais de entrega/abertura.
+          Use <code className="rounded bg-gray-100 px-1 dark:bg-gray-800">{'{{nome}}'}</code> na mensagem para personalizar. WhatsApp precisa estar conectado em Canais.
         </p>
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="!p-4">
           <p className="text-sm text-gray-500">Rascunhos</p>
-          <p className="text-2xl font-bold">{(campaigns ?? []).filter((c) => c.status === 'draft').length}</p>
+          <p className="text-2xl font-bold">{drafts}</p>
         </Card>
-        <Card className="!p-4 opacity-75">
+        <Card className="!p-4">
           <p className="text-sm text-gray-500">Disparos ativos</p>
-          <p className="text-2xl font-bold">—</p>
-          <p className="text-xs text-gray-400">Em breve</p>
+          <p className="text-2xl font-bold">{running}</p>
         </Card>
-        <Card className="!p-4 opacity-75">
+        <Card className="!p-4">
           <p className="text-sm text-gray-500">Mensagens enviadas</p>
-          <p className="text-2xl font-bold">—</p>
-          <p className="text-xs text-gray-400">Em breve</p>
+          <p className="text-2xl font-bold">{totalSent.toLocaleString('pt-BR')}</p>
         </Card>
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-        {(campaigns ?? []).length === 0 ? (
+        {list.length === 0 ? (
           <div className="flex flex-col items-center py-16">
             <Megaphone className="h-12 w-12 text-gray-300" />
             <p className="mt-4 text-gray-500">Nenhuma campanha criada</p>
-            <Button className="mt-4" onClick={() => setModalOpen(true)}>Criar primeiro rascunho</Button>
+            <Button className="mt-4" onClick={() => setModalOpen(true)}>Criar primeira campanha</Button>
           </div>
         ) : (
-          <Table columns={columns} data={campaigns ?? []} keyExtractor={(c) => c.id} onRowClick={setSelected} />
+          <Table columns={columns} data={list} keyExtractor={(c) => c.id} onRowClick={setSelected} />
         )}
       </div>
 
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Nova campanha (rascunho)"
+        title="Nova campanha WhatsApp"
         footer={
           <>
             <Button variant="outline" onClick={() => setModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreate} loading={createCampaign.isPending}>Salvar rascunho</Button>
+            <Button onClick={handleCreate} loading={createCampaign.isPending}>Salvar campanha</Button>
           </>
         }
       >
@@ -187,23 +210,40 @@ export function CampaignsPage() {
             value={form.channel}
             onChange={(e) => setForm({ ...form, channel: e.target.value as ChannelType })}
           />
+          <div className="w-full">
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Mensagem
+            </label>
+            <textarea
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              rows={4}
+              value={form.message}
+              onChange={(e) => setForm({ ...form, message: e.target.value })}
+              placeholder="Olá {{nome}}, temos uma oferta especial para você!"
+            />
+          </div>
+          <Input
+            label="Destinatários (máx.)"
+            type="number"
+            min={0}
+            value={form.recipients}
+            onChange={(e) => setForm({ ...form, recipients: Number(e.target.value) })}
+          />
+          <p className="text-xs text-gray-500">Use 0 para enviar a todos os clientes com telefone.</p>
           <Select
             label="Status"
             options={[
               { value: 'draft', label: 'Rascunho' },
-              { value: 'scheduled', label: 'Agendada (Em breve)', disabled: !CAMPAIGNS_DISPATCH_LIVE },
-              { value: 'running', label: 'Em andamento (Em breve)', disabled: !CAMPAIGNS_DISPATCH_LIVE },
+              { value: 'scheduled', label: 'Agendada' },
             ]}
             value={form.status}
             onChange={(e) => setForm({ ...form, status: e.target.value as Campaign['status'] })}
           />
-          <Input label="Destinatários (planejado)" type="number" value={form.recipients} onChange={(e) => setForm({ ...form, recipients: Number(e.target.value) })} />
           <Input
-            label="Agendar para (Em breve)"
+            label="Agendar para (opcional)"
             type="datetime-local"
             value={form.scheduledAt}
             onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })}
-            disabled={!CAMPAIGNS_DISPATCH_LIVE}
           />
         </div>
       </Modal>
@@ -212,23 +252,42 @@ export function CampaignsPage() {
         open={!!selected}
         onClose={() => setSelected(null)}
         title="Detalhes da campanha"
-        footer={<Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button>}
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button>
+            {selected && canDispatch(selected) && (
+              <Button
+                onClick={() => handleDispatch(selected)}
+                loading={dispatchCampaign.isPending}
+              >
+                <Send className="h-4 w-4" /> Disparar agora
+              </Button>
+            )}
+          </>
+        }
       >
         {selected && (
           <div className="space-y-2 text-sm">
             <p><strong>Nome:</strong> {selected.name}</p>
             <p><strong>Status:</strong> {statusLabels[selected.status]}</p>
-            <p><strong>Destinatários planejados:</strong> {selected.recipients}</p>
-            {!CAMPAIGNS_DISPATCH_LIVE && (
-              <p className="text-amber-700 dark:text-amber-300">
-                Métricas de envio e abertura serão exibidas quando o disparo estiver ativo.
-              </p>
+            <p><strong>Destinatários:</strong> {selected.recipients}</p>
+            <p><strong>Enviadas:</strong> {selected.sent}</p>
+            {selected.failed ? <p><strong>Falhas:</strong> {selected.failed}</p> : null}
+            {selected.dispatchedAt && (
+              <p><strong>Disparada em:</strong> {formatDateTime(selected.dispatchedAt)}</p>
             )}
-            {CAMPAIGNS_DISPATCH_LIVE && (
-              <>
-                <p><strong>Enviadas:</strong> {selected.sent}</p>
-                <p><strong>Aberturas:</strong> {selected.opened}</p>
-              </>
+            {selected.message && (
+              <div>
+                <p className="font-medium">Mensagem:</p>
+                <p className="mt-1 whitespace-pre-wrap rounded-lg bg-gray-50 p-3 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                  {selected.message}
+                </p>
+              </div>
+            )}
+            {selected.lastError && (
+              <p className="text-red-600 dark:text-red-400">
+                <strong>Último erro:</strong> {selected.lastError}
+              </p>
             )}
           </div>
         )}

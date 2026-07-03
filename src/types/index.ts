@@ -172,7 +172,11 @@ export interface Campaign {
   recipients: number;
   sent: number;
   opened: number;
+  failed?: number;
+  message?: string;
   scheduledAt?: string;
+  dispatchedAt?: string;
+  lastError?: string;
 }
 
 export interface ChatbotFlow {

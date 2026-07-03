@@ -36,6 +36,10 @@ export function usePlatformMutations() {
       mutationFn: campaignsService.create,
       onSuccess: invalidate.campaigns,
     }),
+    dispatchCampaign: useMutation({
+      mutationFn: campaignsService.dispatch,
+      onSuccess: invalidate.campaigns,
+    }),
     createChatbot: useMutation({
       mutationFn: chatbotService.create,
       onSuccess: invalidate.chatbots,
