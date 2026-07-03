@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useNotification } from '@/contexts/NotificationContext';
 import {
   ROLE_LABELS,
@@ -21,9 +22,10 @@ const ROLE_OPTIONS = Object.entries(ROLE_LABELS).map(([value, label]) => ({ valu
 
 export function UsersSettingsPanel() {
   const { user: currentUser } = useAuth();
+  const { can } = usePermissions();
   const { addToast } = useNotification();
   const queryClient = useQueryClient();
-  const isAdmin = currentUser?.role === 'admin';
+  const canManageUsers = can('manageUsers');
 
   const { data: users, isLoading, isError } = useQuery({
     queryKey: ['usuarios'],
@@ -105,7 +107,7 @@ export function UsersSettingsPanel() {
         <p>
           Usuários reais do PulseDesk — autenticação via Supabase. Total:{' '}
           <strong>{users?.length ?? 0}</strong>
-          {!isAdmin && ' (somente leitura — peça a um administrador para convidar ou editar).'}
+          {!canManageUsers && ' (somente leitura — peça a um administrador para convidar ou editar).'}
         </p>
       </div>
 
@@ -114,7 +116,7 @@ export function UsersSettingsPanel() {
           <UserRow
             key={u.id}
             user={u}
-            isAdmin={isAdmin}
+            canManageUsers={canManageUsers}
             isSelf={u.id === currentUser?.id}
             onToggleActive={() => handleToggleActive(u)}
             onRoleChange={(role) => handleRoleChange(u, role)}
@@ -126,7 +128,7 @@ export function UsersSettingsPanel() {
         )}
       </div>
 
-      {isAdmin && (
+      {canManageUsers && (
         <>
           <Button variant="outline" onClick={() => setInviteOpen(true)}>
             <UserPlus className="mr-2 h-4 w-4" />
@@ -186,14 +188,14 @@ export function UsersSettingsPanel() {
 
 function UserRow({
   user,
-  isAdmin,
+  canManageUsers,
   isSelf,
   onToggleActive,
   onRoleChange,
   updating,
 }: {
   user: PlatformUser;
-  isAdmin: boolean;
+  canManageUsers: boolean;
   isSelf: boolean;
   onToggleActive: () => void;
   onRoleChange: (role: string) => void;
@@ -215,7 +217,7 @@ function UserRow({
         <Badge variant={user.active ? 'success' : 'default'}>
           {user.active ? 'Ativo' : 'Inativo'}
         </Badge>
-        {isAdmin ? (
+        {canManageUsers ? (
           <>
             <Select
               options={ROLE_OPTIONS}

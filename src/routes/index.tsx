@@ -18,6 +18,7 @@ import { ProductsPage } from '@/pages/ProductsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { ReportsPage } from '@/pages/ReportsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
+import { PermissionRoute } from '@/routes/PermissionRoute';
 import { ProtectedRoute, PublicRoute } from '@/routes/ProtectedRoute';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
@@ -38,7 +39,6 @@ export function AppRoutes() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/atendimento" element={<ConversationsPage />} />
           <Route path="/conversas" element={<Navigate to="/atendimento" replace />} />
-          <Route path="/canais" element={<ChannelsPage />} />
           <Route path="/contatos" element={<CustomersPage />} />
           <Route path="/clientes" element={<Navigate to="/contatos" replace />} />
           <Route path="/produtos" element={<ProductsPage />} />
@@ -47,11 +47,21 @@ export function AppRoutes() {
           <Route path="/copiloto" element={<CopilotPage />} />
           <Route path="/agente-ia" element={<Navigate to="/copiloto" replace />} />
           <Route path="/funil" element={<FunnelPage />} />
-          <Route path="/campanhas" element={<CampaignsPage />} />
-          <Route path="/relatorios" element={<ReportsPage />} />
-          <Route path="/integracoes" element={<IntegrationsPage />} />
           <Route path="/configuracoes" element={<SettingsPage />} />
           <Route path="/perfil" element={<ProfilePage />} />
+
+          <Route element={<PermissionRoute permission="managePlatform" />}>
+            <Route path="/canais" element={<ChannelsPage />} />
+            <Route path="/campanhas" element={<CampaignsPage />} />
+          </Route>
+
+          <Route element={<PermissionRoute permission="viewReports" />}>
+            <Route path="/relatorios" element={<ReportsPage />} />
+          </Route>
+
+          <Route element={<PermissionRoute permission="manageIntegrations" />}>
+            <Route path="/integracoes" element={<IntegrationsPage />} />
+          </Route>
         </Route>
       </Route>
 

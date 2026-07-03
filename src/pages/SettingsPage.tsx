@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useNotification } from '@/contexts/NotificationContext';
+import { usePermissions } from '@/hooks/usePermissions';
+import { canAccessSettingsTab } from '@/utils/navPermissions';
 import { aiSettingsStore } from '@/store/aiSettingsStore';
 import { motion } from 'framer-motion';
 import {
@@ -27,7 +29,7 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const tabs = [
@@ -47,8 +49,20 @@ export function SettingsPage() {
   const [activeTab, setActiveTab] = useState('empresa');
   const { theme, setTheme } = useTheme();
   const { addToast } = useNotification();
+  const { can, role } = usePermissions();
   const navigate = useNavigate();
   const [aiSettings, setAiSettings] = useState(() => aiSettingsStore.get());
+
+  const visibleTabs = useMemo(
+    () => tabs.filter((tab) => canAccessSettingsTab(tab.id, can, role)),
+    [can, role],
+  );
+
+  useEffect(() => {
+    if (!visibleTabs.some((tab) => tab.id === activeTab) && visibleTabs[0]) {
+      setActiveTab(visibleTabs[0].id);
+    }
+  }, [activeTab, visibleTabs]);
 
   const handleSaveOpenAi = () => {
     aiSettingsStore.save(aiSettings);
@@ -70,7 +84,7 @@ export function SettingsPage() {
 
       <div className="flex flex-col gap-6 lg:flex-row">
         <nav className="flex gap-2 overflow-x-auto lg:w-56 lg:flex-col lg:gap-1">
-          {tabs.map(({ id, label, icon: Icon }) => (
+          {visibleTabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
@@ -87,7 +101,7 @@ export function SettingsPage() {
         </nav>
 
         <div className="flex-1">
-          <Card title={tabs.find((t) => t.id === activeTab)?.label ?? 'Configurações'}>
+          <Card title={visibleTabs.find((t) => t.id === activeTab)?.label ?? 'Configurações'}>
             {activeTab === 'empresa' && <CompanySettingsPanel />}
             {activeTab === 'usuarios' && <UsersSettingsPanel />}
             {activeTab === 'permissoes' && <PermissionsSettingsPanel />}

@@ -4,6 +4,7 @@ import { StatCard } from '@/components/ui/Card';
 import { DemoNotice } from '@/components/ui/DemoNotice';
 import { Loading } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useMercosLogs, useMercosStatus } from '@/hooks/useQueries';
 import { mercosService, type MercosSyncType } from '@/services/mercos.service';
@@ -13,6 +14,8 @@ import { AlertTriangle, CheckCircle, Package, RefreshCw, ShoppingCart, Users, XC
 import { useState } from 'react';
 
 export function MercosSettingsPanel() {
+  const { can } = usePermissions();
+  const canSync = can('manageIntegrations');
   const { data: status, isLoading } = useMercosStatus();
   const { data: logs } = useMercosLogs();
   const { addToast } = useNotification();
@@ -82,6 +85,12 @@ export function MercosSettingsPanel() {
   return (
     <div className="space-y-6">
       {isSandbox && <DemoNotice variant="sandbox" />}
+
+      {!canSync && (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+          Somente supervisores e administradores podem sincronizar dados do Mercos.
+        </p>
+      )}
 
       {isProduction ? (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-900 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-100">
@@ -214,7 +223,7 @@ export function MercosSettingsPanel() {
                 key={type}
                 onClick={() => handleSync(type)}
                 loading={syncing === type}
-                disabled={!!syncing || !status?.connected}
+                disabled={!!syncing || !status?.connected || !canSync}
               >
                 <RefreshCw className="h-4 w-4" />
                 Sincronizar {labels[type]}

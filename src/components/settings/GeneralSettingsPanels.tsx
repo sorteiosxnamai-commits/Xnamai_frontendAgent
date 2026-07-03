@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotification } from '@/contexts/NotificationContext';
 import { settingsService, type CompanySettings } from '@/services/settings.service';
+import { roleLabel } from '@/services/users.service';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
@@ -170,7 +171,7 @@ export function PermissionsSettingsPanel() {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-500">Seu perfil:</span>
-        <Badge variant="primary">{data?.role ?? 'user'}</Badge>
+        <Badge variant="primary">{roleLabel(data?.role ?? 'user')}</Badge>
       </div>
       <p className="text-sm text-gray-500">
         Permissões vêm do perfil do usuário. Para alterar, um admin ajusta o perfil em Usuários.

@@ -1,5 +1,6 @@
 import { Logo } from '@/components/layout/Logo';
 import { cn } from '@/utils';
+import { filterNavSections, type NavSection } from '@/utils/navPermissions';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   BarChart3,
@@ -22,14 +23,15 @@ import {
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 
-const navSections = [
+const navSections: NavSection[] = [
   {
     title: 'Operação',
     items: [
       { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { to: '/atendimento', icon: Headphones, label: 'Central de Atendimento' },
-      { to: '/canais', icon: Radio, label: 'Canais' },
+      { to: '/canais', icon: Radio, label: 'Canais', permission: 'managePlatform' },
       { to: '/contatos', icon: Users, label: 'Contatos' },
       { to: '/produtos', icon: Package, label: 'Produtos' },
       { to: '/pedidos', icon: ShoppingCart, label: 'Pedidos' },
@@ -41,14 +43,14 @@ const navSections = [
       { to: '/robo', icon: Bot, label: 'Robô de Atendimento' },
       { to: '/copiloto', icon: Sparkles, label: 'Copiloto IA' },
       { to: '/funil', icon: GitBranch, label: 'Funil de Vendas' },
-      { to: '/campanhas', icon: Megaphone, label: 'Campanhas' },
+      { to: '/campanhas', icon: Megaphone, label: 'Campanhas', permission: 'managePlatform' },
     ],
   },
   {
     title: 'Gestão',
     items: [
-      { to: '/relatorios', icon: BarChart3, label: 'Relatórios' },
-      { to: '/integracoes', icon: Link2, label: 'Integrações' },
+      { to: '/relatorios', icon: BarChart3, label: 'Relatórios', permission: 'viewReports' },
+      { to: '/integracoes', icon: Link2, label: 'Integrações', permission: 'manageIntegrations' },
       { to: '/configuracoes', icon: Settings, label: 'Configurações' },
       { to: '/perfil', icon: UserCircle, label: 'Perfil' },
     ],
@@ -64,7 +66,9 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
   const { logout } = useAuth();
+  const { can } = usePermissions();
   const navigate = useNavigate();
+  const visibleSections = filterNavSections(navSections, can);
 
   const handleExitToLanding = () => {
     onMobileClose();
@@ -96,7 +100,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
       </div>
 
       <nav className="flex-1 overflow-y-auto py-4 scrollbar-thin">
-        {navSections.map((section) => (
+        {visibleSections.map((section) => (
           <div key={section.title} className="mb-4">
             {!collapsed && (
               <p className="mb-2 px-6 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
