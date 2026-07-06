@@ -112,6 +112,12 @@ export function ChannelsPage() {
     setConfirmToggle(null);
   };
 
+  const openRegisterWhatsApp = () => {
+    setNewType('whatsapp');
+    setNewName('WhatsApp Vendas');
+    setConnectOpen(true);
+  };
+
   if (isLoading) return <Loading />;
 
   const allChannels = channels ?? [];
@@ -155,7 +161,7 @@ export function ChannelsPage() {
       </Card>
 
       {isEmpty ? (
-        <ChannelsEmptyState />
+        <ChannelsEmptyState onRegisterWhatsApp={openRegisterWhatsApp} />
       ) : (
         <>
       {liveChannels.length > 0 && (

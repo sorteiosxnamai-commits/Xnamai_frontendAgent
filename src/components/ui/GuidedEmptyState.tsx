@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Headphones, Link, Megaphone, MessageSquare, Package, Radio, Users } from 'lucide-react';
+import { Headphones, Link, Megaphone, MessageSquare, Package, Radio, ShoppingCart, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function ConversationsEmptyState({ filtered }: { filtered: boolean }) {
@@ -99,18 +99,23 @@ export function CustomersEmptyState({ searched }: { searched: boolean }) {
   );
 }
 
-export function ChannelsEmptyState() {
+export function ChannelsEmptyState({ onRegisterWhatsApp }: { onRegisterWhatsApp?: () => void }) {
   const navigate = useNavigate();
 
   return (
     <EmptyState
       icon={Radio}
       title="Nenhum canal configurado"
-      description="Hoje apenas WhatsApp (API Meta) está ativo. Conecte o número na próxima etapa; Instagram, SMS e demais canais estão em desenvolvimento."
+      description="Cadastre o WhatsApp agora (fica pendente até os tokens Meta). Quando conectar a API, o canal passa a receber e enviar mensagens reais."
       action={
         <div className="flex flex-wrap justify-center gap-2">
-          <Button size="sm" onClick={() => navigate('/configuracoes?tab=whatsapp')}>
-            Configurar WhatsApp
+          {onRegisterWhatsApp && (
+            <Button size="sm" onClick={onRegisterWhatsApp}>
+              Cadastrar WhatsApp
+            </Button>
+          )}
+          <Button variant={onRegisterWhatsApp ? 'outline' : 'primary'} size="sm" onClick={() => navigate('/configuracoes?tab=whatsapp')}>
+            Configurar tokens Meta
           </Button>
           <Button variant="outline" size="sm" onClick={() => navigate('/configuracoes?tab=sistema')}>
             Ver checklist
@@ -182,6 +187,55 @@ export function CustomersMercosHint() {
       <Link className="h-4 w-4 shrink-0" />
       <p>
         Dados do <strong>Mercos</strong> — sincronize em Configurações quando receber os tokens de produção.
+      </p>
+    </button>
+  );
+}
+
+export function OrdersEmptyState({ searched }: { searched: boolean }) {
+  const navigate = useNavigate();
+
+  if (searched) {
+    return (
+      <EmptyState
+        icon={ShoppingCart}
+        title="Nenhum pedido encontrado"
+        description="Não há pedidos com os filtros ou busca atuais. Tente outro termo ou limpe os filtros."
+      />
+    );
+  }
+
+  return (
+    <EmptyState
+      icon={ShoppingCart}
+      title="Nenhum pedido sincronizado"
+      description="Os pedidos vêm do Mercos. Configure os tokens e sincronize para alimentar Pedidos, Relatórios, Funil e Copiloto."
+      action={
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button size="sm" onClick={() => navigate('/configuracoes?tab=mercos')}>
+            Ir para Mercos
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate('/configuracoes?tab=sistema')}>
+            Ver status do sistema
+          </Button>
+        </div>
+      }
+    />
+  );
+}
+
+export function OrdersMercosHint() {
+  const navigate = useNavigate();
+
+  return (
+    <button
+      type="button"
+      onClick={() => navigate('/configuracoes?tab=mercos')}
+      className="flex w-full items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-left text-sm text-teal-900 transition-colors hover:bg-teal-100/80 dark:border-teal-900/40 dark:bg-teal-950/30 dark:text-teal-100 dark:hover:bg-teal-950/50"
+    >
+      <Link className="h-4 w-4 shrink-0" />
+      <p>
+        Pedidos do <strong>Mercos</strong> — orçamentos aparecem como <strong>Pendente</strong>; pedidos faturados como <strong>Processando</strong>.
       </p>
     </button>
   );
