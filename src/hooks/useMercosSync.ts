@@ -1,6 +1,11 @@
 import { useNotification } from '@/contexts/NotificationContext';
 import { mercosService, type MercosSyncType } from '@/services/mercos.service';
 import { extractApiErrorMessage } from '@/utils/apiErrors';
+import {
+  formatCooldownSeconds,
+  getMercosSyncCooldownRemainingMs,
+  markMercosSyncCompleted,
+} from '@/utils/mercosSyncCooldown';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 function invalidateAfterSync(queryClient: ReturnType<typeof useQueryClient>, type: MercosSyncType) {
@@ -24,8 +29,17 @@ export function useMercosSync() {
   const { addToast } = useNotification();
 
   return useMutation({
-    mutationFn: (type: MercosSyncType) => mercosService.sync(type),
+    mutationFn: (type: MercosSyncType) => {
+      const remaining = getMercosSyncCooldownRemainingMs();
+      if (remaining > 0) {
+        return Promise.reject(
+          new Error(`Aguarde ${formatCooldownSeconds(remaining)}s antes de sincronizar de novo (proteção Mercos).`),
+        );
+      }
+      return mercosService.sync(type);
+    },
     onSuccess: (result, type) => {
+      markMercosSyncCompleted();
       addToast({ title: 'Sincronização concluída', message: result.message, type: 'success' });
       invalidateAfterSync(queryClient, type);
     },
