@@ -208,8 +208,8 @@ export function OrdersEmptyState({ searched }: { searched: boolean }) {
   return (
     <EmptyState
       icon={ShoppingCart}
-      title="Nenhum pedido sincronizado"
-      description="Os pedidos vêm do Mercos. Configure os tokens e sincronize para alimentar Pedidos, Relatórios, Funil e Copiloto."
+      title="Nenhum pedido ainda"
+      description="Pedidos fechados pelo agente no WhatsApp aparecem aqui automaticamente. Pedidos do Mercos entram via sincronização em Configurações."
       action={
         <div className="flex flex-wrap justify-center gap-2">
           <Button size="sm" onClick={() => navigate('/configuracoes?tab=mercos')}>
@@ -235,7 +235,7 @@ export function OrdersMercosHint() {
     >
       <Link className="h-4 w-4 shrink-0" />
       <p>
-        Pedidos do <strong>Mercos</strong> — orçamentos aparecem como <strong>Pendente</strong>; pedidos faturados como <strong>Processando</strong>.
+        Pedidos do <strong>WhatsApp</strong> (nº WA-…) e do <strong>Mercos</strong> — vendas do agent aparecem ao fechar no chat.
       </p>
     </button>
   );

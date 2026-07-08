@@ -133,7 +133,7 @@ export function CustomersPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Contatos</h1>
-          <p className="text-gray-500 dark:text-gray-400">Base unificada de clientes e leads multicanal</p>
+          <p className="text-gray-500 dark:text-gray-400">Clientes do WhatsApp (agent) e do Mercos</p>
         </div>
         <div className="flex gap-2">
           {canSync && (
