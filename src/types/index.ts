@@ -119,6 +119,37 @@ export interface SalesMetrics {
   vendasPorDia: SalesDayPoint[];
 }
 
+export interface ProductRankingItem {
+  id: string;
+  code?: string;
+  name: string;
+  ordersCount: number;
+  quantity: number;
+  revenue: number;
+}
+
+export interface CustomerRankingItem {
+  id: string;
+  name: string;
+  ordersCount: number;
+  revenue: number;
+  lastOrderAt?: string | null;
+}
+
+export interface SalesRankings {
+  produtosMaisVendidos: ProductRankingItem[];
+  produtosMenosVendidos: ProductRankingItem[];
+  clientesMaisCompram: CustomerRankingItem[];
+  clientesMenosCompram: CustomerRankingItem[];
+  totals: {
+    pedidos: number;
+    produtosComVenda: number;
+    clientesComPedido: number;
+    produtosCatalogo: number;
+    clientesCadastro: number;
+  };
+}
+
 export type MessageSender = 'customer' | 'agent' | 'ai';
 export type MessageStatus = 'sent' | 'delivered' | 'read';
 export type ConversationStatus = 'active' | 'waiting' | 'closed';

@@ -20,6 +20,7 @@ import {
   UserCircle,
   Users,
   X,
+  LineChart,
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,6 +51,7 @@ const navSections: NavSection[] = [
     title: 'Gestão',
     items: [
       { to: '/relatorios', icon: BarChart3, label: 'Relatórios', permission: 'viewReports' },
+      { to: '/insights', icon: LineChart, label: 'Insights', permission: 'viewReports' },
       { to: '/integracoes', icon: Link2, label: 'Integrações', permission: 'manageIntegrations' },
       { to: '/configuracoes', icon: Settings, label: 'Configurações' },
       { to: '/perfil', icon: UserCircle, label: 'Perfil' },

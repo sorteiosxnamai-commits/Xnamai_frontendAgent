@@ -4,6 +4,7 @@ import { salesService } from '@/services/sales.service';
 import { customersService, productsService, ordersService } from '@/services/data.service';
 import { mercosService } from '@/services/mercos.service';
 import { agentService } from '@/services/agent.service';
+import { rankingsService } from '@/services/rankings.service';
 import { systemService } from '@/services/system.service';
 import { conversationsService } from '@/services/conversations.service';
 import type { ListParams } from '@/types';
@@ -19,6 +20,13 @@ export function useSalesMetrics() {
   return useQuery({
     queryKey: ['sales-metrics'],
     queryFn: salesService.getMetrics,
+  });
+}
+
+export function useSalesRankings(limit = 10) {
+  return useQuery({
+    queryKey: ['sales-rankings', limit],
+    queryFn: () => rankingsService.getRankings(limit),
   });
 }
 

@@ -17,6 +17,7 @@ import { OrdersPage } from '@/pages/OrdersPage';
 import { ProductsPage } from '@/pages/ProductsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { ReportsPage } from '@/pages/ReportsPage';
+import { InsightsPage } from '@/pages/InsightsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { PermissionRoute } from '@/routes/PermissionRoute';
 import { ProtectedRoute, PublicRoute } from '@/routes/ProtectedRoute';
@@ -57,6 +58,7 @@ export function AppRoutes() {
 
           <Route element={<PermissionRoute permission="viewReports" />}>
             <Route path="/relatorios" element={<ReportsPage />} />
+            <Route path="/insights" element={<InsightsPage />} />
           </Route>
 
           <Route element={<PermissionRoute permission="manageIntegrations" />}>
