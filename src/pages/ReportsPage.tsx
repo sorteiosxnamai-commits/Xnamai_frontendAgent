@@ -5,6 +5,7 @@ import { useSalesMetrics } from '@/hooks/useQueries';
 import { formatCurrency } from '@/utils';
 import { motion } from 'framer-motion';
 import {
+  ArrowRight,
   Banknote,
   CircleDollarSign,
   Filter,
@@ -24,6 +25,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { Link } from 'react-router-dom';
 
 const STATUS_COLORS: Record<string, string> = {
   delivered: '#10b981',
@@ -93,6 +95,22 @@ export function ReportsPage() {
           Acompanhamento de vendas, funil comercial e receita retida
         </p>
       </div>
+
+      <Link
+        to="/insights"
+        className="flex items-center justify-between gap-4 rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 to-white p-5 shadow-sm transition hover:border-violet-300 dark:border-violet-900/50 dark:from-violet-950/30 dark:to-gray-900"
+      >
+        <div>
+          <p className="font-semibold text-gray-900 dark:text-white">Insights de vendas</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Produtos e clientes que mais e menos compram
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-1 text-sm font-medium text-violet-600 dark:text-violet-400">
+          Abrir rankings
+          <ArrowRight className="h-4 w-4" />
+        </span>
+      </Link>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <DashboardStatCard
