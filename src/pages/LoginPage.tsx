@@ -95,8 +95,8 @@ export function LoginPage() {
   return (
     <div className="dark relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-950 px-4">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-teal-600/15 blur-[100px]" />
-        <div className="absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-violet-600/10 blur-[80px]" />
+        <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-blue-600/15 blur-[100px]" />
+        <div className="absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-red-600/10 blur-[80px]" />
       </div>
 
       <Link
@@ -114,9 +114,9 @@ export function LoginPage() {
         <div className="rounded-2xl border border-white/10 bg-gray-900/80 p-8 shadow-2xl backdrop-blur-xl sm:p-10">
           <div className="mb-8 text-center">
             <Link to="/" className="inline-block">
-              <Logo size="md" showCompany className="[&_span]:text-white [&_span_span]:text-teal-400 [&_p]:text-gray-500" />
+              <Logo size="md" showCompany className="[&_span]:text-white [&_p]:text-gray-500" />
             </Link>
-            <h1 className="mt-6 text-2xl font-bold text-white">Bem-vindo de volta</h1>
+            <h1 className="mt-6 font-display text-2xl font-bold tracking-tight text-white">Bem-vindo de volta</h1>
             <p className="mt-2 text-sm text-gray-400">
               Entre na sua conta para acessar a plataforma
             </p>
@@ -161,7 +161,7 @@ export function LoginPage() {
               </label>
               <button
                 type="button"
-                className="text-sm text-teal-400 hover:underline"
+                className="text-sm text-blue-400 hover:underline"
                 onClick={() => {
                   setResetEmail(getValues('email') ?? '');
                   setForgotOpen(true);
@@ -180,7 +180,7 @@ export function LoginPage() {
           <div className="mt-6 border-t border-white/5 pt-6 text-center">
             <p className="text-sm text-gray-500">
               Ainda não tem conta?{' '}
-              <Link to="/cadastro" className="font-medium text-teal-400 hover:underline">
+              <Link to="/cadastro" className="font-medium text-blue-400 hover:underline">
                 Criar conta grátis
               </Link>
             </p>

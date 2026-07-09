@@ -6,9 +6,9 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const navLinks = [
-  { href: '#recursos', label: 'Recursos' },
+  { href: '#recursos', label: 'IA comercial' },
   { href: '#canais', label: 'Canais' },
-  { href: '#segmentos', label: 'Segmentos' },
+  { href: '#segmentos', label: 'Receita' },
   { href: '#como-funciona', label: 'Como funciona' },
   { href: '#faq', label: 'FAQ' },
 ];
@@ -26,7 +26,7 @@ export function LandingNavbar() {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-gray-950/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="shrink-0">
-          <Logo size="sm" showCompany className="[&_span]:text-white [&_span_span]:text-teal-400 [&_p]:text-gray-400" />
+          <Logo size="sm" showCompany className="[&_span]:text-white [&_p]:text-gray-400" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
@@ -93,8 +93,8 @@ export function LandingFooter() {
     <footer className="border-t border-white/10 bg-gray-950 py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-          <Logo size="sm" showCompany className="[&_span]:text-white [&_span_span]:text-teal-400 [&_p]:text-gray-500" />
-          <p className="text-sm text-gray-500">© 2024 Tironitech · PulseDesk. Todos os direitos reservados.</p>
+          <Logo size="sm" showCompany className="[&_span]:text-white [&_p]:text-gray-500" />
+          <p className="text-sm text-gray-500">© 2024 Tironitech · NITRUS. Todos os direitos reservados.</p>
           <div className="flex gap-6 text-sm text-gray-500">
             <Link to="/legal/privacidade" className="hover:text-gray-300">Privacidade</Link>
             <Link to="/legal/termos" className="hover:text-gray-300">Termos</Link>

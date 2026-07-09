@@ -49,11 +49,11 @@ export function SetupChecklist() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}
-        className="overflow-hidden rounded-2xl border border-teal-200/80 bg-gradient-to-br from-teal-50/90 via-white to-violet-50/50 shadow-sm dark:border-teal-900/40 dark:from-teal-950/20 dark:via-gray-900 dark:to-violet-950/10"
+        className="overflow-hidden rounded-2xl border border-blue-200/80 bg-gradient-to-br from-blue-50/90 via-white to-red-50/50 shadow-sm dark:border-blue-900/40 dark:from-blue-950/20 dark:via-gray-900 dark:to-red-950/10"
       >
         <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
           <div className="flex gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-teal-600 text-white shadow-lg shadow-teal-600/25">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-600/25">
               <Rocket className="h-6 w-6" />
             </div>
             <div>
@@ -65,7 +65,7 @@ export function SetupChecklist() {
               </p>
               <div className="mt-3 h-2 max-w-xs overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                 <div
-                  className="h-full rounded-full bg-teal-500 transition-all"
+                  className="h-full rounded-full bg-gradient-to-r from-blue-600 to-red-500 transition-all"
                   style={{ width: `${readiness.percent}%` }}
                 />
               </div>
@@ -109,7 +109,7 @@ export function SetupChecklist() {
                   actionable ? (
                     <Link
                       to={stepHref(item, can, role)}
-                      className="inline-flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-teal-700 hover:bg-teal-50 dark:text-teal-300 dark:hover:bg-teal-950/40"
+                      className="inline-flex shrink-0 items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-950/40"
                     >
                       Configurar
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -126,7 +126,7 @@ export function SetupChecklist() {
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 bg-white/50 px-5 py-3 dark:border-gray-800 dark:bg-gray-900/30 sm:px-6">
           <Link
             to="/configuracoes?tab=sistema"
-            className="text-sm font-medium text-teal-700 hover:underline dark:text-teal-300"
+            className="text-sm font-medium text-blue-700 hover:underline dark:text-blue-300"
           >
             Ver status completo do sistema
           </Link>

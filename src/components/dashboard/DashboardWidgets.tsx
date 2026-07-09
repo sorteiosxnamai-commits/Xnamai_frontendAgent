@@ -22,11 +22,11 @@ const variants = {
     ring: 'ring-slate-100 dark:ring-slate-800',
   },
   primary: {
-    icon: 'bg-teal-50 text-teal-600 ring-teal-200/60 dark:bg-teal-950/60 dark:text-teal-400 dark:ring-teal-800/60',
-    glow: 'group-hover:shadow-teal-200/60 dark:group-hover:shadow-teal-900/40',
-    bar: 'bg-teal-500',
-    accent: 'from-teal-500/[0.12] via-teal-500/[0.03] to-transparent',
-    ring: 'ring-teal-100/80 dark:ring-teal-900/40',
+    icon: 'bg-blue-50 text-blue-600 ring-blue-200/60 dark:bg-blue-950/60 dark:text-blue-400 dark:ring-blue-800/60',
+    glow: 'group-hover:shadow-blue-200/60 dark:group-hover:shadow-blue-900/40',
+    bar: 'bg-blue-500',
+    accent: 'from-blue-500/[0.12] via-blue-500/[0.03] to-transparent',
+    ring: 'ring-blue-100/80 dark:ring-blue-900/40',
   },
   success: {
     icon: 'bg-emerald-50 text-emerald-600 ring-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-400 dark:ring-emerald-800/60',
@@ -43,11 +43,11 @@ const variants = {
     ring: 'ring-amber-100/80 dark:ring-amber-900/40',
   },
   violet: {
-    icon: 'bg-violet-50 text-violet-600 ring-violet-200/60 dark:bg-violet-950/60 dark:text-violet-400 dark:ring-violet-800/60',
-    glow: 'group-hover:shadow-violet-200/60 dark:group-hover:shadow-violet-900/40',
-    bar: 'bg-violet-500',
-    accent: 'from-violet-500/[0.12] via-violet-500/[0.03] to-transparent',
-    ring: 'ring-violet-100/80 dark:ring-violet-900/40',
+    icon: 'bg-red-50 text-red-600 ring-red-200/60 dark:bg-red-950/60 dark:text-red-400 dark:ring-red-800/60',
+    glow: 'group-hover:shadow-red-200/60 dark:group-hover:shadow-red-900/40',
+    bar: 'bg-red-500',
+    accent: 'from-red-500/[0.10] via-red-500/[0.025] to-transparent',
+    ring: 'ring-red-100/70 dark:ring-red-900/35',
   },
 };
 
@@ -85,7 +85,7 @@ export function DashboardStatCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        'group relative overflow-hidden rounded-2xl border bg-white/80 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:bg-gray-900/80',
+        'group relative overflow-hidden rounded-2xl border bg-white/85 p-[18px] shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:bg-gray-900/85 sm:p-5',
         v.ring,
         glowClass,
       )}
@@ -95,18 +95,18 @@ export function DashboardStatCard({
         <div className="flex items-start justify-between gap-3">
           <div
             className={cn(
-              'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 transition-transform duration-300 group-hover:scale-110',
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 transition-transform duration-300 group-hover:scale-105',
               v.icon,
             )}
           >
-            <Icon className="h-5 w-5" />
+            <Icon className="h-[18px] w-[18px]" />
           </div>
           {sparkline && <MiniSparkline data={sparkline} colorClass={v.bar} />}
         </div>
-        <p className="mt-4 text-[13px] font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+        <p className="mt-4 text-[12px] font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-400">
           {title}
         </p>
-        <p className="mt-1 text-[2rem] font-bold leading-none tracking-tight text-gray-900 dark:text-white">
+        <p className="mt-1 font-display text-[1.8rem] font-black leading-none tracking-tight tabular-nums text-gray-950 dark:text-white sm:text-[2rem]">
           {value}
         </p>
         {delta && (
@@ -143,8 +143,8 @@ interface ChartPanelProps {
 }
 
 const panelAccents = {
-  teal: 'before:bg-gradient-to-b before:from-teal-500 before:to-teal-600',
-  violet: 'before:bg-gradient-to-b before:from-violet-500 before:to-violet-600',
+  teal: 'before:bg-gradient-to-b before:from-blue-500 before:to-blue-600',
+  violet: 'before:bg-gradient-to-b before:from-red-500 before:to-red-600',
   amber: 'before:bg-gradient-to-b before:from-amber-500 before:to-amber-600',
   none: '',
 };
@@ -164,15 +164,15 @@ export function ChartPanel({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        'relative overflow-hidden rounded-2xl border border-gray-200/70 bg-white/90 p-6 shadow-sm backdrop-blur-sm dark:border-gray-800/80 dark:bg-gray-900/90',
+        'relative overflow-hidden rounded-2xl border border-gray-200/80 bg-white/90 p-5 shadow-sm backdrop-blur-sm dark:border-white/10 dark:bg-gray-900/90 sm:p-6',
         accent !== 'none' && 'before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:rounded-l-2xl',
         accent !== 'none' && panelAccents[accent],
         className,
       )}
     >
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="mb-5 flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-base font-semibold tracking-tight text-gray-900 dark:text-white">{title}</h3>
+          <h3 className="font-display text-base font-bold tracking-tight text-gray-950 dark:text-white">{title}</h3>
           {subtitle && (
             <p className="mt-1 text-sm leading-relaxed text-gray-500 dark:text-gray-400">{subtitle}</p>
           )}
@@ -231,16 +231,16 @@ export function ProgressRing({
   const circumference = 2 * Math.PI * 36;
   const strokeDashoffset = circumference - (pct / 100) * circumference;
   const colors = {
-    teal: { stroke: '#0d9488', bg: 'text-teal-600 dark:text-teal-400' },
-    violet: { stroke: '#7c3aed', bg: 'text-violet-600 dark:text-violet-400' },
+    teal: { stroke: '#2563eb', bg: 'text-blue-600 dark:text-blue-400' },
+    violet: { stroke: '#ef4444', bg: 'text-red-600 dark:text-red-400' },
     emerald: { stroke: '#10b981', bg: 'text-emerald-600 dark:text-emerald-400' },
   };
   const c = colors[color];
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative h-20 w-20">
-        <svg className="h-20 w-20 -rotate-90" viewBox="0 0 80 80">
+      <div className="relative h-[72px] w-[72px]">
+        <svg className="h-[72px] w-[72px] -rotate-90" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r="36" fill="none" stroke="currentColor" strokeWidth="6" className="text-gray-100 dark:text-gray-800" />
           <circle
             cx="40"
@@ -256,7 +256,7 @@ export function ProgressRing({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className={cn('text-lg font-bold', c.bg)}>{Math.round(pct)}%</span>
+          <span className={cn('font-display text-base font-black', c.bg)}>{Math.round(pct)}%</span>
         </div>
       </div>
       <p className="mt-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">{label}</p>
@@ -282,16 +282,16 @@ export function InsightBanner({
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay, duration: 0.5 }}
-      className="relative overflow-hidden rounded-2xl border border-violet-200/50 bg-gradient-to-r from-violet-50 via-white to-teal-50 p-5 dark:border-violet-900/40 dark:from-violet-950/40 dark:via-gray-900 dark:to-teal-950/30"
+      className="relative overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-r from-blue-50 via-white to-red-50 p-4 shadow-sm dark:border-white/10 dark:from-blue-950/40 dark:via-gray-900 dark:to-red-950/25 sm:p-5"
     >
-      <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-violet-400/10 blur-2xl" />
+      <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-red-400/10 blur-2xl" />
       <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-teal-500 text-white shadow-lg shadow-violet-500/25">
-            <Icon className="h-6 w-6" />
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-red-500 text-white shadow-md shadow-blue-500/20">
+            <Icon className="h-5 w-5" />
           </div>
           <div>
-            <p className="font-semibold text-gray-900 dark:text-white">{title}</p>
+            <p className="font-display font-bold text-gray-950 dark:text-white">{title}</p>
             <p className="mt-0.5 max-w-xl text-sm text-gray-600 dark:text-gray-400">{description}</p>
           </div>
         </div>

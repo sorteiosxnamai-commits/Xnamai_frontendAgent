@@ -87,8 +87,8 @@ export function SettingsPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Configurações</h1>
-        <p className="text-gray-500 dark:text-gray-400">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Configurações</h1>
+        <p className="mt-1 text-gray-500 dark:text-gray-400">
           Empresa, notificações e segurança persistidos no Supabase
         </p>
       </div>
@@ -101,7 +101,7 @@ export function SettingsPage() {
               onClick={() => setActiveTab(id)}
               className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 activeTab === id
-                  ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                  ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:ring-blue-900/40'
                   : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
               }`}
             >
@@ -119,7 +119,7 @@ export function SettingsPage() {
             {activeTab === 'permissoes' && <PermissionsSettingsPanel />}
             {activeTab === 'openai' && (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 dark:border-violet-800 dark:bg-violet-900/20">
+                <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
                   <Badge variant={aiSettings.enabled && aiSettings.apiKey.startsWith('sk-') ? 'success' : 'default'}>
                     {aiSettings.enabled && aiSettings.apiKey.startsWith('sk-') ? 'OpenAI local' : 'Backend Render'}
                   </Badge>

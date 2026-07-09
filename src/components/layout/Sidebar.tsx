@@ -6,9 +6,11 @@ import {
   BarChart3,
   Bot,
   ChevronLeft,
+  DollarSign,
+  Flame,
+  Gauge,
   GitBranch,
   Headphones,
-  LayoutDashboard,
   Link2,
   LogOut,
   Megaphone,
@@ -28,31 +30,36 @@ import { usePermissions } from '@/hooks/usePermissions';
 
 const navSections: NavSection[] = [
   {
-    title: 'Operação',
+    title: 'Receita',
     items: [
-      { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-      { to: '/atendimento', icon: Headphones, label: 'Central de Atendimento' },
-      { to: '/canais', icon: Radio, label: 'Canais', permission: 'managePlatform' },
-      { to: '/contatos', icon: Users, label: 'Contatos' },
-      { to: '/produtos', icon: Package, label: 'Produtos' },
+      { to: '/dashboard', icon: Gauge, label: 'Painel Comercial' },
+      { to: '/funil', icon: GitBranch, label: 'Funil de Vendas' },
       { to: '/pedidos', icon: ShoppingCart, label: 'Pedidos' },
     ],
   },
   {
-    title: 'Automação & Vendas',
+    title: 'Conversão',
     items: [
-      { to: '/robo', icon: Bot, label: 'Robô de Atendimento' },
-      { to: '/copiloto', icon: Sparkles, label: 'Copiloto IA' },
-      { to: '/funil', icon: GitBranch, label: 'Funil de Vendas' },
+      { to: '/atendimento', icon: Headphones, label: 'Central de Conversão' },
+      { to: '/contatos', icon: Users, label: 'Contatos' },
+      { to: '/produtos', icon: Package, label: 'Produtos' },
+      { to: '/robo', icon: Bot, label: 'Agente Automático' },
+      { to: '/copiloto', icon: Sparkles, label: 'Copiloto Comercial' },
       { to: '/campanhas', icon: Megaphone, label: 'Campanhas', permission: 'managePlatform' },
+      { to: '/canais', icon: Radio, label: 'Canais', permission: 'managePlatform' },
     ],
   },
   {
-    title: 'Gestão',
+    title: 'Inteligência',
     items: [
-      { to: '/relatorios', icon: BarChart3, label: 'Relatórios', permission: 'viewReports' },
-      { to: '/insights', icon: LineChart, label: 'Insights', permission: 'viewReports' },
+      { to: '/relatorios', icon: BarChart3, label: 'Relatórios Comerciais', permission: 'viewReports' },
+      { to: '/insights', icon: LineChart, label: 'Inteligência de Vendas', permission: 'viewReports' },
       { to: '/integracoes', icon: Link2, label: 'Integrações', permission: 'manageIntegrations' },
+    ],
+  },
+  {
+    title: 'Sistema',
+    items: [
       { to: '/configuracoes', icon: Settings, label: 'Configurações' },
       { to: '/perfil', icon: UserCircle, label: 'Perfil' },
     ],
@@ -81,21 +88,21 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
   const content = (
     <aside
       className={cn(
-        'flex h-full flex-col border-r border-gray-200 bg-white transition-all duration-300 dark:border-gray-800 dark:bg-gray-900',
+        'flex h-full flex-col border-r border-gray-200/80 bg-white/95 shadow-lg shadow-slate-200/40 backdrop-blur-xl transition-all duration-300 dark:border-white/10 dark:bg-[#0b1220]/95 dark:shadow-black/20',
         collapsed ? 'w-[72px]' : 'w-64',
       )}
     >
-      <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4 dark:border-gray-800">
-        {!collapsed && <Logo size="sm" showCompany />}
+      <div className="flex h-16 items-center justify-between border-b border-gray-200/80 px-4 dark:border-white/10">
+        {!collapsed && <Logo size="sm" />}
         <button
           onClick={onToggle}
-          className="hidden rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 lg:block dark:hover:bg-gray-800"
+          className="hidden rounded-lg p-1.5 text-gray-400 transition hover:bg-blue-50 hover:text-blue-700 lg:block dark:hover:bg-white/10 dark:hover:text-white"
         >
           <ChevronLeft className={cn('h-5 w-5 transition-transform', collapsed && 'rotate-180')} />
         </button>
         <button
           onClick={onMobileClose}
-          className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 lg:hidden dark:hover:bg-gray-800"
+          className="rounded-lg p-1.5 text-gray-400 transition hover:bg-blue-50 hover:text-blue-700 lg:hidden dark:hover:bg-white/10"
         >
           <X className="h-5 w-5" />
         </button>
@@ -105,7 +112,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
         {visibleSections.map((section) => (
           <div key={section.title} className="mb-4">
             {!collapsed && (
-              <p className="mb-2 px-6 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <p className="mb-2 px-6 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500">
                 {section.title}
               </p>
             )}
@@ -117,17 +124,17 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
                     onClick={onMobileClose}
                     className={({ isActive }) =>
                       cn(
-                        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                        'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-semibold leading-5 transition-all',
                         isActive
-                          ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100',
+                          ? 'bg-gradient-to-r from-blue-600 to-red-500 text-white shadow-lg shadow-blue-600/20'
+                          : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white',
                         collapsed && 'justify-center px-2',
                       )
                     }
                     title={collapsed ? label : undefined}
                   >
-                    <Icon className="h-5 w-5 shrink-0" />
-                    {!collapsed && <span className="flex-1">{label}</span>}
+                    <Icon className="h-[19px] w-[19px] shrink-0 transition-transform group-hover:scale-105" />
+                    {!collapsed && <span className="min-w-0 flex-1 truncate">{label}</span>}
                   </NavLink>
                 </li>
               ))}
@@ -136,28 +143,35 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
         ))}
       </nav>
 
-      <div className="border-t border-gray-200 p-3 dark:border-gray-800">
+      <div className="border-t border-gray-200/80 p-3 dark:border-white/10">
         <button
           type="button"
           onClick={handleExitToLanding}
           className={cn(
-            'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20',
+            'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30',
             collapsed && 'justify-center px-2',
           )}
           title={collapsed ? 'Sair da plataforma' : undefined}
         >
-          <LogOut className="h-5 w-5 shrink-0" />
+          <LogOut className="h-[19px] w-[19px] shrink-0" />
           {!collapsed && <span>Sair da plataforma</span>}
         </button>
       </div>
 
       {!collapsed && (
-        <div className="border-t border-gray-200 p-4 dark:border-gray-800">
-          <div className="rounded-lg bg-gradient-to-br from-primary-50 to-violet-50 p-3 dark:from-primary-900/20 dark:to-violet-900/20">
-            <p className="text-xs font-medium text-primary-800 dark:text-primary-300">Teste grátis 5 dias</p>
-            <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
-              Treinamento e suporte inclusos
-            </p>
+        <div className="border-t border-gray-200/80 p-4 dark:border-white/10">
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#0b1220] via-blue-700 to-red-600 p-4 text-white shadow-lg shadow-blue-900/20">
+            <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/15 blur-2xl" />
+            <div className="relative">
+              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+                <Flame className="h-4 w-4" />
+              </div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-100">Pulso NITRUS</p>
+              <p className="mt-1 text-sm font-semibold leading-5">Acelere leads prontos para comprar.</p>
+              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-semibold">
+                <DollarSign className="h-3 w-3" /> Receita em foco
+              </div>
+            </div>
           </div>
         </div>
       )}

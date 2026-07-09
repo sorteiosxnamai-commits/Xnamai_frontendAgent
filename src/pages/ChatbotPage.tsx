@@ -68,14 +68,14 @@ export function ChatbotPage() {
       if (result.success) {
         await queryClient.invalidateQueries({ queryKey: ['chatbots'] });
         addToast({
-          title: 'Robô respondeu',
+          title: 'Agente respondeu',
           message: result.reply?.slice(0, 120) ?? 'Resposta gerada com sucesso',
           type: 'success',
         });
         navigate(`/atendimento?conversa=${result.conversationId}`);
       } else {
         addToast({
-          title: 'Robô não respondeu',
+          title: 'Agente nao respondeu',
           message: result.message ?? 'Verifique se há atendente humano na conversa',
           type: 'warning',
         });
@@ -102,9 +102,9 @@ export function ChatbotPage() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Robô de Atendimento</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agente Automatico</h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Respostas automáticas com IA quando o cliente envia mensagem — WhatsApp e simulação
+            Qualificacao e respostas automaticas com IA quando o lead envia mensagem — WhatsApp e simulacao
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>

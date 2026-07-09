@@ -7,7 +7,7 @@ const pages = {
   privacidade: {
     title: 'Política de Privacidade',
     content: [
-      'A Tironitech, responsável pelo PulseDesk, trata seus dados pessoais em conformidade com a LGPD (Lei nº 13.709/2018).',
+      'A Tironitech, responsavel pela NITRUS, trata seus dados pessoais em conformidade com a LGPD (Lei nº 13.709/2018).',
       'Coletamos informações de cadastro, uso da plataforma e comunicações para prestar o serviço, melhorar a experiência e cumprir obrigações legais.',
       'Seus dados não são vendidos a terceiros. Compartilhamos informações apenas com provedores essenciais (hospedagem, mensageria, IA) sob contratos de proteção.',
       'Você pode solicitar acesso, correção ou exclusão dos seus dados pelo e-mail privacidade@tironitech.com.br.',
@@ -16,7 +16,7 @@ const pages = {
   termos: {
     title: 'Termos de Uso',
     content: [
-      'Ao utilizar o PulseDesk, você concorda com estes termos e com nossa política de privacidade.',
+      'Ao utilizar a NITRUS, voce concorda com estes termos e com nossa politica de privacidade.',
       'O serviço é oferecido em modelo SaaS, sujeito ao plano contratado. O uso indevido, incluindo spam ou violação de leis, pode resultar em suspensão da conta.',
       'A Tironitech não se responsabiliza por indisponibilidade causada por integrações de terceiros ou força maior.',
       'Alterações nestes termos serão comunicadas por e-mail ou aviso na plataforma com antecedência mínima de 15 dias.',
@@ -29,7 +29,7 @@ const pages = {
       'E-mail: suporte@tironitech.com.br',
       'WhatsApp comercial: (11) 3000-0000',
       'Para incidentes críticos em planos Enterprise, utilize o canal prioritário indicado no seu contrato.',
-      'Consulte também a documentação em docs.pulsedesk.com.br e nossa base de conhecimento.',
+      'Consulte tambem a documentacao em docs.nitrus.ai e nossa base de conhecimento.',
     ],
   },
 } as const;
@@ -44,7 +44,7 @@ export function LegalPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 text-white">
         <p>Página não encontrada.</p>
-        <Link to="/" className="mt-4 text-teal-400 hover:underline">Voltar ao início</Link>
+        <Link to="/" className="mt-4 text-blue-400 hover:underline">Voltar ao inicio</Link>
       </div>
     );
   }

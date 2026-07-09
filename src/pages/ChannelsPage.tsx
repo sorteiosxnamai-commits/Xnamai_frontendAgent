@@ -129,8 +129,8 @@ export function ChannelsPage() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Canais</h1>
-          <p className="text-gray-500 dark:text-gray-400">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Canais</h1>
+          <p className="mt-1 text-gray-500 dark:text-gray-400">
             WhatsApp ativo hoje — demais canais omnichannel em desenvolvimento
           </p>
         </div>
@@ -166,7 +166,7 @@ export function ChannelsPage() {
         <>
       {liveChannels.length > 0 && (
         <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Ativos</h2>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Canais ativos</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {liveChannels.map((channel) => {
               const config = channelConfig[channel.type];
@@ -191,7 +191,7 @@ export function ChannelsPage() {
                   {channel.phone && <p className="mt-2 text-sm text-gray-500">{channel.phone}</p>}
                   <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
                     <div>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{channel.messagesToday}</p>
+                      <p className="font-display text-3xl font-bold tabular-nums text-gray-900 dark:text-white">{channel.messagesToday}</p>
                       <p className="text-xs text-gray-500">mensagens hoje</p>
                     </div>
                     {channel.lastActivity && (

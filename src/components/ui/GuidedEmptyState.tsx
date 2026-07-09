@@ -20,14 +20,14 @@ export function ConversationsEmptyState({ filtered }: { filtered: boolean }) {
     <EmptyState
       icon={Headphones}
       title="Nenhuma conversa ainda"
-      description="As conversas aparecem quando clientes enviam mensagem pelo WhatsApp ou quando você testa o robô de atendimento. Conecte a Meta na semana que vem."
+      description="As conversas aparecem quando leads enviam mensagem pelo WhatsApp ou quando voce testa o agente automatico. Conecte a Meta na semana que vem."
       action={
         <div className="flex flex-wrap justify-center gap-2">
           <Button variant="outline" size="sm" onClick={() => navigate('/configuracoes?tab=whatsapp')}>
             Configurar WhatsApp
           </Button>
           <Button variant="outline" size="sm" onClick={() => navigate('/robo')}>
-            Testar robô
+            Testar agente
           </Button>
         </div>
       }
@@ -165,7 +165,7 @@ export function ProductsMercosHint() {
     <button
       type="button"
       onClick={() => navigate('/configuracoes?tab=mercos')}
-      className="flex w-full items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-left text-sm text-teal-900 transition-colors hover:bg-teal-100/80 dark:border-teal-900/40 dark:bg-teal-950/30 dark:text-teal-100 dark:hover:bg-teal-950/50"
+      className="flex w-full items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-left text-sm text-blue-950 transition-colors hover:bg-blue-100/80 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-100 dark:hover:bg-blue-950/50"
     >
       <Link className="h-4 w-4 shrink-0" />
       <p>
@@ -182,7 +182,7 @@ export function CustomersMercosHint() {
     <button
       type="button"
       onClick={() => navigate('/configuracoes?tab=mercos')}
-      className="flex w-full items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-left text-sm text-teal-900 transition-colors hover:bg-teal-100/80 dark:border-teal-900/40 dark:bg-teal-950/30 dark:text-teal-100 dark:hover:bg-teal-950/50"
+      className="flex w-full items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-left text-sm text-blue-950 transition-colors hover:bg-blue-100/80 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-100 dark:hover:bg-blue-950/50"
     >
       <Link className="h-4 w-4 shrink-0" />
       <p>
@@ -231,7 +231,7 @@ export function OrdersMercosHint() {
     <button
       type="button"
       onClick={() => navigate('/configuracoes?tab=mercos')}
-      className="flex w-full items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-left text-sm text-teal-900 transition-colors hover:bg-teal-100/80 dark:border-teal-900/40 dark:bg-teal-950/30 dark:text-teal-100 dark:hover:bg-teal-950/50"
+      className="flex w-full items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-left text-sm text-blue-950 transition-colors hover:bg-blue-100/80 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-100 dark:hover:bg-blue-950/50"
     >
       <Link className="h-4 w-4 shrink-0" />
       <p>

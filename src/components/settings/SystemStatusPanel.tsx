@@ -114,10 +114,10 @@ export function SystemStatusPanel() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-teal-200 bg-gradient-to-br from-teal-50 to-white p-5 dark:border-teal-900/40 dark:from-teal-950/30 dark:to-gray-900">
+      <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-5 dark:border-blue-900/40 dark:from-blue-950/30 dark:to-gray-900">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-100 text-teal-700 dark:bg-teal-900/50 dark:text-teal-300">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
               <Server className="h-6 w-6" />
             </div>
             <div>
@@ -139,7 +139,7 @@ export function SystemStatusPanel() {
         </div>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
           <div
-            className="h-full rounded-full bg-teal-500 transition-all"
+            className="h-full rounded-full bg-gradient-to-r from-blue-600 to-red-500 transition-all"
             style={{ width: `${readiness.percent}%` }}
           />
         </div>
@@ -224,7 +224,7 @@ export function SystemStatusPanel() {
 
       <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900/40 dark:text-gray-300">
         <p className="flex items-center gap-2 font-medium text-gray-900 dark:text-white">
-          <Sparkles className="h-4 w-4 text-violet-500" />
+          <Sparkles className="h-4 w-4 text-blue-500" />
           Variáveis no Render (backend)
         </p>
         <ul className="mt-2 list-inside list-disc space-y-1 text-xs">

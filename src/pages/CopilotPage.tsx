@@ -13,8 +13,10 @@ import {
   Bot,
   BarChart3,
   FileText,
-  Mic,
+  GitBranch,
+  Target,
   Sparkles,
+  TrendingUp,
   Wand2,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -29,15 +31,15 @@ function buildQuickTools(conversations: Conversation[], contextConvId: string) {
   return [
     {
       icon: FileText,
-      title: 'Resumo inteligente',
-      desc: 'Resume a conversa ativa com dados reais',
+      title: 'Resumo da oportunidade',
+      desc: 'Sintetiza contexto, interesse e próximos passos',
       prompt: selected ? `Resuma a conversa de ${name}` : 'Resuma a conversa mais recente',
       conversationId: selected?.id,
     },
     {
-      icon: Mic,
-      title: 'Transcrição de áudio',
-      desc: 'Analisa a última mensagem do cliente',
+      icon: Target,
+      title: 'Analisar objeção',
+      desc: 'Identifica travas comerciais e argumentos',
       prompt: selected
         ? `Transcreva e analise a mensagem de ${name}`
         : 'Transcreva a última mensagem do cliente',
@@ -45,15 +47,15 @@ function buildQuickTools(conversations: Conversation[], contextConvId: string) {
     },
     {
       icon: Wand2,
-      title: 'Texto mágico',
-      desc: 'Gera resposta profissional com contexto real',
+      title: 'Gerar resposta comercial',
+      desc: 'Cria uma resposta pronta para avançar a venda',
       prompt: selected ? `Gere texto profissional para responder ${name}` : 'Gere texto profissional para o cliente',
       conversationId: selected?.id,
     },
     {
-      icon: Sparkles,
-      title: 'Sugestões',
-      desc: 'Sugere respostas com base na conversa',
+      icon: GitBranch,
+      title: 'Sugerir proximo passo',
+      desc: 'Recomenda follow-up, proposta ou qualificação',
       prompt: selected ? `Sugira resposta para ${name}` : 'Sugira resposta para o cliente',
       conversationId: selected?.id,
     },
@@ -69,7 +71,7 @@ export function CopilotPage() {
       id: 'welcome',
       conversationId: 'copilot',
       content:
-        'Sou o Copiloto IA Elite do PulseDesk. Resolvo dúvidas sobre preços, estoque, pedidos, prazos, pagamento, garantia, **métricas de venda** e suporte — com dados reais do Mercos e Supabase. Peça orçamentos, resumos, status de pedido, funil de vendas ou mensagens prontas para enviar ao cliente.',
+        'Sou o Copiloto Comercial IA da NITRUS. Analiso oportunidades, gero respostas comerciais, consulto pedidos, estoque e métricas de venda com dados reais do Mercos e Supabase. Peça resumos, status de pedido, funil de vendas ou mensagens prontas para enviar ao cliente.',
       sender: 'ai',
       timestamp: new Date().toISOString(),
       status: 'read',
@@ -151,21 +153,27 @@ export function CopilotPage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Copiloto IA</h1>
-        <p className="text-gray-500 dark:text-gray-400">
-          Especialista comercial e de suporte — orçamentos, pedidos, estoque, pagamento, métricas de venda e garantia
-        </p>
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#0b1220] via-blue-700 to-red-600 p-7 text-white shadow-2xl shadow-blue-900/25">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-white/15 blur-3xl" />
+        <div className="relative">
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-blue-100">
+            <Sparkles className="h-3.5 w-3.5" /> IA Comercial NITRUS
+          </span>
+          <h1 className="mt-4 font-display text-2xl font-black tracking-tight text-white lg:text-3xl">Copiloto Comercial IA</h1>
+          <p className="mt-2 max-w-3xl text-blue-50/90">
+            Use a IA para gerar respostas, analisar oportunidades, consultar pedidos e acelerar negociações com dados reais.
+          </p>
+        </div>
         {status?.openaiEnabled && status.gptOnly ? (
-          <p className="mt-2 text-sm text-green-600 dark:text-green-400">
+          <p className="relative mt-4 text-sm text-green-100">
             Modo 100% GPT ativo — {status.model}
           </p>
         ) : status?.openaiEnabled ? (
-          <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+          <p className="relative mt-4 text-sm text-amber-100">
             OpenAI ativo com fallback local — defina COPILOT_GPT_ONLY=true no Render para 100% GPT
           </p>
         ) : (
-          <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+          <p className="relative mt-4 text-sm text-amber-100">
             Modo local (limitado) — configure OPENAI_API_KEY no Render para Copiloto 100% inteligente com GPT-4o
           </p>
         )}
@@ -175,7 +183,7 @@ export function CopilotPage() {
         <StatCard title="Status" value={status?.online ? 'Online' : 'Offline'} icon={Bot} variant={status?.online ? 'success' : 'warning'} />
         <StatCard title="Modelo" value={status?.model ?? '-'} icon={Sparkles} variant="primary" />
         <StatCard title="Tempo médio" value={status?.avgResponseTime ?? '-'} icon={Wand2} />
-        <StatCard title="Conversas" value={conversations?.length ?? 0} icon={FileText} />
+        <StatCard title="Oportunidades" value={conversations?.length ?? 0} icon={TrendingUp} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -190,7 +198,7 @@ export function CopilotPage() {
                 addToast({ title: 'Sem conversas', message: 'Abra Atendimento e crie conversas primeiro', type: 'warning' });
                 return;
               }
-              addToast({ title, message: 'Processando com Copiloto IA...', type: 'info' });
+              addToast({ title, message: 'Processando com Copiloto Comercial...', type: 'info' });
               chatMutation.mutate({ message: prompt, conversationId });
             }}
             onKeyDown={(e) => {
@@ -199,8 +207,8 @@ export function CopilotPage() {
               }
             }}
           >
-            <Card className="transition-shadow hover:shadow-md">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-50 text-violet-600 dark:bg-violet-900/30">
+            <Card className="border-gray-200/80 bg-white/90 transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/10 dark:border-white/10 dark:bg-gray-900/90 dark:hover:border-blue-900/60">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-red-500 text-white shadow-lg shadow-blue-600/20">
                 <Icon className="h-5 w-5" />
               </div>
               <h3 className="mt-3 font-semibold text-gray-900 dark:text-white">{title}</h3>
@@ -210,11 +218,11 @@ export function CopilotPage() {
         ))}
       </div>
 
-      <Card title="Testar Copiloto" subtitle="Converse com a IA usando dados reais da plataforma">
+      <Card title="Workspace comercial NITRUS" subtitle="Converse com a IA usando dados reais da plataforma e contexto da oportunidade" className="border-gray-200/80 bg-white/90 dark:border-white/10 dark:bg-gray-900/90">
         {conversations && conversations.length > 0 && (
           <div className="mb-4 max-w-md">
             <Select
-              label="Contexto da conversa (cliente + histórico real)"
+              label="Contexto da oportunidade (cliente + histórico real)"
               value={contextConvId}
               onChange={(e) => setContextConvId(e.target.value)}
               options={conversations.map((c) => ({
@@ -224,9 +232,9 @@ export function CopilotPage() {
             />
           </div>
         )}
-        <div className="flex h-[380px] flex-col rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2 dark:border-gray-700">
-            <span className="text-sm font-medium">Chat com Copiloto</span>
+        <div className="flex h-[420px] flex-col overflow-hidden rounded-2xl border border-gray-200/80 dark:border-white/10">
+          <div className="flex items-center justify-between border-b border-gray-200/80 bg-slate-50/70 px-4 py-3 dark:border-white/10 dark:bg-white/[0.03]">
+            <span className="text-sm font-semibold">Chat com Copiloto Comercial</span>
             <div className="flex items-center gap-2">
               {contextConv && (
                 <span className="hidden text-xs text-gray-400 sm:inline">
@@ -238,7 +246,7 @@ export function CopilotPage() {
               </Badge>
             </div>
           </div>
-          <div className="flex-1 space-y-3 overflow-y-auto bg-gray-50 p-4 dark:bg-gray-950">
+          <div className="dashboard-grid-bg flex-1 space-y-3 overflow-y-auto bg-slate-50 p-4 dark:bg-[#0b1220]">
             {messages.map((msg) => (
               <div key={msg.id}>
                 <ChatBubble message={msg} />
@@ -254,7 +262,7 @@ export function CopilotPage() {
           <MessageInput
             onSend={(c) => chatMutation.mutate({ message: c, conversationId: contextConvId || primaryConv?.id })}
             disabled={chatMutation.isPending}
-            placeholder="Peça métricas de venda, resumo, status de pedido ou sugestão..."
+            placeholder="Peça métricas de venda, resumo, status de pedido ou resposta comercial..."
           />
         </div>
         <div className="mt-4 flex flex-wrap gap-2">

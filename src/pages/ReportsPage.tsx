@@ -90,23 +90,23 @@ export function ReportsPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Métricas de venda</h1>
-        <p className="text-gray-500 dark:text-gray-400">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Relatórios Comerciais</h1>
+        <p className="mt-1 text-gray-500 dark:text-gray-400">
           Acompanhamento de vendas, funil comercial e receita retida
         </p>
       </div>
 
       <Link
         to="/insights"
-        className="flex items-center justify-between gap-4 rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 to-white p-5 shadow-sm transition hover:border-violet-300 dark:border-violet-900/50 dark:from-violet-950/30 dark:to-gray-900"
+        className="flex items-center justify-between gap-4 rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-white p-5 shadow-sm transition hover:border-blue-300 dark:border-blue-900/50 dark:from-blue-950/30 dark:to-gray-900"
       >
         <div>
-          <p className="font-semibold text-gray-900 dark:text-white">Insights de vendas</p>
+          <p className="font-semibold text-gray-900 dark:text-white">Inteligência de vendas</p>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Produtos e clientes que mais e menos compram
           </p>
         </div>
-        <span className="inline-flex items-center gap-1 text-sm font-medium text-violet-600 dark:text-violet-400">
+        <span className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400">
           Abrir rankings
           <ArrowRight className="h-4 w-4" />
         </span>
@@ -182,14 +182,14 @@ export function ReportsPage() {
               <Bar
                 yAxisId="left"
                 dataKey="vendas"
-                fill="#0d9488"
+                fill="#2563eb"
                 name="Vendas"
                 radius={[4, 4, 0, 0]}
               />
               <Bar
                 yAxisId="right"
                 dataKey="valor"
-                fill="#7c3aed"
+                fill="#ef4444"
                 name="Valor (R$)"
                 radius={[4, 4, 0, 0]}
               />
@@ -231,7 +231,7 @@ export function ReportsPage() {
               className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-gray-800 dark:bg-gray-800/40"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-gray-900">
-                <Icon className="h-5 w-5 text-teal-600" />
+                <Icon className="h-5 w-5 text-blue-600" />
               </div>
               <div>
                 <p className="text-xs text-gray-500">{label}</p>

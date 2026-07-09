@@ -5,15 +5,15 @@ import { useEffect, useRef, useState } from 'react';
 type DemoMessage = { id: string; from: 'customer' | 'agent'; text: string };
 
 const SCRIPT: DemoMessage[] = [
-  { id: '1', from: 'customer', text: 'Preciso de um orçamento para 50 unidades' },
-  { id: '2', from: 'agent', text: 'Olá! Vou verificar disponibilidade e preparar o orçamento.' },
-  { id: '3', from: 'customer', text: 'Quando consigo receber a proposta?' },
-  { id: '4', from: 'agent', text: 'Envio a proposta em até 2h — 50 unidades confirmadas em estoque.' },
+  { id: '1', from: 'customer', text: 'Preciso de uma proposta para 50 unidades' },
+  { id: '2', from: 'agent', text: 'Perfeito. Já validei estoque e vou montar uma proposta comercial.' },
+  { id: '3', from: 'customer', text: 'Consigo receber ainda hoje?' },
+  { id: '4', from: 'agent', text: 'Sim. Envio em até 2h com condição comercial e prazo de entrega.' },
 ];
 
 const SIDEBAR_CHATS = [
-  { name: 'Carlos Mendes', preview: 'Orçamento 50 unidades', active: true },
-  { name: 'Mariana Costa', preview: 'Obrigada pelo atendimento!', active: false },
+  { name: 'Carlos Mendes', preview: 'Proposta 50 unidades', active: true },
+  { name: 'Mariana Costa', preview: 'Lead quente para follow-up', active: false },
   { name: 'Roberto Alves', preview: 'Status do pedido #4521', active: false },
   { name: 'Fernanda Lima', preview: 'Produto XT-200 em estoque?', active: false },
 ];
@@ -28,12 +28,12 @@ function TypingIndicator() {
       initial={{ opacity: 0, y: 12, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.96 }}
-      className="ml-12 flex items-center gap-1 rounded-2xl rounded-tr-sm bg-teal-600/25 px-3.5 py-2.5"
+      className="ml-12 flex items-center gap-1 rounded-2xl rounded-tr-sm bg-blue-600/25 px-3.5 py-2.5"
     >
       {[0, 1, 2].map((i) => (
         <motion.span
           key={i}
-          className="h-1.5 w-1.5 rounded-full bg-teal-200"
+          className="h-1.5 w-1.5 rounded-full bg-blue-200"
           animate={{ y: [0, -5, 0], opacity: [0.4, 1, 0.4] }}
           transition={{ repeat: Infinity, duration: 0.7, delay: i * 0.12, ease: 'easeInOut' }}
         />
@@ -106,14 +106,14 @@ export function LandingChatDemo() {
       transition={{ delay: 0.5 }}
       className="relative mx-auto mt-16 max-w-5xl"
     >
-      <div className="rounded-2xl border border-white/10 bg-gray-900/80 p-2 shadow-2xl shadow-teal-900/20 backdrop-blur">
+      <div className="rounded-2xl border border-white/10 bg-gray-900/80 p-2 shadow-2xl shadow-blue-900/20 backdrop-blur">
         <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
           <div className="flex gap-1.5">
             <div className="h-3 w-3 rounded-full bg-red-500/80" />
             <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
             <div className="h-3 w-3 rounded-full bg-green-500/80" />
           </div>
-          <span className="flex-1 text-center text-xs text-gray-500">app.pulsedesk.io/atendimento</span>
+          <span className="flex-1 text-center text-xs text-gray-500">app.nitrus.ai/conversao</span>
         </div>
 
         <div className="grid grid-cols-12 gap-2 p-4">
@@ -124,15 +124,15 @@ export function LandingChatDemo() {
                 key={chat.name}
                 animate={{
                   scale: activeSidebar === i ? 1.02 : 1,
-                  borderColor: activeSidebar === i ? 'rgba(20, 184, 166, 0.4)' : 'rgba(255,255,255,0)',
+                  borderColor: activeSidebar === i ? 'rgba(37, 99, 235, 0.55)' : 'rgba(255,255,255,0)',
                 }}
                 transition={{ duration: 0.3 }}
                 className={`flex items-center gap-2 rounded-lg border p-2 ${
-                  activeSidebar === i ? 'bg-teal-600/15' : 'bg-gray-700/50'
+                  activeSidebar === i ? 'bg-blue-600/15' : 'bg-gray-700/50'
                 }`}
               >
                 <div className="relative">
-                  <div className={`h-8 w-8 rounded-full ${activeSidebar === i ? 'bg-teal-600/50' : 'bg-teal-600/30'}`} />
+                  <div className={`h-8 w-8 rounded-full ${activeSidebar === i ? 'bg-blue-600/50' : 'bg-blue-600/30'}`} />
                   {activeSidebar === i && (
                     <motion.span
                       className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-gray-800 bg-green-400"
@@ -157,7 +157,7 @@ export function LandingChatDemo() {
           <div className="col-span-6 flex flex-col rounded-lg bg-gray-800/50 p-4">
             <div className="mb-4 flex items-center gap-2">
               <div className="relative">
-                <div className="h-8 w-8 rounded-full bg-teal-600/40" />
+                <div className="h-8 w-8 rounded-full bg-blue-600/40" />
                 <motion.span
                   className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-400"
                   animate={{ opacity: [1, 0.4, 1] }}
@@ -196,7 +196,7 @@ export function LandingChatDemo() {
                       className={
                         msg.from === 'customer'
                           ? 'mr-12 rounded-2xl rounded-tl-sm bg-gray-700/60 p-3 text-xs text-gray-300'
-                          : 'ml-12 rounded-2xl rounded-tr-sm bg-teal-600/30 p-3 text-xs text-teal-100'
+                          : 'ml-12 rounded-2xl rounded-tr-sm bg-blue-600/30 p-3 text-xs text-blue-100'
                       }
                     >
                       {msg.text}
@@ -218,16 +218,16 @@ export function LandingChatDemo() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  className="rounded-lg border border-violet-500/30 bg-violet-600/20 p-2 text-[10px] text-violet-200 shadow-lg shadow-violet-900/20"
+                  className="rounded-lg border border-blue-500/30 bg-gradient-to-br from-blue-600/25 to-red-600/20 p-2 text-[10px] text-blue-100 shadow-lg shadow-blue-900/20"
                 >
                   <motion.div
                     animate={{ rotate: [0, 8, -8, 0] }}
                     transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
                     className="inline-block"
                   >
-                    <Sparkles className="mb-1 h-3 w-3 text-violet-300" />
+                    <Sparkles className="mb-1 h-3 w-3 text-blue-200" />
                   </motion.div>
-                  Copiloto: Sugerir proposta em 2h
+                  Copiloto: Proposta e follow-up em 2h
                 </motion.div>
               )}
             </AnimatePresence>

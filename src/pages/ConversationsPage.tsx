@@ -27,6 +27,7 @@ import {
   RefreshCw,
   ShoppingCart,
   Sparkles,
+  Target,
   User,
   UserCheck,
   Wand2,
@@ -300,22 +301,31 @@ export function ConversationsPage() {
 
   return (
     <div className="flex h-[calc(100vh-7rem)] flex-col">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Central de Atendimento</h1>
-        <p className="text-gray-500 dark:text-gray-400">
-          Transferência, encerramento e reservas persistidos no Supabase
-        </p>
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+            <Target className="h-3.5 w-3.5" /> Central de Conversão
+          </span>
+          <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-gray-950 dark:text-white lg:text-3xl">Central de Conversão</h1>
+          <p className="mt-1 max-w-2xl text-gray-500 dark:text-gray-400">
+            Responda leads, qualifique oportunidades e use IA para acelerar cada negociação.
+          </p>
+        </div>
+        <div className="hidden rounded-2xl border border-gray-200/80 bg-white/80 px-4 py-3 shadow-sm dark:border-white/10 dark:bg-gray-900/80 lg:block">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Mesa Comercial NITRUS</p>
+          <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">Atendimento orientado à venda</p>
+        </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+      <div className="flex flex-1 overflow-hidden rounded-2xl border border-gray-200/80 bg-white/90 shadow-lg shadow-slate-200/50 backdrop-blur dark:border-white/10 dark:bg-gray-900/90 dark:shadow-black/20">
         <div
           className={`flex w-full flex-col border-r border-gray-200 md:w-80 lg:w-96 dark:border-gray-700 ${
             activeConversationId ? 'hidden md:flex' : 'flex'
           }`}
         >
-          <div className="space-y-3 border-b border-gray-200 p-3 dark:border-gray-700">
+          <div className="space-y-3 border-b border-gray-200/80 bg-slate-50/60 p-3 dark:border-white/10 dark:bg-white/[0.03]">
             <Search
-              placeholder="Buscar conversas..."
+              placeholder="Buscar leads e conversas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -363,7 +373,7 @@ export function ConversationsPage() {
         <div className={`flex-1 flex-col ${activeConversationId ? 'flex' : 'hidden md:flex'}`}>
           {activeConversation ? (
             <>
-              <div className="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+              <div className="flex items-center justify-between gap-3 border-b border-gray-200/80 bg-white/80 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-gray-900/80">
                 <div className="flex min-w-0 items-center gap-2">
                   <Button
                     variant="ghost"
@@ -423,7 +433,7 @@ export function ConversationsPage() {
                       size="sm"
                       onClick={() => setCloseOpen(true)}
                     >
-                      <XCircle className="h-4 w-4" /> Encerrar
+                      <XCircle className="h-4 w-4" /> Concluir
                     </Button>
                   )}
                   <Badge variant={STATUS_VARIANTS[activeConversation.status]}>
@@ -432,7 +442,7 @@ export function ConversationsPage() {
                 </div>
               </div>
 
-              <div className="flex-1 space-y-4 overflow-y-auto bg-gray-50 p-4 dark:bg-gray-950">
+              <div className="dashboard-grid-bg flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4 dark:bg-[#0b1220]">
                 {isClosed && (
                   <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                     Conversa encerrada. Reabra para enviar novas mensagens.
@@ -460,7 +470,7 @@ export function ConversationsPage() {
               <MessageInput
                 onSend={handleSend}
                 disabled={sendMutation.isPending || isClosed}
-                placeholder={isClosed ? 'Conversa encerrada' : 'Digite sua mensagem...'}
+                placeholder={isClosed ? 'Conversa encerrada' : 'Digite sua resposta comercial...'}
               />
             </>
           ) : (
@@ -468,13 +478,14 @@ export function ConversationsPage() {
           )}
         </div>
 
-        <div className="hidden w-80 flex-col border-l border-gray-200 xl:flex dark:border-gray-700">
+        <div className="hidden w-80 flex-col border-l border-gray-200/80 xl:flex dark:border-white/10">
           {customerDetail ? (
             <div className="flex-1 overflow-y-auto p-4">
-              <div className="mb-6 text-center">
-                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-xl font-bold text-primary-700 dark:bg-primary-900/40 dark:text-primary-300">
+              <div className="mb-6 rounded-2xl border border-gray-200/80 bg-gradient-to-br from-white to-blue-50/70 p-4 text-center shadow-sm dark:border-white/10 dark:from-gray-900 dark:to-blue-950/20">
+                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-red-500 text-xl font-bold text-white shadow-lg shadow-blue-600/20">
                   {customerDetail.name.split(' ').map((n) => n[0]).slice(0, 2).join('')}
                 </div>
+                <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-300">Perfil comercial do cliente</p>
                 <h3 className="font-semibold text-gray-900 dark:text-white">{customerDetail.name}</h3>
                 <p className="text-sm text-gray-500">{customerDetail.company}</p>
               </div>
@@ -495,7 +506,7 @@ export function ConversationsPage() {
 
               <div className="mt-4">
                 <h4 className="mb-2 flex items-center gap-1 text-sm font-medium">
-                  <ShoppingCart className="h-4 w-4" /> Pedidos ({customerDetail.orders.length})
+                  <ShoppingCart className="h-4 w-4 text-blue-600" /> Pedidos ({customerDetail.orders.length})
                 </h4>
                 {customerDetail.orders.slice(0, 3).map((o) => (
                   <div key={o.id} className="mb-1 text-xs text-gray-500">
@@ -506,7 +517,7 @@ export function ConversationsPage() {
 
               <div className="mt-4">
                 <h4 className="mb-2 flex items-center gap-1 text-sm font-medium">
-                  <Package className="h-4 w-4" /> Produtos comprados
+                  <Package className="h-4 w-4 text-red-500" /> Produtos comprados
                 </h4>
                 {customerDetail.purchasedProducts.slice(0, 3).map((p) => (
                   <div key={p.id} className="mb-1 text-xs text-gray-500">
@@ -516,10 +527,10 @@ export function ConversationsPage() {
               </div>
 
               <div className="mt-6 space-y-2">
-                <div className="rounded-lg bg-violet-50 p-3 dark:bg-violet-900/20">
+                <div className="rounded-2xl border border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-red-50 p-3 shadow-sm dark:border-white/10 dark:from-blue-950/30 dark:via-gray-900 dark:to-red-950/20">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="flex items-center gap-1 text-xs font-medium text-violet-700 dark:text-violet-300">
-                      <Sparkles className="h-3.5 w-3.5" /> Copiloto IA
+                    <p className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.12em] text-blue-700 dark:text-blue-300">
+                      <Sparkles className="h-3.5 w-3.5" /> Copiloto Comercial
                     </p>
                     {aiSuggestion && (
                       <Badge variant={aiSuggestion.priority === 'high' ? 'danger' : aiSuggestion.priority === 'medium' ? 'warning' : 'default'} className="text-[10px]">
@@ -528,10 +539,10 @@ export function ConversationsPage() {
                     )}
                   </div>
                   {aiLoading ? (
-                    <p className="mt-2 text-xs text-violet-500">Analisando conversa...</p>
+                    <p className="mt-2 text-xs text-blue-500">Analisando oportunidade...</p>
                   ) : (
                     <>
-                      <p className="mt-1 text-xs text-violet-600 dark:text-violet-400">
+                      <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">
                         {aiSuggestion?.insight ?? 'Selecione uma conversa para análise.'}
                       </p>
                       {aiSuggestion?.suggestion && (
@@ -548,7 +559,7 @@ export function ConversationsPage() {
                     onClick={handleUseSuggestion}
                     disabled={aiLoading || !aiSuggestion?.suggestion || isClosed}
                   >
-                    <Wand2 className="h-3 w-3" /> Usar sugestão
+                    <Wand2 className="h-3 w-3" /> Usar resposta sugerida
                   </Button>
                 </div>
                 <Button
@@ -558,10 +569,10 @@ export function ConversationsPage() {
                   onClick={() => setTransferOpen(true)}
                   disabled={isClosed || teamLoading || agentOptions.length === 0}
                 >
-                  <RefreshCw className="h-4 w-4" /> Transferir atendimento
+                  <RefreshCw className="h-4 w-4" /> Transferir conversa
                 </Button>
                 <Button variant="outline" className="w-full justify-start" size="sm" onClick={handleOpenFunnel}>
-                  <ShoppingCart className="h-4 w-4" /> Abrir no funil
+                  <ShoppingCart className="h-4 w-4" /> Abrir oportunidade
                 </Button>
                 <Button
                   variant="outline"
@@ -579,13 +590,13 @@ export function ConversationsPage() {
                     size="sm"
                     onClick={() => setCloseOpen(true)}
                   >
-                    <CheckCircle2 className="h-4 w-4" /> Encerrar atendimento
+                    <CheckCircle2 className="h-4 w-4" /> Concluir atendimento
                   </Button>
                 )}
               </div>
             </div>
           ) : (
-            <EmptyState icon={User} title="Informações do cliente" description="Selecione uma conversa" />
+            <EmptyState icon={User} title="Perfil comercial do cliente" description="Selecione uma conversa" />
           )}
         </div>
       </div>
@@ -593,12 +604,12 @@ export function ConversationsPage() {
       <Modal
         open={transferOpen}
         onClose={() => setTransferOpen(false)}
-        title="Transferir atendimento"
+        title="Transferir conversa"
         footer={
           <>
             <Button variant="outline" onClick={() => setTransferOpen(false)}>Cancelar</Button>
             <Button onClick={() => transferMutation.mutate()} disabled={transferMutation.isPending || !transferAgent}>
-              Transferir
+              Transferir conversa
             </Button>
           </>
         }
@@ -618,12 +629,12 @@ export function ConversationsPage() {
       <Modal
         open={closeOpen}
         onClose={() => setCloseOpen(false)}
-        title="Encerrar atendimento"
+        title="Concluir atendimento"
         footer={
           <>
             <Button variant="outline" onClick={() => setCloseOpen(false)}>Cancelar</Button>
             <Button onClick={() => closeMutation.mutate()} disabled={closeMutation.isPending}>
-              Encerrar
+              Concluir
             </Button>
           </>
         }

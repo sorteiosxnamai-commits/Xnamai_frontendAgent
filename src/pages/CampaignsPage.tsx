@@ -142,8 +142,8 @@ export function CampaignsPage() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Campanhas</h1>
-          <p className="text-gray-500 dark:text-gray-400">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Campanhas</h1>
+          <p className="mt-1 text-gray-500 dark:text-gray-400">
             Crie campanhas WhatsApp e dispare para clientes sincronizados do Mercos
           </p>
         </div>
@@ -163,20 +163,20 @@ export function CampaignsPage() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="!p-4">
-          <p className="text-sm text-gray-500">Rascunhos</p>
-          <p className="text-2xl font-bold">{drafts}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rascunhos</p>
+          <p className="mt-1 font-display text-3xl font-bold tabular-nums">{drafts}</p>
         </Card>
         <Card className="!p-4">
-          <p className="text-sm text-gray-500">Disparos ativos</p>
-          <p className="text-2xl font-bold">{running}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Disparos ativos</p>
+          <p className="mt-1 font-display text-3xl font-bold tabular-nums">{running}</p>
         </Card>
         <Card className="!p-4">
-          <p className="text-sm text-gray-500">Mensagens enviadas</p>
-          <p className="text-2xl font-bold">{totalSent.toLocaleString('pt-BR')}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Mensagens enviadas</p>
+          <p className="mt-1 font-display text-3xl font-bold tabular-nums">{totalSent.toLocaleString('pt-BR')}</p>
         </Card>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
         {list.length === 0 ? (
           <CampaignsEmptyState onCreate={() => setModalOpen(true)} />
         ) : (

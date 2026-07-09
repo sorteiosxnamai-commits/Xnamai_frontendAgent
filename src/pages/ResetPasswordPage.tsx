@@ -68,7 +68,7 @@ export function ResetPasswordPage() {
         <div className="max-w-md rounded-2xl border border-white/10 bg-gray-900 p-8 text-center">
           <h1 className="text-xl font-bold text-white">Link inválido</h1>
           <p className="mt-2 text-sm text-gray-400">Solicite um novo link na tela de login.</p>
-          <Link to="/login" className="mt-6 inline-block text-teal-400 hover:underline">
+          <Link to="/login" className="mt-6 inline-block text-blue-400 hover:underline">
             Voltar ao login
           </Link>
         </div>
@@ -92,7 +92,7 @@ export function ResetPasswordPage() {
       >
         <div className="rounded-2xl border border-white/10 bg-gray-900/80 p-8 shadow-2xl backdrop-blur-xl sm:p-10">
           <div className="mb-8 text-center">
-            <Logo size="md" showCompany className="[&_span]:text-white [&_span_span]:text-teal-400 [&_p]:text-gray-500" />
+            <Logo size="md" showCompany className="[&_span]:text-white [&_p]:text-gray-500" />
             <h1 className="mt-6 text-2xl font-bold text-white">Nova senha</h1>
             <p className="mt-2 text-sm text-gray-400">Digite e confirme sua nova senha</p>
           </div>

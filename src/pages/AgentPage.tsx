@@ -20,7 +20,7 @@ export function AgentPage() {
     {
       id: 'welcome',
       conversationId: 'agent-test',
-      content: 'Olá! Sou o agente de IA do TiroConnect. Como posso ajudar?',
+      content: 'Ola! Sou o agente comercial de IA da NITRUS. Como posso ajudar?',
       sender: 'ai',
       timestamp: new Date().toISOString(),
       status: 'read',
@@ -72,7 +72,7 @@ export function AgentPage() {
         {
           id: 'welcome',
           conversationId: 'agent-test',
-          content: 'Olá! Sou o agente de IA do PulseDesk. Como posso ajudar?',
+          content: 'Ola! Sou o agente comercial de IA da NITRUS. Como posso ajudar?',
           sender: 'ai',
           timestamp: new Date().toISOString(),
           status: 'read',

@@ -6,7 +6,7 @@ import { useNotification } from '@/contexts/NotificationContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn, formatRelativeTime } from '@/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, Building2, LogOut, Menu, Moon, Sun, UserCircle } from 'lucide-react';
+import { Bell, Building2, LogOut, Menu, Moon, Sun, UserCircle, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -29,16 +29,16 @@ export function Header({ onMenuClick }: HeaderProps) {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 dark:border-gray-800 dark:bg-gray-900 lg:px-6">
+    <header className="relative z-[80] flex h-16 items-center justify-between border-b border-gray-200/80 bg-white/95 px-4 shadow-sm shadow-slate-200/40 backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/95 dark:shadow-black/10 lg:px-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden">
           <Menu className="h-5 w-5" />
         </Button>
-        <Search placeholder="Pesquisar..." className="hidden w-72 md:block" />
+        <Search placeholder="Buscar leads, pedidos, clientes..." className="hidden w-72 md:block lg:w-80" />
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={toggleTheme}>
+        <Button variant="ghost" size="icon" onClick={toggleTheme} className="hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-white/10">
           {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </Button>
 
@@ -49,9 +49,9 @@ export function Header({ onMenuClick }: HeaderProps) {
             onClick={() => setShowNotifications(!showNotifications)}
             className="relative"
           >
-            <Bell className="h-5 w-5" />
+            <Bell className="h-[19px] w-[19px]" />
             {unreadCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-blue-600 text-[10px] font-bold text-white shadow-sm shadow-red-500/40">
                 {unreadCount}
               </span>
             )}
@@ -60,15 +60,17 @@ export function Header({ onMenuClick }: HeaderProps) {
           <AnimatePresence>
             {showNotifications && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+                <div className="fixed inset-0 z-[110]" onClick={() => setShowNotifications(false)} />
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
-                  className="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900"
+                  className="fixed left-3 right-3 top-16 z-[120] overflow-hidden rounded-2xl border border-gray-200/80 bg-white/95 shadow-2xl shadow-slate-900/15 backdrop-blur-xl dark:border-white/10 dark:bg-gray-950/95 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-96"
                 >
-                  <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
-                    <h3 className="font-semibold">Notificações</h3>
+                  <div className="flex items-center justify-between border-b border-gray-200/80 px-4 py-3 dark:border-white/10">
+                    <h3 className="flex items-center gap-2 font-semibold">
+                      <Zap className="h-4 w-4 text-blue-600" /> Alertas comerciais
+                    </h3>
                     <button
                       onClick={markAllAsRead}
                       className="text-xs text-primary-600 hover:underline dark:text-primary-400"
@@ -76,14 +78,14 @@ export function Header({ onMenuClick }: HeaderProps) {
                       Marcar todas como lidas
                     </button>
                   </div>
-                  <div className="max-h-80 overflow-y-auto">
+                  <div className="max-h-[420px] overflow-y-auto">
                     {notifications.map((n) => (
                       <button
                         key={n.id}
                         onClick={() => markAsRead(n.id)}
                         className={cn(
-                          'flex w-full flex-col gap-0.5 border-b border-gray-100 px-4 py-3 text-left transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800',
-                          !n.read && 'bg-primary-50/50 dark:bg-primary-900/10',
+                          'flex w-full flex-col gap-0.5 border-b border-gray-100 px-4 py-3 text-left transition-colors hover:bg-blue-50/70 dark:border-white/10 dark:hover:bg-white/10',
+                          !n.read && 'bg-blue-50/60 dark:bg-blue-950/20',
                         )}
                       >
                         <span className="text-sm font-medium">{n.title}</span>
@@ -98,7 +100,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           </AnimatePresence>
         </div>
 
-        <div className="relative flex items-center gap-2 border-l border-gray-200 pl-2 sm:gap-3 sm:pl-3 dark:border-gray-700">
+        <div className="relative flex items-center gap-2 border-l border-gray-200/80 pl-2 sm:gap-3 sm:pl-3 dark:border-white/10">
           <div className="hidden text-right sm:block">
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user?.name}</p>
             <p className="flex items-center justify-end gap-1 text-xs text-gray-500">
@@ -113,12 +115,12 @@ export function Header({ onMenuClick }: HeaderProps) {
           <AnimatePresence>
             {showUserMenu && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
+                <div className="fixed inset-0 z-[110]" onClick={() => setShowUserMenu(false)} />
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
-                  className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-gray-200 bg-white py-1 shadow-xl dark:border-gray-700 dark:bg-gray-900"
+                  className="fixed left-3 right-3 top-16 z-[120] overflow-hidden rounded-2xl border border-gray-200/80 bg-white/95 py-1 shadow-2xl shadow-slate-900/15 backdrop-blur-xl dark:border-white/10 dark:bg-gray-950/95 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-56"
                 >
                   <div className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user?.name}</p>

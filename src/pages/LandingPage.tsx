@@ -1,5 +1,6 @@
 import { LandingFooter, LandingNavbar, LandingSection } from '@/components/landing/LandingLayout';
 import { LandingChatDemo } from '@/components/landing/LandingChatDemo';
+import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
@@ -30,34 +31,34 @@ const channels = [
   { icon: Instagram, name: 'Instagram', color: 'text-pink-400' },
   { icon: MessageCircle, name: 'Facebook', color: 'text-blue-400' },
   { icon: Send, name: 'Telegram', color: 'text-sky-400' },
-  { icon: Headphones, name: 'WebChat', color: 'text-violet-400' },
+  { icon: Headphones, name: 'WebChat', color: 'text-red-300' },
   { icon: Mail, name: 'E-mail', color: 'text-gray-400' },
 ];
 
 const features = [
   {
     icon: Bot,
-    title: 'Robô de Atendimento',
-    desc: 'Automatize triagens e respostas 24/7. Ativo sem interrupções, com encaminhamento inteligente para humanos.',
+    title: 'Agente Automático',
+    desc: 'Qualifique leads 24/7, responda rápido e entregue oportunidades prontas para o time comercial.',
     tag: '24/7',
   },
   {
     icon: Sparkles,
-    title: 'Copiloto IA',
-    desc: 'Resuma conversas, transcreva áudios e receba sugestões de resposta com tom de voz da sua empresa.',
-    tag: 'Generative IA',
+    title: 'Copiloto Comercial IA',
+    desc: 'Gere respostas, contorne objeções e acelere follow-ups usando dados reais de clientes e pedidos.',
+    tag: 'Sales IA',
   },
   {
     icon: GitBranch,
     title: 'Funil de Vendas',
-    desc: 'Pipeline visual intuitivo. Histórico unificado por negócio e relatórios de conversão.',
+    desc: 'Pipeline visual para acompanhar leads, propostas e recuperação de oportunidades.',
     tag: 'Sales CRM',
   },
   {
     icon: BarChart3,
-    title: 'Relatórios Avançados',
-    desc: 'NPS, CSAT, tempo médio e performance do time em dashboards em tempo real.',
-    tag: 'Analytics',
+    title: 'Pulso de Receita',
+    desc: 'Métricas de conversão, tempo de resposta e pedidos em um cockpit comercial em tempo real.',
+    tag: 'Revenue',
   },
 ];
 
@@ -70,48 +71,48 @@ const steps = [
   {
     step: '01',
     icon: MessageCircle,
-    title: 'Conecte seus canais',
-    desc: 'WhatsApp, Instagram, WebChat e e-mail em minutos — um painel, zero confusão.',
+    title: 'Capture conversas',
+    desc: 'WhatsApp, Instagram, WebChat e e-mail em minutos — um cockpit único para não perder leads.',
     color: 'text-green-400',
     glow: 'group-hover:shadow-green-900/30',
   },
   {
     step: '02',
     icon: Sparkles,
-    title: 'Atenda com IA + time',
-    desc: 'Robô triagem 24/7, Copiloto sugere respostas e humanos assumem quando precisar.',
-    color: 'text-violet-400',
-    glow: 'group-hover:shadow-violet-900/30',
+    title: 'Qualifique com IA + time',
+    desc: 'Agente automático faz triagem, Copiloto sugere respostas e humanos fecham a negociação.',
+    color: 'text-red-400',
+    glow: 'group-hover:shadow-red-900/30',
   },
   {
     step: '03',
     icon: BarChart3,
-    title: 'Converta e analise',
-    desc: 'Funil de vendas, campanhas e dashboards com NPS, CSAT e tempo de resposta.',
-    color: 'text-teal-400',
-    glow: 'group-hover:shadow-teal-900/30',
+    title: 'Converta e recupere',
+    desc: 'Funil de vendas, campanhas e dashboards para acelerar receita e recuperar oportunidades.',
+    color: 'text-blue-400',
+    glow: 'group-hover:shadow-blue-900/30',
   },
 ];
 
 const benefits = [
-  { icon: Headphones, title: 'Suporte dedicado', desc: 'Atendimento humano e contínuo' },
-  { icon: Shield, title: 'Segurança LGPD', desc: 'Criptografia e backup automático' },
-  { icon: Zap, title: 'Setup gratuito', desc: 'Implantação rápida sem custo inicial' },
-  { icon: Users, title: 'Treinamento incluso', desc: 'Onboarding completo para sua equipe' },
+  { icon: Headphones, title: 'Operação assistida', desc: 'Time humano com IA no fluxo' },
+  { icon: Shield, title: 'Confiança LGPD', desc: 'Governança para dados comerciais' },
+  { icon: Zap, title: 'Setup rápido', desc: 'Implantação guiada sem atrito' },
+  { icon: Users, title: 'Time treinado', desc: 'Onboarding para acelerar vendas' },
 ];
 
 const faqs = [
   {
-    q: 'O que é o PulseDesk?',
-    a: 'Plataforma multicanal que centraliza WhatsApp, Instagram, Facebook, Telegram, WebChat, SMS e e-mail em um único painel, com IA integrada.',
+    q: 'O que é a NITRUS?',
+    a: 'A NITRUS é uma plataforma comercial com IA para transformar conversas em vendas, centralizando canais, leads, funil e respostas inteligentes.',
   },
   {
     q: 'Funciona com WhatsApp API Oficial?',
     a: 'Sim. Múltiplos atendentes em um número, automação, campanhas e governança — sem depender de celular.',
   },
   {
-    q: 'Posso integrar com meu CRM?',
-    a: 'Sim. HubSpot, RD Station, Pipedrive, Salesforce e dezenas de ERPs e e-commerces via API aberta.',
+    q: 'A NITRUS ajuda a recuperar oportunidades?',
+    a: 'Sim. A plataforma organiza leads, histórico, campanhas e próximos passos para reduzir perda de oportunidades.',
   },
   {
     q: 'Tem teste grátis?',
@@ -121,10 +122,26 @@ const faqs = [
 
 const stats = [
   { value: '7+', label: 'Canais integrados' },
-  { value: '68%', label: 'Resolução via bot' },
-  { value: '1m 48s', label: 'Tempo médio resposta' },
-  { value: '4.6/5', label: 'CSAT médio' },
+  { value: '68%', label: 'Resolução assistida por IA' },
+  { value: '1m 48s', label: 'Tempo médio de resposta' },
+  { value: '4.6/5', label: 'Experiência média' },
 ];
+
+const statCounters: Record<
+  string,
+  {
+    value: number;
+    suffix?: string;
+    decimals?: number;
+    duration?: number;
+    format?: 'number' | 'time';
+  }
+> = {
+  '7+': { value: 7, suffix: '+', duration: 1300 },
+  '68%': { value: 68, suffix: '%', duration: 1500 },
+  '1m 48s': { value: 108, format: 'time', duration: 1700 },
+  '4.6/5': { value: 4.6, suffix: '/5', decimals: 1, duration: 1600 },
+};
 
 export function LandingPage() {
   const { isAuthenticated } = useAuth();
@@ -145,27 +162,26 @@ export function LandingPage() {
       {/* Hero */}
       <section className="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-32">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-teal-600/20 blur-[120px]" />
-          <div className="absolute top-20 right-0 h-[400px] w-[400px] rounded-full bg-violet-600/15 blur-[100px]" />
+          <div className="absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-blue-600/20 blur-[120px]" />
+          <div className="absolute top-20 right-0 h-[400px] w-[400px] rounded-full bg-red-600/15 blur-[100px]" />
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-4 py-1.5 text-sm text-teal-300"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-sm font-semibold text-blue-200"
           >
-            <Sparkles className="h-4 w-4" /> Inteligência Artificial Integrada
+            <Sparkles className="h-4 w-4" /> IA comercial para receita
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mx-auto max-w-4xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
+            className="mx-auto max-w-4xl font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-[3.4rem]"
           >
-            Centralize todos os seus canais,{' '}
-            <span className="gradient-text">organize conversas</span> e acelere respostas com IA
+            Transforme conversas em vendas com a IA comercial da <span className="gradient-text">NITRUS</span>
           </motion.h1>
 
           <motion.p
@@ -174,8 +190,7 @@ export function LandingPage() {
             transition={{ delay: 0.2 }}
             className="mx-auto mt-6 max-w-2xl text-lg text-gray-400"
           >
-            Atenda no WhatsApp, Instagram, Facebook, WebChat, Telegram, SMS ou e-mail.
-            Sem alternar janelas, sem perder histórico — tudo em um só lugar.
+            Centralize canais, qualifique leads, gere respostas inteligentes e acompanhe oportunidades em um cockpit feito para acelerar receita.
           </motion.p>
 
           <motion.div
@@ -193,7 +208,7 @@ export function LandingPage() {
               className="min-w-[200px] border-gray-600 text-white hover:bg-white/5"
               onClick={() => navigate('/login')}
             >
-              Já tenho conta
+              Entrar na plataforma
             </Button>
           </motion.div>
 
@@ -221,12 +236,28 @@ export function LandingPage() {
       {/* Stats */}
       <LandingSection className="border-y border-white/5 bg-gray-900/50 py-12">
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-          {stats.map(({ value, label }) => (
-            <div key={label} className="text-center">
-              <p className="text-3xl font-bold text-teal-400">{value}</p>
-              <p className="mt-1 text-sm text-gray-500">{label}</p>
-            </div>
-          ))}
+          {stats.map(({ value, label }) => {
+            const counter = statCounters[value];
+
+            return (
+              <div key={label} className="text-center">
+                <p className="text-3xl font-bold text-blue-400">
+                  {counter ? (
+                    <AnimatedCounter
+                      value={counter.value}
+                      suffix={counter.suffix}
+                      decimals={counter.decimals}
+                      duration={counter.duration}
+                      format={counter.format}
+                    />
+                  ) : (
+                    value
+                  )}
+                </p>
+                <p className="mt-1 text-sm text-gray-500">{label}</p>
+              </div>
+            );
+          })}
         </div>
       </LandingSection>
 
@@ -234,17 +265,17 @@ export function LandingPage() {
       <LandingSection id="canais">
         <div className="text-center">
           <h2 className="text-3xl font-bold sm:text-4xl">
-            Todos os seus canais em uma só tela
+            Leads de todos os canais em uma so tela
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-gray-400">
-            Sem abas, sem conversas perdidas, sem confusão.
+            Conversas, histórico e oportunidades conectadas para vender com mais velocidade.
           </p>
         </div>
         <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {channels.map(({ icon: Icon, name, color }) => (
             <div
               key={name}
-              className="group flex cursor-default flex-col items-center rounded-2xl border border-white/5 bg-gray-900/50 p-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:border-teal-500/40 hover:bg-gray-900 hover:shadow-xl hover:shadow-teal-900/25"
+              className="group flex cursor-default flex-col items-center rounded-2xl border border-white/5 bg-gray-900/50 p-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:border-blue-500/40 hover:bg-gray-900 hover:shadow-xl hover:shadow-blue-900/25"
             >
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/[0.04] transition-all duration-300 ease-out group-hover:-translate-y-3 group-hover:bg-white/[0.08] group-hover:shadow-lg group-hover:shadow-black/20">
                 <Icon
@@ -262,21 +293,21 @@ export function LandingPage() {
       {/* Recursos */}
       <LandingSection id="recursos" className="bg-gray-900/30">
         <div className="text-center">
-          <h2 className="text-3xl font-bold sm:text-4xl">Ferramentas que fazem a diferença</h2>
+          <h2 className="text-3xl font-bold sm:text-4xl">Ferramentas para converter mais</h2>
           <p className="mx-auto mt-4 max-w-2xl text-gray-400">
-            Ecossistema completo para escalar seu atendimento com inteligência.
+            Ecossistema comercial para qualificar, responder, vender e recuperar oportunidades.
           </p>
         </div>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {features.map(({ icon: Icon, title, desc, tag }) => (
             <div
               key={title}
-              className="group rounded-2xl border border-white/5 bg-gray-900/50 p-6 transition-all hover:border-teal-500/20 hover:shadow-lg hover:shadow-teal-900/10"
+              className="group rounded-2xl border border-white/5 bg-gray-900/50 p-6 transition-all hover:border-blue-500/20 hover:shadow-lg hover:shadow-blue-900/10"
             >
-              <span className="rounded-full bg-teal-500/10 px-2.5 py-0.5 text-[11px] font-medium text-teal-400">
+              <span className="rounded-full bg-blue-500/10 px-2.5 py-0.5 text-[11px] font-medium text-blue-300">
                 {tag}
               </span>
-              <div className="mt-4 flex h-12 w-12 items-center justify-center rounded-xl bg-teal-500/10 text-teal-400 transition-colors group-hover:bg-teal-500/20">
+              <div className="mt-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300 transition-colors group-hover:bg-blue-500/20">
                 <Icon className="h-6 w-6" />
               </div>
               <h3 className="mt-4 text-lg font-semibold">{title}</h3>
@@ -288,11 +319,11 @@ export function LandingPage() {
         <div className="mt-16 grid gap-6 lg:grid-cols-3">
           {[
             { icon: Mic, title: 'Transcrição de áudios', desc: 'Converta mensagens de voz em texto automaticamente' },
-            { icon: Sparkles, title: 'Texto mágico', desc: 'Gere respostas profissionais com um clique' },
-            { icon: Star, title: 'NPS e CSAT', desc: 'Meça satisfação do cliente em tempo real' },
+            { icon: Sparkles, title: 'Resposta comercial', desc: 'Gere mensagens prontas para avançar negociações' },
+            { icon: Star, title: 'Recuperação de oportunidades', desc: 'Priorize leads parados e follow-ups importantes' },
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="flex gap-4 rounded-xl border border-white/5 p-5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-400">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-300">
                 <Icon className="h-5 w-5" />
               </div>
               <div>
@@ -307,16 +338,16 @@ export function LandingPage() {
       {/* Segmentos */}
       <LandingSection id="segmentos">
         <div className="text-center">
-          <h2 className="text-3xl font-bold sm:text-4xl">Soluções para cada segmento</h2>
+          <h2 className="font-display text-3xl font-bold sm:text-4xl">Receita para cada operação comercial</h2>
           <p className="mx-auto mt-4 max-w-2xl text-gray-400">
-            Do pequeno negócio à enterprise — adaptável ao seu fluxo de trabalho.
+            Do pequeno negócio a operações maiores, com fluxos adaptáveis ao seu ciclo de vendas.
           </p>
         </div>
         <div className="mt-10 flex flex-wrap justify-center gap-3">
           {segments.map((seg) => (
             <span
               key={seg}
-              className="rounded-full border border-white/10 bg-gray-900/50 px-4 py-2 text-sm text-gray-300 transition-colors hover:border-teal-500/30 hover:text-white"
+              className="rounded-full border border-white/10 bg-gray-900/50 px-4 py-2 text-sm text-gray-300 transition-colors hover:border-blue-500/30 hover:text-white"
             >
               {seg}
             </span>
@@ -324,9 +355,9 @@ export function LandingPage() {
         </div>
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           {[
-            { title: 'Pequenas Empresas', desc: 'Centralize canais, automatize tarefas e ganhe tempo para o cliente.', cta: 'Começar agora' },
-            { title: 'Médias Empresas', desc: 'Dashboards avançados, integração com CRMs e automação de marketing.', cta: 'Escalar time' },
-            { title: 'Enterprise', desc: 'Segurança de nível enterprise, APIs abertas e gerente dedicado.', cta: 'Falar com especialista' },
+            { title: 'Pequenas Empresas', desc: 'Centralize canais, responda rápido e transforme interesse em pedido.', cta: 'Começar agora' },
+            { title: 'Médias Empresas', desc: 'Funil, campanhas e inteligência para escalar times comerciais.', cta: 'Escalar receita' },
+            { title: 'Enterprise', desc: 'Governança, APIs e operação comercial conectada ponta a ponta.', cta: 'Falar com especialista' },
           ].map(({ title, desc, cta }) => (
             <div key={title} className="rounded-2xl border border-white/5 bg-gradient-to-b from-gray-900/80 to-gray-950 p-6">
               <h3 className="text-xl font-semibold">{title}</h3>
@@ -346,18 +377,18 @@ export function LandingPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-500/10"
+            className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10"
           >
-            <Zap className="h-6 w-6 text-teal-400" />
+            <Zap className="h-6 w-6 text-blue-300" />
           </motion.div>
-          <h2 className="text-3xl font-bold sm:text-4xl">Como funciona o PulseDesk</h2>
+          <h2 className="text-3xl font-bold sm:text-4xl">Como funciona a NITRUS</h2>
           <p className="mx-auto mt-4 max-w-2xl text-gray-400">
-            Do primeiro contato ao fechamento — três passos para escalar seu atendimento.
+            Do primeiro contato ao fechamento — três passos para acelerar sua receita.
           </p>
         </div>
 
         <div className="relative mt-14 grid gap-6 md:grid-cols-3">
-          <div className="pointer-events-none absolute top-16 hidden h-0.5 w-full bg-gradient-to-r from-transparent via-teal-500/30 to-transparent md:block" />
+          <div className="pointer-events-none absolute top-16 hidden h-0.5 w-full bg-gradient-to-r from-transparent via-blue-500/30 to-transparent md:block" />
 
           {steps.map(({ step, icon: Icon, title, desc, color, glow }, i) => (
             <motion.div
@@ -366,9 +397,9 @@ export function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.12 }}
-              className={`group relative rounded-2xl border border-white/5 bg-gray-900/60 p-8 transition-all duration-300 ease-out hover:-translate-y-2 hover:border-teal-500/30 hover:bg-gray-900 hover:shadow-xl ${glow}`}
+              className={`group relative rounded-2xl border border-white/5 bg-gray-900/60 p-8 transition-all duration-300 ease-out hover:-translate-y-2 hover:border-blue-500/30 hover:bg-gray-900 hover:shadow-xl ${glow}`}
             >
-              <span className="text-xs font-bold tracking-widest text-teal-500/80">{step}</span>
+              <span className="text-xs font-bold tracking-widest text-blue-400/90">{step}</span>
               <div className="mt-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.04] transition-all duration-300 group-hover:-translate-y-2 group-hover:bg-white/[0.08]">
                 <Icon className={`h-7 w-7 ${color} transition-transform duration-300 group-hover:scale-110`} />
               </div>
@@ -390,7 +421,7 @@ export function LandingPage() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {benefits.map(({ icon: Icon, title, desc }) => (
             <div key={title} className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-400">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-300">
                 <Icon className="h-7 w-7" />
               </div>
               <h3 className="mt-4 font-semibold">{title}</h3>
@@ -430,21 +461,21 @@ export function LandingPage() {
         <div className="relative overflow-hidden rounded-3xl gradient-hero p-10 text-center sm:p-16">
           <div className="relative z-10">
             <h2 className="text-3xl font-bold sm:text-4xl">
-              Pronto para transformar seu atendimento?
+              Pronto para transformar conversas em vendas?
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-teal-100">
+            <p className="mx-auto mt-4 max-w-xl text-blue-100">
               Teste grátis por 5 dias. Treinamento e suporte inclusos.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button size="lg" variant="secondary" className="min-w-[220px] bg-white text-teal-800 hover:bg-gray-100" onClick={() => navigate('/login')}>
+              <Button size="lg" variant="secondary" className="min-w-[220px] bg-white text-blue-800 hover:bg-gray-100" onClick={() => navigate('/login')}>
                 Começar teste grátis
               </Button>
               <Button size="lg" variant="outline" className="min-w-[220px] border-white/30 text-white hover:bg-white/10" onClick={() => navigate('/login')}>
                 Entrar na plataforma
               </Button>
             </div>
-            <ul className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-teal-100">
-              {['Sem cartão', 'Setup grátis', 'LGPD', 'Suporte humano'].map((item) => (
+            <ul className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-blue-100">
+              {['Sem cartão', 'Setup rápido', 'LGPD', 'Suporte humano'].map((item) => (
                 <li key={item} className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4" /> {item}
                 </li>
