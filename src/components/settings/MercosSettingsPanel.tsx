@@ -6,11 +6,11 @@ import { Loading } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useNotification } from '@/contexts/NotificationContext';
-import { useMercosLogs, useMercosStatus } from '@/hooks/useQueries';
+import { useMercosHomologacao, useMercosLogs, useMercosStatus } from '@/hooks/useQueries';
 import { mercosService, type MercosSyncType } from '@/services/mercos.service';
 import { formatCurrency, formatDateTime } from '@/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, CheckCircle, Package, RefreshCw, ShoppingCart, Users, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, ClipboardCheck, Package, RefreshCw, ShoppingCart, Users, XCircle } from 'lucide-react';
 import { useState } from 'react';
 
 export function MercosSettingsPanel() {
@@ -18,6 +18,7 @@ export function MercosSettingsPanel() {
   const canSync = can('manageIntegrations');
   const { data: status, isLoading } = useMercosStatus();
   const { data: logs } = useMercosLogs();
+  const { data: homologacao, isFetching: loadingHomolog, refetch: refetchHomolog } = useMercosHomologacao(canSync);
   const { addToast } = useNotification();
   const queryClient = useQueryClient();
   const [syncing, setSyncing] = useState<MercosSyncType | null>(null);
@@ -169,6 +170,73 @@ export function MercosSettingsPanel() {
           testa e sincroniza com as credenciais já deployadas — não é possível alterar tokens pelo navegador.
         </p>
       </div>
+
+      {canSync && (
+        <div className="rounded-lg border border-gray-100 p-4 dark:border-gray-800">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex gap-3">
+              <ClipboardCheck className="mt-0.5 h-6 w-6 shrink-0 text-teal-600" />
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-white">Homologação Mercos (API)</p>
+                <p className="mt-1 text-sm text-gray-500">
+                  Probe das rotas exigidas na ata (clientes, produtos, tabelas, condições, etc.).
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {homologacao ? (
+                <Badge variant={homologacao.prontoParaHomologacao ? 'success' : 'danger'}>
+                  {homologacao.prontoParaHomologacao ? 'Pronto' : 'Pendente'}
+                </Badge>
+              ) : (
+                <Badge variant="default">—</Badge>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetchHomolog()}
+                loading={loadingHomolog}
+              >
+                <RefreshCw className="h-4 w-4" />
+                Verificar
+              </Button>
+            </div>
+          </div>
+          {homologacao && (
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">APIs de leitura</p>
+                <ul className="space-y-1 text-sm">
+                  {Object.entries(homologacao.apisLeitura ?? {}).map(([nome, ok]) => (
+                    <li key={nome} className="flex items-center justify-between gap-2">
+                      <span className="text-gray-700 dark:text-gray-300">{nome}</span>
+                      <span className={ok ? 'text-green-600' : 'text-red-500'}>
+                        {ok ? `OK${homologacao.contagens?.[nome] != null ? ` (${homologacao.contagens[nome]})` : ''}` : 'Falha'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">Critérios</p>
+                <ul className="space-y-1 text-sm">
+                  {Object.entries(homologacao.criteriosObrigatorios ?? {}).map(([nome, ok]) => (
+                    <li key={nome} className="flex items-center justify-between gap-2">
+                      <span className="text-gray-700 dark:text-gray-300">{nome}</span>
+                      <span className={ok ? 'text-green-600' : 'text-red-500'}>{ok ? 'OK' : 'Falta'}</span>
+                    </li>
+                  ))}
+                </ul>
+                {Object.keys(homologacao.erros ?? {}).length > 0 && (
+                  <p className="mt-3 text-xs text-red-600">
+                    Erros: {Object.entries(homologacao.erros ?? {}).map(([k, v]) => `${k}: ${v}`).join(' · ')}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-4 rounded-lg border border-gray-100 p-4 dark:border-gray-800">
         {status?.connected ? (

@@ -98,6 +98,9 @@ export function SetupChecklist() {
                   <div className="min-w-0">
                     <p className={`text-sm font-medium ${item.done ? 'text-gray-500 line-through' : 'text-gray-900 dark:text-white'}`}>
                       {item.title}
+                      {item.optional ? (
+                        <span className="ml-2 text-xs font-normal text-gray-400">(opcional)</span>
+                      ) : null}
                     </p>
                     <p className="truncate text-xs text-gray-500">{item.description}</p>
                   </div>

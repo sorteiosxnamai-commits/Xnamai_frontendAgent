@@ -1,7 +1,7 @@
 import { api } from './api';
 import { mockMercosStatus, mockMercosLogs } from '@/data/mocks';
 import { delay } from '@/utils';
-import type { MercosStatus, MercosLog } from '@/types';
+import type { MercosHomologacao, MercosStatus, MercosLog } from '@/types';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 
@@ -23,6 +23,18 @@ export const mercosService = {
       return mockMercosLogs;
     }
     const { data } = await api.get<MercosLog[]>('/mercos/logs');
+    return data;
+  },
+
+  getHomologacao: async (): Promise<MercosHomologacao> => {
+    if (USE_MOCK) {
+      await delay(400);
+      return {
+        prontoParaHomologacao: false,
+        erros: { mock: 'Modo mock ativo — configure VITE_USE_MOCK=false' },
+      };
+    }
+    const { data } = await api.get<MercosHomologacao>('/mercos/homologacao');
     return data;
   },
 

@@ -288,6 +288,22 @@ export interface MercosStatus {
   retainedRevenue?: number;
 }
 
+export interface MercosHomologacao {
+  prontoParaHomologacao: boolean;
+  ambiente?: {
+    environment?: string;
+    isProduction?: boolean;
+    isSandbox?: boolean;
+    baseUrlHost?: string;
+    configured?: boolean;
+  };
+  criteriosObrigatorios?: Record<string, boolean>;
+  apisLeitura?: Record<string, boolean>;
+  contagens?: Record<string, number>;
+  erros?: Record<string, string>;
+  documentacao?: string;
+}
+
 export interface MercosLog {
   id: string;
   type: 'products' | 'customers' | 'orders' | 'all';
@@ -387,6 +403,7 @@ export interface SystemChecklistItem {
   description: string;
   done: boolean;
   settingsTab: string;
+  optional?: boolean;
 }
 
 export interface SystemStatus {

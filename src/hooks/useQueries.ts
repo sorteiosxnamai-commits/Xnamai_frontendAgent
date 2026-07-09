@@ -73,6 +73,15 @@ export function useMercosLogs() {
   });
 }
 
+export function useMercosHomologacao(enabled = true) {
+  return useQuery({
+    queryKey: ['mercos', 'homologacao'],
+    queryFn: mercosService.getHomologacao,
+    enabled,
+    staleTime: 60_000,
+  });
+}
+
 export function useAgentStatus() {
   return useQuery({
     queryKey: ['agent', 'status'],

@@ -81,11 +81,27 @@ export function WhatsAppSettingsPanel() {
 
   return (
     <div className="space-y-6">
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
+        <p className="font-medium">Dois WhatsApps no projeto — não misture</p>
+        <ul className="mt-2 list-disc space-y-1 pl-4 text-amber-800 dark:text-amber-200/90">
+          <li>
+            <strong>Vendedor IA (homologação / demo comercial):</strong> Z-API no serviço{' '}
+            <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">agent-ia-xnamai</code>.
+            Webhook: <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">https://agent-ia-xnamai.onrender.com/webhook</code>.
+            Conversas entram em Atendimento via bridge Supabase.
+          </li>
+          <li>
+            <strong>Esta tela:</strong> WhatsApp oficial Meta Cloud no backend PulseDesk — canal próprio,
+            independente do Z-API. “Desconectado” aqui não significa que o vendedor IA está fora.
+          </li>
+        </ul>
+      </div>
+
       <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900 dark:border-green-900/50 dark:bg-green-950/30 dark:text-green-100">
         <p className="font-medium">WhatsApp API Oficial (Meta Cloud)</p>
         <p className="mt-1 text-green-800 dark:text-green-200/90">
-          Mensagens recebidas entram em <strong>Atendimento</strong> via webhook. Respostas do agente
-          são enviadas pelo WhatsApp quando o canal está conectado.
+          Mensagens deste canal entram em <strong>Atendimento</strong> via webhook Meta. Use só se for
+          operar o número oficial pela Meta — não substitui o agente Z-API da demo.
         </p>
       </div>
 
