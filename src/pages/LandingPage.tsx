@@ -1,5 +1,8 @@
 import { LandingFooter, LandingNavbar, LandingSection } from '@/components/landing/LandingLayout';
 import { LandingChatDemo } from '@/components/landing/LandingChatDemo';
+import { AuroraBackground } from '@/components/landing/AuroraBackground';
+import { Marquee } from '@/components/landing/Marquee';
+import { ScrollProgress } from '@/components/landing/ScrollProgress';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,12 +13,14 @@ import {
   Bot,
   CheckCircle2,
   ChevronDown,
+  Clock,
   GitBranch,
   Headphones,
   Instagram,
   Mail,
   MessageCircle,
   Mic,
+  Radio,
   Send,
   Shield,
   Sparkles,
@@ -143,6 +148,13 @@ const statCounters: Record<
   '4.6/5': { value: 4.6, suffix: '/5', decimals: 1, duration: 1600 },
 };
 
+const statIcons = {
+  '7+': Radio,
+  '68%': Bot,
+  '1m 48s': Clock,
+  '4.6/5': Star,
+};
+
 export function LandingPage() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -157,14 +169,12 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <ScrollProgress />
       <LandingNavbar />
 
       {/* Hero */}
       <section className="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-32">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-blue-600/20 blur-[120px]" />
-          <div className="absolute top-20 right-0 h-[400px] w-[400px] rounded-full bg-red-600/15 blur-[100px]" />
-        </div>
+        <AuroraBackground />
 
         <div className="relative mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <motion.div
@@ -224,6 +234,27 @@ export function LandingPage() {
           <LandingChatDemo />
 
           <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.55 }}
+            className="mt-12"
+          >
+            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-slate-600">
+              Feito para operações comerciais em movimento
+            </p>
+            <Marquee duration={28}>
+              {segments.map((seg) => (
+                <span
+                  key={seg}
+                  className="mx-2 shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-5 py-2 text-sm font-medium text-slate-400 transition-colors hover:border-blue-500/30 hover:text-white"
+                >
+                  {seg}
+                </span>
+              ))}
+            </Marquee>
+          </motion.div>
+
+          <motion.div
             animate={{ y: [0, 8, 0] }}
             transition={{ repeat: Infinity, duration: 2 }}
             className="mt-8 flex justify-center"
@@ -234,14 +265,25 @@ export function LandingPage() {
       </section>
 
       {/* Stats */}
-      <LandingSection className="border-y border-white/5 bg-gray-900/50 py-12">
-        <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
+      <LandingSection className="relative overflow-hidden border-y border-white/5 bg-gray-900/50 py-14">
+        <div className="pointer-events-none absolute inset-0 dashboard-grid-bg opacity-20" />
+        <div className="relative grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
           {stats.map(({ value, label }) => {
             const counter = statCounters[value];
+            const Icon = statIcons[value as keyof typeof statIcons] ?? Sparkles;
 
             return (
-              <div key={label} className="text-center">
-                <p className="text-3xl font-bold text-blue-400">
+              <motion.div
+                key={label}
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="glow-border glass-card rounded-2xl border border-white/5 p-5 text-center transition-transform duration-300 hover:-translate-y-1 sm:p-6"
+              >
+                <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <p className="font-display text-3xl font-bold text-white tabular-nums sm:text-4xl">
                   {counter ? (
                     <AnimatedCounter
                       value={counter.value}
@@ -255,7 +297,7 @@ export function LandingPage() {
                   )}
                 </p>
                 <p className="mt-1 text-sm text-gray-500">{label}</p>
-              </div>
+              </motion.div>
             );
           })}
         </div>
@@ -291,18 +333,19 @@ export function LandingPage() {
       </LandingSection>
 
       {/* Recursos */}
-      <LandingSection id="recursos" className="bg-gray-900/30">
-        <div className="text-center">
+      <LandingSection id="recursos" className="relative overflow-hidden bg-gray-900/30">
+        <AuroraBackground withGrid={false} className="opacity-45" />
+        <div className="relative text-center">
           <h2 className="text-3xl font-bold sm:text-4xl">Ferramentas para converter mais</h2>
           <p className="mx-auto mt-4 max-w-2xl text-gray-400">
             Ecossistema comercial para qualificar, responder, vender e recuperar oportunidades.
           </p>
         </div>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="relative mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {features.map(({ icon: Icon, title, desc, tag }) => (
             <div
               key={title}
-              className="group rounded-2xl border border-white/5 bg-gray-900/50 p-6 transition-all hover:border-blue-500/20 hover:shadow-lg hover:shadow-blue-900/10"
+              className="glow-border group rounded-2xl border border-white/5 bg-gray-900/50 p-6 transition-all hover:border-blue-500/20 hover:shadow-lg hover:shadow-blue-900/10"
             >
               <span className="rounded-full bg-blue-500/10 px-2.5 py-0.5 text-[11px] font-medium text-blue-300">
                 {tag}
@@ -316,7 +359,7 @@ export function LandingPage() {
           ))}
         </div>
 
-        <div className="mt-16 grid gap-6 lg:grid-cols-3">
+        <div className="relative mt-16 grid gap-6 lg:grid-cols-3">
           {[
             { icon: Mic, title: 'Transcrição de áudios', desc: 'Converta mensagens de voz em texto automaticamente' },
             { icon: Sparkles, title: 'Resposta comercial', desc: 'Gere mensagens prontas para avançar negociações' },
@@ -458,7 +501,22 @@ export function LandingPage() {
 
       {/* CTA Final */}
       <LandingSection>
-        <div className="relative overflow-hidden rounded-3xl gradient-hero p-10 text-center sm:p-16">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="relative overflow-hidden rounded-3xl gradient-hero p-10 text-center sm:p-16"
+        >
+          <motion.div
+            className="absolute inset-0 opacity-55"
+            style={{
+              backgroundImage: 'linear-gradient(135deg, #0b1220 0%, #2563eb 45%, #ef4444 100%)',
+              backgroundSize: '200% 200%',
+            }}
+            animate={{ backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'] }}
+            transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <div className="pointer-events-none absolute inset-0 dashboard-grid-bg opacity-20" />
           <div className="relative z-10">
             <h2 className="text-3xl font-bold sm:text-4xl">
               Pronto para transformar conversas em vendas?
@@ -482,7 +540,7 @@ export function LandingPage() {
               ))}
             </ul>
           </div>
-        </div>
+        </motion.div>
       </LandingSection>
 
       <LandingFooter />
