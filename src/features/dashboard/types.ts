@@ -34,3 +34,53 @@ export interface RoutineItem {
   action: string;
   href?: string;
 }
+
+export interface DashboardNavigationItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+export interface DashboardSelectOption {
+  value: string;
+  label: string;
+}
+
+export interface DashboardExecutiveHeaderProps {
+  firstName: string;
+  operationStatus: string;
+  operationTone: DashboardTone;
+  presentationMode: boolean;
+  isFetching: boolean;
+  onRefresh: () => void;
+  onTogglePresentation: () => void;
+}
+
+export interface DashboardInternalNavProps {
+  items: DashboardNavigationItem[];
+  activeSection: string;
+  isHidden: boolean;
+  presentationMode: boolean;
+  filtersOpen: boolean;
+  period: PeriodFilter;
+  productFilter: string;
+  customerFilter: string;
+  statusFilter: CommercialStatusFilter;
+  channelFilter: string;
+  periodOptions: DashboardSelectOption[];
+  productOptions: DashboardSelectOption[];
+  customerOptions: DashboardSelectOption[];
+  statusOptions: DashboardSelectOption[];
+  channelOptions: DashboardSelectOption[];
+  onPeriodChange: (value: PeriodFilter) => void;
+  onProductChange: (value: string) => void;
+  onCustomerChange: (value: string) => void;
+  onStatusChange: (value: CommercialStatusFilter) => void;
+  onChannelChange: (value: string) => void;
+  onToggleFilters: () => void;
+}
+
+export interface BusinessSummarySectionProps {
+  metrics: ExecutiveKpi[];
+  presentationMode: boolean;
+}

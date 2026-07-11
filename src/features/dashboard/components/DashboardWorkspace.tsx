@@ -21,9 +21,8 @@ import {
 } from '@/hooks/useQueries';
 import { agentService } from '@/services/agent.service';
 import { cn, formatCurrency, formatDate, formatDateTime, formatRelativeTime } from '@/utils';
-import type { ChannelType, Conversation, Customer, Order, Product } from '@/types';
+import type { ChannelType, Product } from '@/types';
 import { useMutation } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
 import {
   AlertTriangle,
   ArrowRight,
@@ -44,7 +43,6 @@ import {
   RefreshCw,
   ShieldCheck,
   ShoppingCart,
-  SlidersHorizontal,
   Sparkles,
   Target,
   TrendingUp,
@@ -52,6 +50,12 @@ import {
   Zap,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { BusinessSummarySection } from './BusinessSummarySection';
+import { DashboardExecutiveHeader } from './DashboardExecutiveHeader';
+import { DashboardInternalNav } from './DashboardInternalNav';
+import { useDashboardNavigation, usePresentationMode } from '../hooks';
+import type { CommercialStatusFilter, DashboardNavigationItem, ExecutiveKpi, PeriodFilter, ProductSort, RoutineItem } from '../types';
+import { daysSince, filterConversations, filterOrders, filterProducts, formatPercent, getCustomerAction, getCustomerStatus, hasBuyingIntent, periodCutoff, scoreConversation } from '../utils';
 import { Link } from 'react-router-dom';
 import {
   Area,
@@ -91,64 +95,6 @@ const CHANNEL_LABELS: Record<ChannelType, string> = {
   email: 'E-mail',
 };
 
-type PeriodFilter = 'today' | '7d' | '30d' | 'month';
-type CommercialStatusFilter = 'all' | 'active' | 'waiting' | 'closed';
-type ProductSort = 'best' | 'worst' | 'revenue' | 'idle' | 'recent' | 'az';
-
-type ExecutiveKpi = {
-  title: string;
-  value: string | number;
-  description: string;
-  badge: string;
-  tone: 'blue' | 'red' | 'green' | 'amber' | 'slate';
-  icon: typeof CircleDollarSign;
-};
-
-type LeadScore = {
-  id: string;
-  customerName: string;
-  channel: ChannelType;
-  score: number;
-  label: 'Quente' | 'Morno' | 'Frio' | 'Em risco' | 'Cliente fiel';
-  reason: string;
-  lastInteraction: string;
-  nextAction: string;
-};
-
-type RoutineItem = {
-  priority: 'Alta' | 'Media' | 'Baixa';
-  description: string;
-  origin: string;
-  impact: string;
-  action: string;
-  href?: string;
-};
-
-function getGreeting(): string {
-  const h = new Date().getHours();
-  if (h < 12) return 'Bom dia';
-  if (h < 18) return 'Boa tarde';
-  return 'Boa noite';
-}
-
-function formatToday(): string {
-  return new Intl.DateTimeFormat('pt-BR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  }).format(new Date());
-}
-
-function daysSince(date?: string | null): number {
-  if (!date) return 999;
-  const diff = Date.now() - new Date(date).getTime();
-  return Math.max(0, Math.floor(diff / 86400000));
-}
-
-function pct(value: number): string {
-  return `${Math.max(0, Math.round(value))}%`;
-}
-
 function statusToneClass(tone: ExecutiveKpi['tone']): string {
   const tones = {
     blue: 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:ring-blue-900/50',
@@ -158,21 +104,6 @@ function statusToneClass(tone: ExecutiveKpi['tone']): string {
     slate: 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-800/70 dark:text-slate-300 dark:ring-slate-700',
   };
   return tones[tone];
-}
-
-function getCustomerStatus(customer: Customer): 'Fiel' | 'Recorrente' | 'Novo' | 'Em risco' {
-  if (daysSince(customer.lastContact) > 90 && customer.totalSpent > 0) return 'Em risco';
-  if (customer.ordersCount >= 5 || customer.totalSpent >= 5000) return 'Fiel';
-  if (customer.ordersCount >= 2) return 'Recorrente';
-  return 'Novo';
-}
-
-function getCustomerAction(customer: Customer): string {
-  const status = getCustomerStatus(customer);
-  if (status === 'Em risco') return 'Enviar proposta de reativação';
-  if (status === 'Fiel') return 'Oferecer condição de recompra';
-  if (status === 'Recorrente') return 'Sugerir produto relacionado';
-  return 'Qualificar necessidade';
 }
 
 function buildChannelVolume(
@@ -204,69 +135,6 @@ function buildChannelVolume(
     type: item.type,
     value: Math.max(1, Math.round((item.count / total) * 100)),
   }));
-}
-
-function hasBuyingIntent(message: string): boolean {
-  return /or[cç]amento|pre[cç]o|valor|pedido|comprar|proposta|estoque|entrega|prazo/i.test(message);
-}
-
-function scoreConversation(conv: Conversation, customers: Customer[], orders: Order[]): LeadScore {
-  const customer = customers.find((c) => c.id === conv.customerId || c.name === conv.customerName);
-  const customerOrders = orders.filter((o) => o.customerId === conv.customerId || o.customerName === conv.customerName);
-  const recentInteraction = daysSince(conv.lastMessageAt) <= 2;
-  const buyingIntent = hasBuyingIntent(conv.lastMessage);
-  const waiting = conv.status === 'waiting';
-  const recurring = (customer?.ordersCount ?? customerOrders.length) >= 2;
-  const loyal = recurring && (customer?.totalSpent ?? customerOrders.reduce((sum, o) => sum + o.total, 0)) >= 5000;
-  const noRecentOrder = customerOrders.length > 0 && daysSince(customerOrders[0]?.createdAt) > 60;
-
-  let score = 35;
-  if (recentInteraction) score += 15;
-  if (buyingIntent) score += 25;
-  if (waiting) score += 12;
-  if (conv.unreadCount > 0) score += 8;
-  if (recurring) score += 12;
-  if (loyal) score += 10;
-  if (noRecentOrder) score -= 12;
-  if (conv.status === 'closed') score -= 15;
-  score = Math.max(0, Math.min(100, score));
-
-  let label: LeadScore['label'] = 'Frio';
-  if (loyal) label = 'Cliente fiel';
-  else if (waiting && score >= 55) label = 'Em risco';
-  else if (score >= 75) label = 'Quente';
-  else if (score >= 50) label = 'Morno';
-
-  const reason = waiting
-    ? 'Aguardando resposta'
-    : buyingIntent
-      ? 'Demonstrou intenção comercial'
-      : loyal
-        ? 'Cliente recorrente de alto valor'
-        : recurring
-          ? 'Cliente recorrente'
-          : recentInteraction
-            ? 'Interação recente'
-            : 'Sem sinal comercial forte';
-
-  const nextAction = waiting
-    ? 'Responder agora'
-    : buyingIntent
-      ? 'Enviar proposta comercial'
-      : loyal
-        ? 'Oferecer recompra'
-        : 'Qualificar próximo passo';
-
-  return {
-    id: conv.id,
-    customerName: conv.customerName,
-    channel: conv.channel,
-    score,
-    label,
-    reason,
-    lastInteraction: conv.lastMessageAt,
-    nextAction,
-  };
 }
 
 function EmptyInsight({ text }: { text: string }) {
@@ -311,33 +179,6 @@ function Section({
   );
 }
 
-function KpiCard({ item }: { item: ExecutiveKpi }) {
-  const Icon = item.icon;
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="group rounded-2xl border border-gray-200/80 bg-white/90 p-5 shadow-sm backdrop-blur transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-gray-900/90"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">{item.title}</p>
-          <p className="mt-3 font-display text-3xl font-black tabular-nums tracking-tight text-gray-950 dark:text-white">
-            {item.value}
-          </p>
-        </div>
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-red-500 text-white shadow-lg shadow-blue-600/20">
-          <Icon className="h-5 w-5" />
-        </div>
-      </div>
-      <p className="mt-3 min-h-10 text-sm text-gray-500 dark:text-gray-400">{item.description}</p>
-      <span className={cn('mt-4 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1', statusToneClass(item.tone))}>
-        {item.badge}
-      </span>
-    </motion.div>
-  );
-}
-
 function MiniMetric({
   label,
   value,
@@ -352,38 +193,6 @@ function MiniMetric({
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>
       <p className={cn('mt-2 font-display text-2xl font-bold tabular-nums', statusToneClass(tone).split(' ')[1])}>{value}</p>
     </div>
-  );
-}
-
-function CompactSelect({
-  ariaLabel,
-  value,
-  onChange,
-  options,
-  className,
-}: {
-  ariaLabel: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: { value: string; label: string }[];
-  className?: string;
-}) {
-  return (
-    <select
-      aria-label={ariaLabel}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={cn(
-        'h-9 rounded-xl border border-white/10 bg-slate-900/80 px-3 text-[13px] font-medium text-slate-100 outline-none transition focus:border-blue-500/70 focus:ring-2 focus:ring-blue-500/20',
-        className,
-      )}
-    >
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
   );
 }
 
@@ -447,14 +256,13 @@ export function DashboardWorkspace() {
   const [customerFilter, setCustomerFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<CommercialStatusFilter>('all');
   const [channelFilter, setChannelFilter] = useState('');
-  const [presentationMode, setPresentationMode] = useState(false);
+  const { presentationMode, togglePresentationMode } = usePresentationMode();
   const [productSort, setProductSort] = useState<ProductSort>('best');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [askText, setAskText] = useState('');
   const [agentAnswer, setAgentAnswer] = useState('');
-  const [activeSection, setActiveSection] = useState('visao-geral');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [isDashboardNavHidden, setIsDashboardNavHidden] = useState(false);
+  const { activeSection, isHidden: isDashboardNavHidden } = useDashboardNavigation(presentationMode);
 
   const customers = useMemo(() => customersData?.data ?? [], [customersData]);
   const products = useMemo(() => productsData?.data ?? [], [productsData]);
@@ -473,87 +281,20 @@ export function DashboardWorkspace() {
     onError: () => setAgentAnswer('Não foi possível consultar o NITRUS agora. Tente novamente em instantes.'),
   });
 
-  const periodDays = period === 'today' ? 1 : period === '7d' ? 7 : period === 'month' ? new Date().getDate() : 30;
-  const cutoff = Date.now() - periodDays * 86400000;
+  const cutoff = periodCutoff(period);
 
   const filteredConversations = useMemo(
-    () =>
-      conversationList.filter((conv) => {
-        if (statusFilter !== 'all' && conv.status !== statusFilter) return false;
-        if (channelFilter && conv.channel !== channelFilter) return false;
-        if (customerFilter && conv.customerId !== customerFilter) return false;
-        return new Date(conv.lastMessageAt).getTime() >= cutoff;
-      }),
+    () => filterConversations(conversationList, { status: statusFilter, channel: channelFilter, customer: customerFilter, cutoff }),
     [channelFilter, conversationList, customerFilter, cutoff, statusFilter],
   );
 
-  const filteredOrders = useMemo(
-    () =>
-      orders.filter((order) => {
-        if (customerFilter && order.customerId !== customerFilter) return false;
-        return new Date(order.createdAt).getTime() >= cutoff;
-      }),
-    [customerFilter, cutoff, orders],
-  );
+  const filteredOrders = useMemo(() => filterOrders(orders, customerFilter, cutoff), [customerFilter, cutoff, orders]);
 
-  const filteredProducts = useMemo(
-    () => products.filter((product) => !productFilter || product.id === productFilter),
-    [productFilter, products],
-  );
+  const filteredProducts = useMemo(() => filterProducts(products, productFilter), [productFilter, products]);
 
   useEffect(() => {
-    const scrollEl = document.getElementById('app-scroll-container');
-    const target = scrollEl ?? window;
-    let last = scrollEl ? scrollEl.scrollTop : window.scrollY;
-
-    const getTop = () => (scrollEl ? scrollEl.scrollTop : window.scrollY);
-
-    const onScroll = () => {
-      const current = getTop();
-
-      if (current < 80) {
-        setIsDashboardNavHidden(false);
-        last = current;
-        return;
-      }
-
-      if (current > last + 16) {
-        setIsDashboardNavHidden(true);
-        setFiltersOpen(false);
-      } else if (current < last - 16) {
-        setIsDashboardNavHidden(false);
-      }
-
-      last = current;
-    };
-
-    target.addEventListener('scroll', onScroll, { passive: true });
-    return () => target.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    const scrollEl = document.getElementById('app-scroll-container');
-    const ids = ['visao-geral', 'ia', 'pipeline', 'leads', 'clientes', 'produtos', 'operacao'];
-    const elements = ids.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
-    if (!elements.length) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target.id) setActiveSection(visible.target.id);
-      },
-      {
-        root: scrollEl,
-        rootMargin: '-18% 0px -68% 0px',
-        threshold: [0.1, 0.25, 0.5],
-      },
-    );
-
-    elements.forEach((element) => observer.observe(element));
-    return () => observer.disconnect();
-  }, [presentationMode]);
+    if (isDashboardNavHidden) setFiltersOpen(false);
+  }, [isDashboardNavHidden]);
 
   if (isLoading) {
     return (
@@ -733,7 +474,7 @@ export function DashboardWorkspace() {
       title: 'Receita retida',
       value: formatCurrency(retainedRevenue),
       description: 'Receita concretizada em pedidos entregues ou retidos.',
-      badge: `${pct(retentionRate)} de retenção`,
+      badge: `${formatPercent(retentionRate)} de retenção`,
       tone: retentionRate >= 50 ? 'green' : 'amber',
       icon: ShieldCheck,
     },
@@ -787,7 +528,7 @@ export function DashboardWorkspace() {
     },
     {
       title: 'Taxa de retenção',
-      value: pct(retentionRate),
+      value: formatPercent(retentionRate),
       description: 'Estimativa baseada em receita vendida e retida.',
       badge: retentionRate >= 50 ? 'Boa retenção' : 'Revisar recompra',
       tone: retentionRate >= 50 ? 'green' : 'amber',
@@ -803,7 +544,7 @@ export function DashboardWorkspace() {
     },
   ];
 
-  const nav = [
+  const nav: DashboardNavigationItem[] = [
     { label: 'Visão geral', id: 'visao-geral', icon: BarChart3 },
     { label: 'IA', id: 'ia', icon: Brain },
     { label: 'Pipeline', id: 'pipeline', icon: GitBranch },
@@ -880,164 +621,41 @@ export function DashboardWorkspace() {
       <div className="relative space-y-8">
         {!presentationMode && <SetupChecklist />}
 
-        <motion.header
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#0b1220] via-blue-800 to-red-600 p-6 text-white shadow-xl shadow-blue-900/25 lg:p-8"
-        >
-          <div className="pointer-events-none absolute inset-0 dashboard-grid-bg opacity-30" />
-          <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-            <div className="max-w-4xl">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-blue-100">
-                  <Sparkles className="h-3.5 w-3.5" /> Centro de inteligência comercial
-                </span>
-                <span className={cn('rounded-full px-3 py-1 text-xs font-semibold ring-1', statusToneClass(operationTone))}>
-                  Operação {operationStatus}
-                </span>
-                <span className="text-sm capitalize text-blue-100">{formatToday()}</span>
-              </div>
-              <h1 className="mt-5 font-display text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
-                Painel Comercial NITRUS
-              </h1>
-              <p className="mt-3 max-w-3xl text-base text-blue-50/90 lg:text-lg">
-                Visão inteligente de vendas, clientes, produtos e oportunidades.
-              </p>
-              <p className="mt-2 text-sm text-blue-100/80">
-                {getGreeting()}, {user?.name?.split(' ')[0] ?? 'usuário'}. O NITRUS consolida a rotina comercial, previsões e prioridades da operação em uma única tela.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                to="/atendimento"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-blue-800 shadow-lg transition hover:bg-blue-50"
-              >
-                <Target className="h-4 w-4" /> Abrir Central de Conversão
-              </Link>
-              <a
-                href="#pergunte"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-2.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15"
-              >
-                <Brain className="h-4 w-4" /> Perguntar ao NITRUS
-              </a>
-              <Button
-                type="button"
-                variant="outline"
-                className="border-white/25 bg-white/10 text-white hover:bg-white/15"
-                onClick={() => refetch()}
-                loading={isFetching}
-              >
-                <RefreshCw className="h-4 w-4" />
-                Atualizar
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="border-white/25 bg-white/10 text-white hover:bg-white/15"
-                onClick={() => setPresentationMode((value) => !value)}
-              >
-                <Gauge className="h-4 w-4" />
-                {presentationMode ? 'Modo completo' : 'Modo apresentação'}
-              </Button>
-            </div>
-          </div>
-        </motion.header>
+        <DashboardExecutiveHeader
+          firstName={user?.name?.split(' ')[0] ?? 'usuário'}
+          operationStatus={operationStatus}
+          operationTone={operationTone}
+          presentationMode={presentationMode}
+          isFetching={isFetching}
+          onRefresh={() => refetch()}
+          onTogglePresentation={togglePresentationMode}
+        />
 
-        <div
-          className={cn(
-            'sticky top-0 z-[40] -mx-4 transition-all duration-300 ease-out lg:-mx-6',
-            isDashboardNavHidden ? 'pointer-events-none -translate-y-full opacity-0' : 'translate-y-0 opacity-100',
-          )}
-        >
-          <div className="border-b border-white/10 bg-slate-950/80 px-4 py-2.5 shadow-lg shadow-black/10 backdrop-blur-xl lg:px-6">
-            <div className="rounded-2xl border border-white/10 bg-slate-950/75 p-2 shadow-lg shadow-black/10 backdrop-blur-xl">
-              <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
-                <nav className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  {nav.map(({ label, id, icon: Icon }) => {
-                    const active = activeSection === id;
-                    return (
-                      <a
-                        key={id}
-                        href={`#${id}`}
-                        className={cn(
-                          'inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-3 text-[13px] font-semibold transition-all',
-                          active
-                            ? 'border-transparent bg-gradient-to-r from-blue-600 to-red-500 text-white shadow-md shadow-blue-950/20'
-                            : 'border-white/0 text-slate-300 hover:border-white/10 hover:bg-white/[0.08] hover:text-white',
-                        )}
-                      >
-                        <Icon className="h-4 w-4" />
-                        {label}
-                      </a>
-                    );
-                  })}
-                </nav>
+        <DashboardInternalNav
+          items={nav}
+          activeSection={activeSection}
+          isHidden={isDashboardNavHidden}
+          presentationMode={presentationMode}
+          filtersOpen={filtersOpen}
+          period={period}
+          productFilter={productFilter}
+          customerFilter={customerFilter}
+          statusFilter={statusFilter}
+          channelFilter={channelFilter}
+          periodOptions={periodOptions}
+          productOptions={productOptions}
+          customerOptions={customerOptions}
+          statusOptions={statusOptions}
+          channelOptions={channelOptions}
+          onPeriodChange={setPeriod}
+          onProductChange={setProductFilter}
+          onCustomerChange={setCustomerFilter}
+          onStatusChange={setStatusFilter}
+          onChannelChange={setChannelFilter}
+          onToggleFilters={() => setFiltersOpen((value) => !value)}
+        />
 
-                {!presentationMode && (
-                  <div className="flex shrink-0 items-center gap-2">
-                    <CompactSelect
-                      ariaLabel="Período"
-                      value={period}
-                      onChange={(value) => setPeriod(value as PeriodFilter)}
-                      options={periodOptions}
-                      className="w-[118px]"
-                    />
-                    <div className="hidden items-center gap-2 lg:flex">
-                      <CompactSelect ariaLabel="Produto" value={productFilter} onChange={setProductFilter} options={productOptions} className="w-[150px]" />
-                      <CompactSelect ariaLabel="Cliente" value={customerFilter} onChange={setCustomerFilter} options={customerOptions} className="w-[150px]" />
-                      <CompactSelect
-                        ariaLabel="Status comercial"
-                        value={statusFilter}
-                        onChange={(value) => setStatusFilter(value as CommercialStatusFilter)}
-                        options={statusOptions}
-                        className="w-[140px]"
-                      />
-                      <CompactSelect ariaLabel="Canal" value={channelFilter} onChange={setChannelFilter} options={channelOptions} className="w-[140px]" />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setFiltersOpen((value) => !value)}
-                      className={cn(
-                        'inline-flex h-9 items-center gap-2 rounded-full border border-white/10 px-3 text-[13px] font-semibold text-slate-200 transition hover:bg-white/[0.08] hover:text-white lg:hidden',
-                        filtersOpen && 'bg-white/[0.08] text-white',
-                      )}
-                    >
-                      <SlidersHorizontal className="h-4 w-4" />
-                      Filtros
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {!presentationMode && filtersOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  className="mt-2 grid gap-2 border-t border-white/10 pt-2 sm:grid-cols-2 lg:hidden"
-                >
-                  <CompactSelect ariaLabel="Produto" value={productFilter} onChange={setProductFilter} options={productOptions} />
-                  <CompactSelect ariaLabel="Cliente" value={customerFilter} onChange={setCustomerFilter} options={customerOptions} />
-                  <CompactSelect
-                    ariaLabel="Status comercial"
-                    value={statusFilter}
-                    onChange={(value) => setStatusFilter(value as CommercialStatusFilter)}
-                    options={statusOptions}
-                  />
-                  <CompactSelect ariaLabel="Canal" value={channelFilter} onChange={setChannelFilter} options={channelOptions} />
-                </motion.div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <Section id="visao-geral" title="Resumo geral do negócio" subtitle="KPIs executivos com contexto comercial e status operacional." icon={BarChart3}>
-          <div className={cn('grid gap-4 sm:grid-cols-2 xl:grid-cols-5', presentationMode && 'xl:grid-cols-5')}>
-            {kpis.map((item) => (
-              <KpiCard key={item.title} item={item} />
-            ))}
-          </div>
-        </Section>
+        <BusinessSummarySection metrics={kpis} presentationMode={presentationMode} />
 
         <Section id="ia" title="Resumo inteligente do NITRUS" subtitle="Diagnóstico acionável gerado a partir dos dados disponíveis no painel." icon={Brain}>
           <div className="grid gap-4 lg:grid-cols-5">
@@ -1090,7 +708,7 @@ export function DashboardWorkspace() {
                   <MiniMetric label="Conservadora" value={formatCurrency(conservativeForecast)} tone="slate" />
                   <MiniMetric label="Provável" value={formatCurrency(probableForecast)} tone="blue" />
                   <MiniMetric label="Otimista" value={formatCurrency(optimisticForecast)} tone="green" />
-                  <MiniMetric label="Prob. conversão" value={pct(probableRate * 100)} tone="amber" />
+                  <MiniMetric label="Prob. conversão" value={formatPercent(probableRate * 100)} tone="amber" />
                 </div>
                 <p className="mt-4 text-xs text-gray-500">
                   Estimativa calculada a partir dos dados disponíveis no NITRUS, combinando pipeline, retenção, conversão e fila comercial.
@@ -1138,13 +756,13 @@ export function DashboardWorkspace() {
                 <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-red-500" style={{ width: `${pipelineHealth}%` }} />
               </div>
               <p className="mt-4 text-sm text-gray-500">
-                {gargalo ? `Maior gargalo: ${gargalo.label} (${pct(gargalo.quedaPct ?? 0)} de queda).` : 'Use pedidos, conversas e funil para detectar gargalos com mais precisão.'}
+                {gargalo ? `Maior gargalo: ${gargalo.label} (${formatPercent(gargalo.quedaPct ?? 0)} de queda).` : 'Use pedidos, conversas e funil para detectar gargalos com mais precisão.'}
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:col-span-8 lg:grid-cols-4">
               <MiniMetric label="Valor no funil" value={formatCurrency(pipelineValue)} tone="blue" />
               <MiniMetric label="Oportunidades" value={opportunityCount} tone="slate" />
-              <MiniMetric label="Conversão estimada" value={pct(conversionRate)} tone="green" />
+              <MiniMetric label="Conversão estimada" value={formatPercent(conversionRate)} tone="green" />
               <MiniMetric label="Negócios em risco" value={stats.waitingQueue} tone={stats.waitingQueue > 0 ? 'amber' : 'green'} />
             </div>
           </div>
@@ -1155,7 +773,7 @@ export function DashboardWorkspace() {
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-semibold text-gray-900 dark:text-white">{step.label}</p>
                     <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
-                      {pct(step.conversaoPct)}
+                      {formatPercent(step.conversaoPct)}
                     </span>
                   </div>
                   <p className="mt-3 font-display text-2xl font-bold tabular-nums">{formatCurrency(step.valor)}</p>
@@ -1387,7 +1005,7 @@ export function DashboardWorkspace() {
             <MiniMetric label="Receita retida" value={formatCurrency(retainedRevenue)} tone="green" />
             <MiniMetric label="Clientes ativos" value={activeCustomers} tone="blue" />
             <MiniMetric label="Clientes recorrentes" value={recurringCustomers} tone="green" />
-            <MiniMetric label="Conversão estimada" value={pct(conversionRate)} tone="amber" />
+            <MiniMetric label="Conversão estimada" value={formatPercent(conversionRate)} tone="amber" />
             <MiniMetric label="Evolução" value={ordersChart.length ? `${ordersChart.length} pontos` : 'Sem série'} tone="slate" />
           </div>
           <div className="grid gap-4 lg:grid-cols-2">
