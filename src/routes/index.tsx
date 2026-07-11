@@ -2,10 +2,7 @@ import { AppLayout } from '@/layouts/AppLayout';
 import { CampaignsPage } from '@/pages/CampaignsPage';
 import { ChannelsPage } from '@/pages/ChannelsPage';
 import { ChatbotPage } from '@/pages/ChatbotPage';
-import { ConversationsPage } from '@/pages/ConversationsPage';
-import { CopilotPage } from '@/pages/CopilotPage';
 import { CustomersPage } from '@/pages/CustomersPage';
-import { DashboardPage } from '@/pages/DashboardPage';
 import { FunnelPage } from '@/pages/FunnelPage';
 import { IntegrationsPage } from '@/pages/IntegrationsPage';
 import { LandingPage } from '@/pages/LandingPage';
@@ -13,15 +10,25 @@ import { LegalPage } from '@/pages/LegalPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
-import { OrdersPage } from '@/pages/OrdersPage';
-import { ProductsPage } from '@/pages/ProductsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
-import { ReportsPage } from '@/pages/ReportsPage';
-import { InsightsPage } from '@/pages/InsightsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { PermissionRoute } from '@/routes/PermissionRoute';
 import { ProtectedRoute, PublicRoute } from '@/routes/ProtectedRoute';
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { RouteLoadingFallback } from '@/components/ui/PageState';
+
+const DashboardPage = lazy(() => import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
+const ConversationsPage = lazy(() => import('@/pages/ConversationsPage').then((m) => ({ default: m.ConversationsPage })));
+const ReportsPage = lazy(() => import('@/pages/ReportsPage').then((m) => ({ default: m.ReportsPage })));
+const InsightsPage = lazy(() => import('@/pages/InsightsPage').then((m) => ({ default: m.InsightsPage })));
+const ProductsPage = lazy(() => import('@/pages/ProductsPage').then((m) => ({ default: m.ProductsPage })));
+const OrdersPage = lazy(() => import('@/pages/OrdersPage').then((m) => ({ default: m.OrdersPage })));
+const CopilotPage = lazy(() => import('@/pages/CopilotPage').then((m) => ({ default: m.CopilotPage })));
+
+function LazyPage({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={<RouteLoadingFallback />}>{children}</Suspense>;
+}
 
 export function AppRoutes() {
   return (
@@ -37,15 +44,15 @@ export function AppRoutes() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/atendimento" element={<ConversationsPage />} />
+          <Route path="/dashboard" element={<LazyPage><DashboardPage /></LazyPage>} />
+          <Route path="/atendimento" element={<LazyPage><ConversationsPage /></LazyPage>} />
           <Route path="/conversas" element={<Navigate to="/atendimento" replace />} />
           <Route path="/contatos" element={<CustomersPage />} />
           <Route path="/clientes" element={<Navigate to="/contatos" replace />} />
-          <Route path="/produtos" element={<ProductsPage />} />
-          <Route path="/pedidos" element={<OrdersPage />} />
+          <Route path="/produtos" element={<LazyPage><ProductsPage /></LazyPage>} />
+          <Route path="/pedidos" element={<LazyPage><OrdersPage /></LazyPage>} />
           <Route path="/robo" element={<ChatbotPage />} />
-          <Route path="/copiloto" element={<CopilotPage />} />
+          <Route path="/copiloto" element={<LazyPage><CopilotPage /></LazyPage>} />
           <Route path="/agente-ia" element={<Navigate to="/copiloto" replace />} />
           <Route path="/funil" element={<FunnelPage />} />
           <Route path="/configuracoes" element={<SettingsPage />} />
@@ -57,8 +64,8 @@ export function AppRoutes() {
           </Route>
 
           <Route element={<PermissionRoute permission="viewReports" />}>
-            <Route path="/relatorios" element={<ReportsPage />} />
-            <Route path="/insights" element={<InsightsPage />} />
+            <Route path="/relatorios" element={<LazyPage><ReportsPage /></LazyPage>} />
+            <Route path="/insights" element={<LazyPage><InsightsPage /></LazyPage>} />
           </Route>
 
           <Route element={<PermissionRoute permission="manageIntegrations" />}>

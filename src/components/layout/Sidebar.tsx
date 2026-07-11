@@ -15,55 +15,37 @@ import {
   LogOut,
   Megaphone,
   Package,
-  Radio,
   Settings,
   ShoppingCart,
   Sparkles,
   UserCircle,
   Users,
   X,
-  LineChart,
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 
 const navSections: NavSection[] = [
-  {
-    title: 'Receita',
-    items: [
-      { to: '/dashboard', icon: Gauge, label: 'Painel Comercial' },
-      { to: '/funil', icon: GitBranch, label: 'Funil de Vendas' },
-      { to: '/pedidos', icon: ShoppingCart, label: 'Pedidos' },
-    ],
-  },
-  {
-    title: 'Conversão',
-    items: [
-      { to: '/atendimento', icon: Headphones, label: 'Central de Conversão' },
-      { to: '/contatos', icon: Users, label: 'Contatos' },
-      { to: '/produtos', icon: Package, label: 'Produtos' },
-      { to: '/robo', icon: Bot, label: 'Agente Automático' },
-      { to: '/copiloto', icon: Sparkles, label: 'Copiloto Comercial' },
-      { to: '/campanhas', icon: Megaphone, label: 'Campanhas', permission: 'managePlatform' },
-      { to: '/canais', icon: Radio, label: 'Canais', permission: 'managePlatform' },
-    ],
-  },
-  {
-    title: 'Inteligência',
-    items: [
-      { to: '/relatorios', icon: BarChart3, label: 'Relatórios Comerciais', permission: 'viewReports' },
-      { to: '/insights', icon: LineChart, label: 'Inteligência de Vendas', permission: 'viewReports' },
-      { to: '/integracoes', icon: Link2, label: 'Integrações', permission: 'manageIntegrations' },
-    ],
-  },
-  {
-    title: 'Sistema',
-    items: [
-      { to: '/configuracoes', icon: Settings, label: 'Configurações' },
-      { to: '/perfil', icon: UserCircle, label: 'Perfil' },
-    ],
-  },
+  { title: 'OPERAÇÃO', items: [
+    { to: '/dashboard', icon: Gauge, label: 'Painel Comercial' },
+    { to: '/atendimento', icon: Headphones, label: 'Central de Conversão' },
+    { to: '/contatos', icon: Users, label: 'Clientes' },
+    { to: '/produtos', icon: Package, label: 'Produtos' },
+    { to: '/pedidos', icon: ShoppingCart, label: 'Pedidos' },
+    { to: '/funil', icon: GitBranch, label: 'Funil de Vendas' },
+  ] },
+  { title: 'AGENTE', items: [
+    { to: '/copiloto', icon: Sparkles, label: 'Copiloto Comercial' },
+    { to: '/robo', icon: Bot, label: 'Agente Automático' },
+  ] },
+  { title: 'GESTÃO', items: [
+    { to: '/campanhas', icon: Megaphone, label: 'Campanhas', permission: 'managePlatform' },
+    { to: '/relatorios', icon: BarChart3, label: 'Relatórios', permission: 'viewReports' },
+    { to: '/configuracoes', icon: UserCircle, label: 'Equipe e acessos' },
+    { to: '/integracoes', icon: Link2, label: 'Canais e integrações', permission: 'manageIntegrations' },
+    { to: '/perfil', icon: Settings, label: 'Minha empresa' },
+  ] },
 ];
 
 interface SidebarProps {
