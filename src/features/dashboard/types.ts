@@ -121,3 +121,26 @@ export interface PipelineHealthData {
 export interface PipelineHealthSectionProps {
   data: PipelineHealthData;
 }
+export interface LeadScoringSectionProps {
+  leads: LeadScore[];
+  presentationMode: boolean;
+}
+
+export interface CommercialRoutineSectionProps {
+  items: RoutineItem[];
+  presentationMode: boolean;
+}
+
+export interface ServiceCapacityData {
+  activeConversations: number;
+  waitingConversations: number;
+  closedConversations: number;
+  averageResponseTime: string;
+  aiResolutionRate: number;
+  status: string;
+  tone: DashboardTone;
+}
+
+export interface ServiceCapacitySectionProps {
+  data: ServiceCapacityData;
+}

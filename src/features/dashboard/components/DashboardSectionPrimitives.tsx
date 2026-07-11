@@ -1,4 +1,4 @@
-﻿import { cn } from '@/utils';
+import { cn } from '@/utils';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { DashboardTone } from '../types';
@@ -54,6 +54,18 @@ export function DashboardChartTooltip({ active, payload, label }: { active?: boo
       {payload.map((item) => (
         <p key={item.name} className="flex items-center justify-between gap-6 text-gray-500"><span>{item.name}</span><span className="font-semibold tabular-nums" style={{ color: item.color }}>{item.value}</span></p>
       ))}
+    </div>
+  );
+}
+export function DashboardDataTable({ headers, children }: { headers: string[]; children: ReactNode }) {
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-gray-200/80 bg-white/90 shadow-sm dark:border-white/10 dark:bg-gray-900/90">
+      <table className="min-w-full text-left text-[13px] sm:text-sm">
+        <thead className="bg-slate-50 text-xs uppercase tracking-wide text-gray-500 dark:bg-white/[0.03]">
+          <tr>{headers.map((header) => <th key={header} className="whitespace-nowrap px-3 py-2.5 font-semibold">{header}</th>)}</tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100 dark:divide-white/10">{children}</tbody>
+      </table>
     </div>
   );
 }

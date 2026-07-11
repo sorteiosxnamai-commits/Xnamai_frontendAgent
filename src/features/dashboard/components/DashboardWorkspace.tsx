@@ -1,4 +1,3 @@
-import { ChannelBadge } from '@/components/ui/ChannelBadge';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -28,7 +27,6 @@ import {
   BarChart3,
   Bot,
   Brain,
-  Calendar,
   CircleDollarSign,
   Gauge,
   GitBranch,
@@ -47,12 +45,15 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { BusinessSummarySection } from './BusinessSummarySection';
+import { CommercialRoutineSection } from './CommercialRoutineSection';
 import { DashboardExecutiveHeader } from './DashboardExecutiveHeader';
 import { DashboardInternalNav } from './DashboardInternalNav';
+import { LeadScoringSection } from './LeadScoringSection';
 import { NitrosExecutiveSummary } from './NitrosExecutiveSummary';
 import { PipelineHealthSection } from './PipelineHealthSection';
 import { RevenueForecastSection } from './RevenueForecastSection';
-import { DashboardChartTooltip as ChartTooltip, DashboardEmptyInsight as EmptyInsight, DashboardMiniMetric as MiniMetric, DashboardSection as Section, statusToneClass } from './DashboardSectionPrimitives';
+import { ServiceCapacitySection } from './ServiceCapacitySection';
+import { DashboardChartTooltip as ChartTooltip, DashboardDataTable as DataTable, DashboardEmptyInsight as EmptyInsight, DashboardMiniMetric as MiniMetric, DashboardSection as Section, statusToneClass } from './DashboardSectionPrimitives';
 import { useDashboardNavigation, usePresentationMode } from '../hooks';
 import type { CommercialStatusFilter, DashboardNavigationItem, ExecutiveKpi, PeriodFilter, ProductSort, RoutineItem } from '../types';
 import { daysSince, filterConversations, filterOrders, filterProducts, formatPercent, getCustomerAction, getCustomerStatus, hasBuyingIntent, periodCutoff, scoreConversation } from '../utils';
@@ -122,31 +123,6 @@ function buildChannelVolume(
     type: item.type,
     value: Math.max(1, Math.round((item.count / total) * 100)),
   }));
-}
-
-function DataTable({
-  headers,
-  children,
-}: {
-  headers: string[];
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="overflow-x-auto rounded-2xl border border-gray-200/80 bg-white/90 shadow-sm dark:border-white/10 dark:bg-gray-900/90">
-      <table className="min-w-full text-left text-[13px] sm:text-sm">
-        <thead className="bg-slate-50 text-xs uppercase tracking-wide text-gray-500 dark:bg-white/[0.03]">
-          <tr>
-            {headers.map((h) => (
-              <th key={h} className="whitespace-nowrap px-3 py-2.5 font-semibold">
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100 dark:divide-white/10">{children}</tbody>
-      </table>
-    </div>
-  );
 }
 
 export function DashboardWorkspace() {
@@ -602,82 +578,21 @@ export function DashboardWorkspace() {
           }}
         />
 
-        <Section id="leads" title="Pontuação de leads" subtitle="Classificação de potencial comercial calculada localmente com conversas, histórico e sinais de intenção." icon={Target} hidden={presentationMode}>
-          {leadScores.length ? (
-            <DataTable headers={['Cliente', 'Canal', 'Score', 'Classificação', 'Motivo', 'Última interação', 'Próxima ação']}>
-              {leadScores.map((lead) => (
-                <tr key={lead.id}>
-                  <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-gray-900 dark:text-white">{lead.customerName}</td>
-                  <td className="px-3 py-2.5"><ChannelBadge channel={lead.channel} /></td>
-                  <td className="px-3 py-2.5">
-                    <div className="flex min-w-32 items-center gap-2">
-                      <div className="h-2 flex-1 rounded-full bg-gray-100 dark:bg-gray-800">
-                        <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-red-500" style={{ width: `${lead.score}%` }} />
-                      </div>
-                      <span className="font-bold tabular-nums">{lead.score}</span>
-                    </div>
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold ring-1', statusToneClass(lead.label === 'Quente' || lead.label === 'Cliente fiel' ? 'green' : lead.label === 'Em risco' ? 'red' : lead.label === 'Morno' ? 'amber' : 'slate'))}>
-                      {lead.label}
-                    </span>
-                  </td>
-                  <td className="min-w-52 px-3 py-2.5 text-gray-600 dark:text-gray-300">{lead.reason}</td>
-                  <td className="whitespace-nowrap px-3 py-2.5 text-gray-500">{formatRelativeTime(lead.lastInteraction)}</td>
-                  <td className="min-w-44 px-3 py-2.5 text-gray-700 dark:text-gray-300">{lead.nextAction}</td>
-                </tr>
-              ))}
-            </DataTable>
-          ) : (
-            <EmptyInsight text="Sem leads suficientes para pontuação. Novas conversas e pedidos permitirão classificar clientes por potencial." />
-          )}
-        </Section>
+        <LeadScoringSection leads={leadScores} presentationMode={presentationMode} />
 
-        <Section id="rotina" title="Rotina comercial de hoje" subtitle="Lista dinâmica calculada na interface. Nenhuma tarefa é persistida no banco." icon={Calendar} hidden={presentationMode}>
-          <div className="grid gap-4 lg:grid-cols-2">
-            {routineItems.map((item) => (
-              <div key={`${item.description}-${item.origin}`} className="rounded-2xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90">
-                <div className="flex items-start justify-between gap-3">
-                  <span className={cn('rounded-full px-2.5 py-1 text-xs font-bold ring-1', statusToneClass(item.priority === 'Alta' ? 'red' : item.priority === 'Media' ? 'amber' : 'slate'))}>
-                    Prioridade {item.priority}
-                  </span>
-                  <span className="text-xs text-gray-500">{item.origin}</span>
-                </div>
-                <h3 className="mt-4 font-semibold text-gray-950 dark:text-white">{item.description}</h3>
-                <p className="mt-2 text-sm text-gray-500">{item.impact}</p>
-                {item.href ? (
-                  <Link to={item.href} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700">
-                    {item.action} <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : (
-                  <a href="#pergunte" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700">
-                    {item.action} <ArrowRight className="h-4 w-4" />
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        </Section>
+        <CommercialRoutineSection items={routineItems} presentationMode={presentationMode} />
 
-        <Section id="operacao" title="Capacidade de atendimento" subtitle="Carga operacional, velocidade e resolução por IA." icon={Headphones}>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-            <MiniMetric label="Ativas" value={stats.activeConversations} tone="blue" />
-            <MiniMetric label="Aguardando" value={stats.waitingQueue} tone={stats.waitingQueue ? 'amber' : 'green'} />
-            <MiniMetric label="Encerradas" value={stats.closedConversations} tone="slate" />
-            <MiniMetric label="Tempo médio" value={stats.avgResponseTime} tone="blue" />
-            <MiniMetric label="Resolvido por IA" value={`${stats.botResolved}%`} tone="green" />
-            <MiniMetric label="Carga estimada" value={operationStatus} tone={operationTone} />
-          </div>
-          <div className="rounded-2xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              {operationStatus === 'Saudável'
-                ? 'Operação saudável no momento.'
-                : operationStatus === 'Atenção'
-                  ? 'Use o Copiloto para acelerar respostas e priorize leads quentes.'
-                  : 'Fila alta. Priorize leads quentes e distribua atendimento antes de iniciar novas campanhas.'}
-            </p>
-          </div>
-        </Section>
+        <ServiceCapacitySection
+          data={{
+            activeConversations: stats.activeConversations,
+            waitingConversations: stats.waitingQueue,
+            closedConversations: stats.closedConversations,
+            averageResponseTime: stats.avgResponseTime,
+            aiResolutionRate: stats.botResolved,
+            status: operationStatus,
+            tone: operationTone,
+          }}
+        />
 
         <Section id="clientes" title="Clientes mais fiéis" subtitle="Ordenados por valor comprado, quantidade de pedidos e recorrência." icon={HeartHandshake} hidden={presentationMode}>
           {loyalCustomers.length ? (
