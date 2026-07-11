@@ -24,20 +24,16 @@ import { cn, formatCurrency, formatDate, formatDateTime, formatRelativeTime } fr
 import type { ChannelType, Product } from '@/types';
 import { useMutation } from '@tanstack/react-query';
 import {
-  AlertTriangle,
   ArrowRight,
   BarChart3,
   Bot,
   Brain,
   Calendar,
-  CheckCircle2,
   CircleDollarSign,
-  Flame,
   Gauge,
   GitBranch,
   Headphones,
   HeartHandshake,
-  LineChart as LineChartIcon,
   MessageSquare,
   Package,
   RefreshCw,
@@ -53,6 +49,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { BusinessSummarySection } from './BusinessSummarySection';
 import { DashboardExecutiveHeader } from './DashboardExecutiveHeader';
 import { DashboardInternalNav } from './DashboardInternalNav';
+import { NitrosExecutiveSummary } from './NitrosExecutiveSummary';
+import { PipelineHealthSection } from './PipelineHealthSection';
+import { RevenueForecastSection } from './RevenueForecastSection';
+import { DashboardChartTooltip as ChartTooltip, DashboardEmptyInsight as EmptyInsight, DashboardMiniMetric as MiniMetric, DashboardSection as Section, statusToneClass } from './DashboardSectionPrimitives';
 import { useDashboardNavigation, usePresentationMode } from '../hooks';
 import type { CommercialStatusFilter, DashboardNavigationItem, ExecutiveKpi, PeriodFilter, ProductSort, RoutineItem } from '../types';
 import { daysSince, filterConversations, filterOrders, filterProducts, formatPercent, getCustomerAction, getCustomerStatus, hasBuyingIntent, periodCutoff, scoreConversation } from '../utils';
@@ -60,8 +60,6 @@ import { Link } from 'react-router-dom';
 import {
   Area,
   AreaChart,
-  Bar,
-  BarChart,
   CartesianGrid,
   Cell,
   Line,
@@ -95,17 +93,6 @@ const CHANNEL_LABELS: Record<ChannelType, string> = {
   email: 'E-mail',
 };
 
-function statusToneClass(tone: ExecutiveKpi['tone']): string {
-  const tones = {
-    blue: 'bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:ring-blue-900/50',
-    red: 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-300 dark:ring-red-900/50',
-    green: 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900/50',
-    amber: 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-900/50',
-    slate: 'bg-slate-50 text-slate-700 ring-slate-200 dark:bg-slate-800/70 dark:text-slate-300 dark:ring-slate-700',
-  };
-  return tones[tone];
-}
-
 function buildChannelVolume(
   channels: { type: ChannelType; name: string; messagesToday: number }[] | undefined,
   conversations: { channel: ChannelType }[] | undefined,
@@ -137,65 +124,6 @@ function buildChannelVolume(
   }));
 }
 
-function EmptyInsight({ text }: { text: string }) {
-  return (
-    <div className="rounded-2xl border border-dashed border-gray-200 bg-white/70 p-6 text-sm text-gray-500 dark:border-white/10 dark:bg-gray-900/60 dark:text-gray-400">
-      {text}
-    </div>
-  );
-}
-
-function Section({
-  id,
-  title,
-  subtitle,
-  icon: Icon,
-  children,
-  hidden,
-}: {
-  id: string;
-  title: string;
-  subtitle?: string;
-  icon: typeof Sparkles;
-  children: React.ReactNode;
-  hidden?: boolean;
-}) {
-  if (hidden) return null;
-  return (
-    <section id={id} className="scroll-mt-32 space-y-4">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:ring-blue-900/50">
-              <Icon className="h-5 w-5" />
-            </span>
-            <h2 className="font-display text-xl font-bold tracking-tight text-gray-950 dark:text-white">{title}</h2>
-          </div>
-          {subtitle && <p className="mt-1 max-w-3xl text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
-        </div>
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function MiniMetric({
-  label,
-  value,
-  tone = 'blue',
-}: {
-  label: string;
-  value: string | number;
-  tone?: ExecutiveKpi['tone'];
-}) {
-  return (
-    <div className="rounded-2xl border border-gray-200/80 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-gray-900/80">
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>
-      <p className={cn('mt-2 font-display text-2xl font-bold tabular-nums', statusToneClass(tone).split(' ')[1])}>{value}</p>
-    </div>
-  );
-}
-
 function DataTable({
   headers,
   children,
@@ -217,23 +145,6 @@ function DataTable({
         </thead>
         <tbody className="divide-y divide-gray-100 dark:divide-white/10">{children}</tbody>
       </table>
-    </div>
-  );
-}
-
-function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white p-3 text-xs shadow-lg dark:border-white/10 dark:bg-gray-900">
-      <p className="mb-2 font-semibold text-gray-900 dark:text-white">{label}</p>
-      {payload.map((item) => (
-        <p key={item.name} className="flex items-center justify-between gap-6 text-gray-500">
-          <span>{item.name}</span>
-          <span className="font-semibold tabular-nums" style={{ color: item.color }}>
-            {item.value}
-          </span>
-        </p>
-      ))}
     </div>
   );
 }
@@ -657,137 +568,39 @@ export function DashboardWorkspace() {
 
         <BusinessSummarySection metrics={kpis} presentationMode={presentationMode} />
 
-        <Section id="ia" title="Resumo inteligente do NITRUS" subtitle="Diagnóstico acionável gerado a partir dos dados disponíveis no painel." icon={Brain}>
-          <div className="grid gap-4 lg:grid-cols-5">
-            <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#0b1220] via-blue-800 to-red-600 p-6 text-white shadow-xl shadow-blue-900/20 lg:col-span-2">
-              <div className="flex items-center gap-2 text-blue-100">
-                <Sparkles className="h-5 w-5" />
-                <p className="text-xs font-bold uppercase tracking-[0.18em]">Coach comercial</p>
-              </div>
-              <p className="mt-5 text-lg font-semibold leading-relaxed">{executiveDiagnosis}</p>
-              <div className="mt-6 grid gap-3">
-                <div className="rounded-2xl bg-white/10 p-4">
-                  <p className="text-xs font-bold uppercase tracking-wide text-blue-100">Ação recomendada agora</p>
-                  <p className="mt-1 text-sm">{recommendedAction}</p>
-                </div>
-                <div className="rounded-2xl bg-white/10 p-4">
-                  <p className="text-xs font-bold uppercase tracking-wide text-blue-100">Impacto esperado</p>
-                  <p className="mt-1 text-sm">{expectedImpact}</p>
-                </div>
-              </div>
-            </div>
-            <div className="grid gap-4 lg:col-span-3 md:grid-cols-3">
-              <div className="rounded-2xl border border-red-200/70 bg-red-50/80 p-5 dark:border-red-900/40 dark:bg-red-950/20">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
-                <p className="mt-3 text-xs font-bold uppercase tracking-wide text-red-700 dark:text-red-300">Principal risco</p>
-                <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">{mainRisk}</p>
-              </div>
-              <div className="rounded-2xl border border-blue-200/70 bg-blue-50/80 p-5 dark:border-blue-900/40 dark:bg-blue-950/20">
-                <Flame className="h-5 w-5 text-blue-600" />
-                <p className="mt-3 text-xs font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300">Principal oportunidade</p>
-                <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">{mainOpportunity}</p>
-              </div>
-              <div className="rounded-2xl border border-emerald-200/70 bg-emerald-50/80 p-5 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                <p className="mt-3 text-xs font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Credibilidade</p>
-                <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">
-                  {agentStatus?.online ? 'IA online' : 'IA sem status online'} com {channels?.filter((c) => c.connected).length ?? 0} canal(is) conectado(s).
-                </p>
-              </div>
-            </div>
-          </div>
-        </Section>
+        <NitrosExecutiveSummary
+          diagnosis={executiveDiagnosis}
+          recommendedAction={recommendedAction}
+          expectedImpact={expectedImpact}
+          mainRisk={mainRisk}
+          mainOpportunity={mainOpportunity}
+          agentOnline={Boolean(agentStatus?.online)}
+          connectedChannels={channels?.filter((channel) => channel.connected).length ?? 0}
+        />
 
-        <Section id="previsao" title="Previsão comercial" subtitle="Estimativa calculada a partir dos dados disponíveis no NITRUS." icon={LineChartIcon}>
-          {pipelineValue > 0 ? (
-            <div className="grid gap-4 lg:grid-cols-5">
-              <div className="rounded-3xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90 lg:col-span-2">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <MiniMetric label="Receita atual" value={formatCurrency(revenueSold)} tone="green" />
-                  <MiniMetric label="Pipeline em aberto" value={formatCurrency(pipelineValue)} tone="blue" />
-                  <MiniMetric label="Conservadora" value={formatCurrency(conservativeForecast)} tone="slate" />
-                  <MiniMetric label="Provável" value={formatCurrency(probableForecast)} tone="blue" />
-                  <MiniMetric label="Otimista" value={formatCurrency(optimisticForecast)} tone="green" />
-                  <MiniMetric label="Prob. conversão" value={formatPercent(probableRate * 100)} tone="amber" />
-                </div>
-                <p className="mt-4 text-xs text-gray-500">
-                  Estimativa calculada a partir dos dados disponíveis no NITRUS, combinando pipeline, retenção, conversão e fila comercial.
-                </p>
-              </div>
-              <div className="rounded-3xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90 lg:col-span-3">
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart
-                    data={[
-                      { name: 'Atual', valor: revenueSold },
-                      { name: 'Conservadora', valor: conservativeForecast },
-                      { name: 'Provável', valor: probableForecast },
-                      { name: 'Otimista', valor: optimisticForecast },
-                    ]}
-                  >
-                    <CartesianGrid strokeDasharray="4 4" vertical={false} className="stroke-gray-200 dark:stroke-gray-800" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 12, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-                    <Tooltip content={<ChartTooltip />} />
-                    <Bar dataKey="valor" name="Valor" radius={[10, 10, 0, 0]}>
-                      {[CHART.green, CHART.slate, CHART.blue, CHART.red].map((color) => (
-                        <Cell key={color} fill={color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          ) : (
-            <EmptyInsight text="Sem pipeline suficiente para estimativa. Sincronize pedidos, movimente oportunidades ou registre novas conversas para o NITRUS projetar cenários." />
-          )}
-        </Section>
+        <RevenueForecastSection
+          data={{
+            conservative: conservativeForecast,
+            probable: probableForecast,
+            optimistic: optimisticForecast,
+            soldRevenue: revenueSold,
+            openPipeline: pipelineValue,
+            probableRate,
+          }}
+        />
 
-        <Section id="pipeline" title="Saúde do pipeline" subtitle="Gargalos, valor em aberto e próximos riscos comerciais." icon={GitBranch}>
-          <div className="grid gap-4 lg:grid-cols-12">
-            <div className="rounded-3xl border border-gray-200/80 bg-white/90 p-6 shadow-sm dark:border-white/10 dark:bg-gray-900/90 lg:col-span-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-gray-500">Índice de saúde</p>
-                  <p className="mt-2 font-display text-4xl font-black tabular-nums text-gray-950 dark:text-white">{pipelineHealth}</p>
-                </div>
-                <Gauge className={cn('h-10 w-10', pipelineTone === 'green' ? 'text-emerald-500' : pipelineTone === 'amber' ? 'text-amber-500' : 'text-red-500')} />
-              </div>
-              <div className="mt-5 h-3 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
-                <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-red-500" style={{ width: `${pipelineHealth}%` }} />
-              </div>
-              <p className="mt-4 text-sm text-gray-500">
-                {gargalo ? `Maior gargalo: ${gargalo.label} (${formatPercent(gargalo.quedaPct ?? 0)} de queda).` : 'Use pedidos, conversas e funil para detectar gargalos com mais precisão.'}
-              </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:col-span-8 lg:grid-cols-4">
-              <MiniMetric label="Valor no funil" value={formatCurrency(pipelineValue)} tone="blue" />
-              <MiniMetric label="Oportunidades" value={opportunityCount} tone="slate" />
-              <MiniMetric label="Conversão estimada" value={formatPercent(conversionRate)} tone="green" />
-              <MiniMetric label="Negócios em risco" value={stats.waitingQueue} tone={stats.waitingQueue > 0 ? 'amber' : 'green'} />
-            </div>
-          </div>
-          {salesMetrics?.funil?.length ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {salesMetrics.funil.map((step) => (
-                <div key={step.id} className="rounded-2xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold text-gray-900 dark:text-white">{step.label}</p>
-                    <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
-                      {formatPercent(step.conversaoPct)}
-                    </span>
-                  </div>
-                  <p className="mt-3 font-display text-2xl font-bold tabular-nums">{formatCurrency(step.valor)}</p>
-                  <p className="mt-1 text-sm text-gray-500">{step.quantidade} oportunidade(s)</p>
-                  <div className="mt-4 h-2 rounded-full bg-gray-100 dark:bg-gray-800">
-                    <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-red-500" style={{ width: `${Math.min(100, step.conversaoPct)}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <EmptyInsight text="O NITRUS ainda não recebeu etapas suficientes do funil. A saúde do pipeline está usando pedidos, conversas e métricas comerciais disponíveis." />
-          )}
-        </Section>
+        <PipelineHealthSection
+          data={{
+            health: pipelineHealth,
+            tone: pipelineTone,
+            bottleneck: gargalo,
+            openPipeline: pipelineValue,
+            opportunityCount,
+            conversionRate,
+            atRiskCount: stats.waitingQueue,
+            stages: salesMetrics?.funil ?? [],
+          }}
+        />
 
         <Section id="leads" title="Pontuação de leads" subtitle="Classificação de potencial comercial calculada localmente com conversas, histórico e sinais de intenção." icon={Target} hidden={presentationMode}>
           {leadScores.length ? (

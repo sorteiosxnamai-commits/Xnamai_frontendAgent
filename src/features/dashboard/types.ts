@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import type { ChannelType } from '@/types';
+import type { ChannelType, SalesFunnelStep } from '@/types';
 
 export type PeriodFilter = 'today' | '7d' | '30d' | 'month';
 export type CommercialStatusFilter = 'all' | 'active' | 'waiting' | 'closed';
@@ -83,4 +83,41 @@ export interface DashboardInternalNavProps {
 export interface BusinessSummarySectionProps {
   metrics: ExecutiveKpi[];
   presentationMode: boolean;
+}
+export interface NitrosExecutiveSummaryProps {
+  diagnosis: string;
+  recommendedAction: string;
+  expectedImpact: string;
+  mainRisk: string;
+  mainOpportunity: string;
+  agentOnline: boolean;
+  connectedChannels: number;
+}
+
+export interface RevenueForecastData {
+  conservative: number;
+  probable: number;
+  optimistic: number;
+  soldRevenue: number;
+  openPipeline: number;
+  probableRate: number;
+}
+
+export interface RevenueForecastSectionProps {
+  data: RevenueForecastData;
+}
+
+export interface PipelineHealthData {
+  health: number;
+  tone: DashboardTone;
+  bottleneck?: SalesFunnelStep;
+  openPipeline: number;
+  opportunityCount: number;
+  conversionRate: number;
+  atRiskCount: number;
+  stages: SalesFunnelStep[];
+}
+
+export interface PipelineHealthSectionProps {
+  data: PipelineHealthData;
 }
