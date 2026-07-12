@@ -1,4 +1,3 @@
-import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
@@ -19,7 +18,7 @@ import {
   useSystemStatus,
 } from '@/hooks/useQueries';
 import { agentService } from '@/services/agent.service';
-import { cn, formatCurrency, formatDate, formatDateTime, formatRelativeTime } from '@/utils';
+import { cn, formatCurrency, formatDateTime } from '@/utils';
 import type { ChannelType, Product } from '@/types';
 import { useMutation } from '@tanstack/react-query';
 import {
@@ -34,7 +33,6 @@ import {
   HeartHandshake,
   MessageSquare,
   Package,
-  RefreshCw,
   ShieldCheck,
   ShoppingCart,
   Sparkles,
@@ -49,9 +47,12 @@ import { CommercialRoutineSection } from './CommercialRoutineSection';
 import { DashboardExecutiveHeader } from './DashboardExecutiveHeader';
 import { DashboardInternalNav } from './DashboardInternalNav';
 import { LeadScoringSection } from './LeadScoringSection';
+import { LoyalCustomersSection } from './LoyalCustomersSection';
 import { NitrosExecutiveSummary } from './NitrosExecutiveSummary';
 import { PipelineHealthSection } from './PipelineHealthSection';
 import { RevenueForecastSection } from './RevenueForecastSection';
+import { RecentCustomersSection } from './RecentCustomersSection';
+import { RetentionSection } from './RetentionSection';
 import { ServiceCapacitySection } from './ServiceCapacitySection';
 import { DashboardChartTooltip as ChartTooltip, DashboardDataTable as DataTable, DashboardEmptyInsight as EmptyInsight, DashboardMiniMetric as MiniMetric, DashboardSection as Section, statusToneClass } from './DashboardSectionPrimitives';
 import { useDashboardNavigation, usePresentationMode } from '../hooks';
@@ -233,16 +234,41 @@ export function DashboardWorkspace() {
 
   const loyalCustomers = [...customers]
     .sort((a, b) => b.totalSpent - a.totalSpent || b.ordersCount - a.ordersCount)
-    .slice(0, 8);
+    .slice(0, 8)
+    .map((customer) => {
+      const status = getCustomerStatus(customer);
+      return {
+        customer,
+        status,
+        action: getCustomerAction(customer),
+        tone: status === 'Em risco' ? 'red' as const : status === 'Fiel' ? 'green' as const : 'blue' as const,
+      };
+    });
 
   const recentCustomers = [...customers]
     .sort((a, b) => new Date(b.lastContact).getTime() - new Date(a.lastContact).getTime())
-    .slice(0, 8);
+    .slice(0, 8)
+    .map((customer) => ({
+      customer,
+      status: customer.ordersCount > 0 ? 'Cliente ativo' : 'Novo lead',
+      action: customer.ordersCount > 0 ? 'Sugerir recompra ou produto complementar.' : 'Qualificar necessidade e prazo de compra.',
+    }));
 
   const retentionCustomers = customers
     .filter((c) => c.totalSpent > 0 && (daysSince(c.lastContact) > 45 || c.ordersCount >= 2))
     .sort((a, b) => daysSince(b.lastContact) - daysSince(a.lastContact) || b.totalSpent - a.totalSpent)
-    .slice(0, 8);
+    .slice(0, 8)
+    .map((customer) => {
+      const daysWithoutPurchase = daysSince(customer.lastContact);
+      const highRisk = daysWithoutPurchase > 90;
+      return {
+        customer,
+        daysWithoutPurchase,
+        risk: highRisk ? 'Alto' : 'Moderado',
+        recommendedAction: highRisk ? 'Retomada de conversa com condição especial.' : 'Follow-up de recompra ou produto relacionado.',
+        tone: highRisk ? 'red' as const : 'amber' as const,
+      };
+    });
 
   const productRows = [...filteredProducts]
     .sort((a, b) => {
@@ -594,84 +620,11 @@ export function DashboardWorkspace() {
           }}
         />
 
-        <Section id="clientes" title="Clientes mais fiéis" subtitle="Ordenados por valor comprado, quantidade de pedidos e recorrência." icon={HeartHandshake} hidden={presentationMode}>
-          {loyalCustomers.length ? (
-            <DataTable headers={['Cliente', 'Empresa', 'Total comprado', 'Pedidos', 'Última interação', 'Status', 'Ação sugerida']}>
-              {loyalCustomers.map((customer) => (
-                <tr key={customer.id}>
-                  <td className="px-3 py-2.5">
-                    <div className="flex items-center gap-3">
-                      <Avatar name={customer.name} size="sm" />
-                      <span className="font-semibold text-gray-900 dark:text-white">{customer.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-3 py-2.5 text-gray-600 dark:text-gray-300">{customer.company || '-'}</td>
-                  <td className="px-3 py-2.5 font-semibold tabular-nums">{formatCurrency(customer.totalSpent)}</td>
-                  <td className="px-3 py-2.5 tabular-nums">{customer.ordersCount}</td>
-                  <td className="px-3 py-2.5 text-gray-500">{formatRelativeTime(customer.lastContact)}</td>
-                  <td className="px-3 py-2.5">
-                    <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold ring-1', statusToneClass(getCustomerStatus(customer) === 'Em risco' ? 'red' : getCustomerStatus(customer) === 'Fiel' ? 'green' : 'blue'))}>
-                      {getCustomerStatus(customer)}
-                    </span>
-                  </td>
-                  <td className="min-w-44 px-3 py-2.5 text-gray-700 dark:text-gray-300">{getCustomerAction(customer)}</td>
-                </tr>
-              ))}
-            </DataTable>
-          ) : (
-            <EmptyInsight text="Ainda não há clientes suficientes para identificar fidelidade e recorrência." />
-          )}
-        </Section>
+        <LoyalCustomersSection customers={loyalCustomers} presentationMode={presentationMode} />
 
-        <Section id="clientes-recentes" title="Clientes recentes" subtitle="Leads e clientes mais novos, com próxima ação recomendada." icon={Users} hidden={presentationMode}>
-          {recentCustomers.length ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {recentCustomers.map((customer) => (
-                <div key={customer.id} className="rounded-2xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90">
-                  <div className="flex items-center gap-3">
-                    <Avatar name={customer.name} size="md" />
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold text-gray-900 dark:text-white">{customer.name}</p>
-                      <p className="truncate text-xs text-gray-500">{customer.company || customer.city || 'Cliente'}</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 grid gap-2 text-sm">
-                    <p className="flex justify-between"><span className="text-gray-500">Última interação</span><strong>{formatRelativeTime(customer.lastContact)}</strong></p>
-                    <p className="flex justify-between"><span className="text-gray-500">Status</span><strong>{customer.ordersCount > 0 ? 'Cliente ativo' : 'Novo lead'}</strong></p>
-                    <p className="text-gray-600 dark:text-gray-300">{customer.ordersCount > 0 ? 'Sugerir recompra ou produto complementar.' : 'Qualificar necessidade e prazo de compra.'}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <EmptyInsight text="Sem clientes recentes carregados no período." />
-          )}
-        </Section>
+        <RecentCustomersSection customers={recentCustomers} presentationMode={presentationMode} />
 
-        <Section id="retencao" title="Retenção e reativação" subtitle="Clientes com histórico relevante que podem estar esfriando." icon={RefreshCw} hidden={presentationMode}>
-          {retentionCustomers.length ? (
-            <DataTable headers={['Cliente', 'Valor histórico', 'Última compra/interação', 'Dias sem compra', 'Risco', 'Sugestão de abordagem']}>
-              {retentionCustomers.map((customer) => (
-                <tr key={customer.id}>
-                  <td className="px-3 py-2.5 font-semibold text-gray-900 dark:text-white">{customer.name}</td>
-                  <td className="px-3 py-2.5 font-semibold tabular-nums">{formatCurrency(customer.totalSpent)}</td>
-                  <td className="px-3 py-2.5 text-gray-500">{formatDate(customer.lastContact)}</td>
-                  <td className="px-3 py-2.5 tabular-nums">{daysSince(customer.lastContact)}</td>
-                  <td className="px-3 py-2.5">
-                    <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold ring-1', statusToneClass(daysSince(customer.lastContact) > 90 ? 'red' : 'amber'))}>
-                      {daysSince(customer.lastContact) > 90 ? 'Alto' : 'Moderado'}
-                    </span>
-                  </td>
-                  <td className="min-w-64 px-3 py-2.5 text-gray-700 dark:text-gray-300">
-                    {daysSince(customer.lastContact) > 90 ? 'Retomada de conversa com condição especial.' : 'Follow-up de recompra ou produto relacionado.'}
-                  </td>
-                </tr>
-              ))}
-            </DataTable>
-          ) : (
-            <EmptyInsight text="Nenhum cliente em risco de retenção detectado com os dados atuais." />
-          )}
-        </Section>
+        <RetentionSection customers={retentionCustomers} presentationMode={presentationMode} />
 
         <Section id="produtos" title="Produtos e catálogo comercial" subtitle="Catálogo disponível para atendimento, propostas e campanhas." icon={Package} hidden={presentationMode}>
           <div className="flex flex-col gap-3 rounded-2xl border border-gray-200/80 bg-white/90 p-4 shadow-sm dark:border-white/10 dark:bg-gray-900/90 md:flex-row md:items-center md:justify-between">

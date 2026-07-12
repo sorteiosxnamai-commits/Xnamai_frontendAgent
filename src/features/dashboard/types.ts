@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import type { ChannelType, SalesFunnelStep } from '@/types';
+import type { ChannelType, Customer, SalesFunnelStep } from '@/types';
 
 export type PeriodFilter = 'today' | '7d' | '30d' | 'month';
 export type CommercialStatusFilter = 'all' | 'active' | 'waiting' | 'closed';
@@ -143,4 +143,40 @@ export interface ServiceCapacityData {
 
 export interface ServiceCapacitySectionProps {
   data: ServiceCapacityData;
+}
+
+export interface LoyalCustomerItem {
+  customer: Customer;
+  status: string;
+  action: string;
+  tone: DashboardTone;
+}
+
+export interface LoyalCustomersSectionProps {
+  customers: LoyalCustomerItem[];
+  presentationMode: boolean;
+}
+
+export interface RecentCustomerItem {
+  customer: Customer;
+  status: string;
+  action: string;
+}
+
+export interface RecentCustomersSectionProps {
+  customers: RecentCustomerItem[];
+  presentationMode: boolean;
+}
+
+export interface RetentionCustomerItem {
+  customer: Customer;
+  daysWithoutPurchase: number;
+  risk: string;
+  recommendedAction: string;
+  tone: DashboardTone;
+}
+
+export interface RetentionSectionProps {
+  customers: RetentionCustomerItem[];
+  presentationMode: boolean;
 }
