@@ -2,9 +2,22 @@ import { api } from './api';
 
 export interface CompanySettings {
   name: string;
-  cnpj: string;
-  email: string;
-  phone: string;
+  brandName?: string;
+  cnpj?: string;
+  email?: string;
+  phone?: string;
+  segment?: string;
+  website?: string;
+  country?: string;
+  currency?: string;
+  salesModel?: 'b2b' | 'b2c' | 'mixed';
+  salesChannels?: string[];
+  businessHours?: string;
+  primaryContact?: string;
+  agentDisplayName?: string;
+  agentRole?: string;
+  agentLanguage?: string;
+  agentPrimaryChannel?: string;
 }
 
 export interface NotificationSettings {
@@ -28,12 +41,7 @@ export const settingsService = {
   },
 
   saveCompany: async (payload: CompanySettings): Promise<CompanySettings> => {
-    const { data } = await api.patch<CompanySettings>('/settings/empresa', {
-      name: payload.name,
-      cnpj: payload.cnpj || null,
-      email: payload.email || null,
-      phone: payload.phone || null,
-    });
+    const { data } = await api.patch<CompanySettings>('/settings/empresa', payload);
     return data;
   },
 

@@ -1,9 +1,13 @@
 import { businessService } from '@/features/business/services/business.service';
 import type { BusinessProfileDraft } from '@/features/business/types';
 import type { CompanySettings } from '@/services/settings.service';
+import { workspaceKeys } from '@/services/workspace.service';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const businessProfileQueryKey = ['settings', 'empresa'] as const;
+export const settingsKeys = {
+  business: () => businessProfileQueryKey,
+};
 
 export function useBusinessProfile() {
   return useQuery({
@@ -20,6 +24,7 @@ export function useSaveBusinessProfile() {
       businessService.saveProfile(draft, current),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: businessProfileQueryKey });
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.current() });
     },
   });
 }

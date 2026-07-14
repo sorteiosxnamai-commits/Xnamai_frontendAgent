@@ -3,13 +3,41 @@ import type { BusinessProfileDraft, BusinessPersistence } from '@/features/busin
 
 export const businessPersistence: BusinessPersistence = {
   canPersist: true,
-  supportedFields: ['name', 'primaryContact'],
+  supportedFields: [
+    'name',
+    'brandName',
+    'segment',
+    'website',
+    'country',
+    'currency',
+    'salesModel',
+    'salesChannels',
+    'businessHours',
+    'primaryContact',
+    'agentDisplayName',
+    'agentMainRole',
+    'agentLanguage',
+    'agentMainChannel',
+  ],
 };
 
 export function businessFromCompanySettings(settings: CompanySettings): BusinessProfileDraft {
   return {
     name: settings.name ?? '',
-    primaryContact: settings.email ?? '',
+    brandName: settings.brandName ?? '',
+    segment: settings.segment ?? '',
+    website: settings.website ?? '',
+    country: settings.country ?? '',
+    currency: settings.currency ?? '',
+    salesModel: settings.salesModel,
+    salesChannels: settings.salesChannels ?? [],
+    businessHours: settings.businessHours ?? '',
+    primaryContact: settings.primaryContact ?? settings.email ?? '',
+    agentDisplayName: settings.agentDisplayName ?? '',
+    agentMainRole: settings.agentRole ?? '',
+    agentLanguage: settings.agentLanguage ?? '',
+    agentMainChannel: settings.agentPrimaryChannel ?? '',
+    agentConfigurationStatus: settings.agentDisplayName || settings.agentRole ? 'configured' : 'not_configured',
   };
 }
 
@@ -19,9 +47,22 @@ export function companySettingsFromBusinessDraft(
 ): CompanySettings {
   return {
     name: draft.name,
-    cnpj: current?.cnpj ?? '',
-    email: draft.primaryContact ?? current?.email ?? '',
-    phone: current?.phone ?? '',
+    brandName: draft.brandName ?? current?.brandName,
+    cnpj: current?.cnpj,
+    email: draft.primaryContact ?? current?.email,
+    phone: current?.phone,
+    segment: draft.segment ?? current?.segment,
+    website: draft.website ?? current?.website,
+    country: draft.country ?? current?.country,
+    currency: draft.currency ?? current?.currency,
+    salesModel: draft.salesModel ?? current?.salesModel,
+    salesChannels: draft.salesChannels ?? current?.salesChannels,
+    businessHours: draft.businessHours ?? current?.businessHours,
+    primaryContact: draft.primaryContact ?? current?.primaryContact,
+    agentDisplayName: draft.agentDisplayName ?? current?.agentDisplayName,
+    agentRole: draft.agentMainRole ?? current?.agentRole,
+    agentLanguage: draft.agentLanguage ?? current?.agentLanguage,
+    agentPrimaryChannel: draft.agentMainChannel ?? current?.agentPrimaryChannel,
   };
 }
 

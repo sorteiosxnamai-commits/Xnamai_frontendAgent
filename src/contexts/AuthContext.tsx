@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -18,7 +19,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
-  register: (credentials: RegisterCredentials) => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<User>;
   logout: () => void;
   updateProfile: (patch: Partial<User>) => Promise<void>;
 }
@@ -69,7 +70,40 @@ function readStoredSessionUser(): User | null {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => readStoredSessionUser());
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(() => Boolean(localStorage.getItem(TOKEN_KEY) && !USE_MOCK));
+
+  useEffect(() => {
+    if (USE_MOCK) {
+      setIsLoading(false);
+      return;
+    }
+
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
+    let active = true;
+    authService.me()
+      .then(({ data }) => {
+        if (!active) return;
+        const authUser = normalizeSessionUser(data);
+        localStorage.setItem(USER_KEY, JSON.stringify(authUser));
+        setUser(authUser);
+      })
+      .catch(() => {
+        if (!active) return;
+        setUser((current) => current);
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     setIsLoading(true);
@@ -117,15 +151,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: 'user',
           company: credentials.company || 'NITRUS',
         };
-        persistSession('mock-jwt-token', 'mock-refresh-token', authUser);
-        setUser(normalizeSessionUser(authUser));
-        return;
+        const normalized = normalizeSessionUser(authUser);
+        persistSession('mock-jwt-token', 'mock-refresh-token', normalized);
+        setUser(normalized);
+        return normalized;
       }
 
       const { data } = await authService.register(credentials);
       const authUser = normalizeSessionUser(data.user);
       persistSession(data.token, data.refreshToken, authUser);
       setUser(authUser);
+      return authUser;
     } catch (error: unknown) {
       throw new Error(extractApiErrorMessage(error, 'Não foi possível criar a conta'));
     } finally {

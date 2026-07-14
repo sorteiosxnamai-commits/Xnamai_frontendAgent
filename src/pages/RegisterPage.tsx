@@ -40,7 +40,7 @@ export function RegisterPage() {
 
   const onSubmit = async (data: RegisterForm) => {
     try {
-      await registerUser({
+      const user = await registerUser({
         name: data.name,
         email: data.email,
         password: data.password,
@@ -51,7 +51,7 @@ export function RegisterPage() {
         message: 'Bem-vindo ao NITRUS!',
         type: 'success',
       });
-      navigate('/dashboard');
+      navigate(user.onboardingStatus === 'complete' ? '/dashboard' : '/onboarding');
     } catch (error) {
       addToast({
         title: 'Não foi possível cadastrar',

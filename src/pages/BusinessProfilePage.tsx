@@ -8,7 +8,6 @@ import {
   BusinessAgentConfigForm,
   BusinessIdentityForm,
   BusinessOperationForm,
-  PersistenceNotice,
   useBusinessProfile,
   useSaveBusinessProfile,
   type BusinessProfileDraft,
@@ -65,9 +64,10 @@ export function BusinessProfilePage() {
       { draft, current: data?.raw },
       {
         onSuccess: () => {
+          workspace.refetchWorkspace();
           addToast({
             title: 'Empresa atualizada',
-            message: 'Campos suportados pelo backend foram salvos.',
+            message: 'Configurações empresariais salvas no workspace.',
             type: 'success',
           });
         },
@@ -102,8 +102,6 @@ export function BusinessProfilePage() {
           {canManageCompany ? 'Edição permitida' : 'Somente leitura'}
         </Badge>
       </div>
-
-      <PersistenceNotice />
 
       {!canManageCompany && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">

@@ -131,6 +131,7 @@ export const authService = {
     }),
   updateProfile: (patch: { name?: string; company?: string }) =>
     api.patch<User>('/auth/profile', patch),
+  me: () => api.get<User>('/auth/me'),
   logout: (refreshToken?: string) =>
     api.post('/auth/logout', refreshToken ? { refreshToken } : {}),
 };
