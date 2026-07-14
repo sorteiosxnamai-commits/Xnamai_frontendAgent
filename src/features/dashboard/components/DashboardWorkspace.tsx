@@ -1,7 +1,3 @@
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Modal } from '@/components/ui/Modal';
-import { Select } from '@/components/ui/Select';
 import { SetupChecklist } from '@/components/dashboard/SetupChecklist';
 import { Loading, Skeleton } from '@/components/ui/EmptyState';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,12 +13,9 @@ import {
   useSalesMetrics,
   useSystemStatus,
 } from '@/hooks/useQueries';
-import { agentService } from '@/services/agent.service';
 import { cn, formatCurrency, formatDateTime } from '@/utils';
-import type { ChannelType, Product } from '@/types';
-import { useMutation } from '@tanstack/react-query';
+import type { ChannelType } from '@/types';
 import {
-  ArrowRight,
   BarChart3,
   Bot,
   Brain,
@@ -35,55 +28,30 @@ import {
   Package,
   ShieldCheck,
   ShoppingCart,
-  Sparkles,
   Target,
-  TrendingUp,
   Users,
-  Zap,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { BusinessSummarySection } from './BusinessSummarySection';
+import { AskNitrosSection } from './AskNitrosSection';
+import { CommercialPerformanceSection } from './CommercialPerformanceSection';
 import { CommercialRoutineSection } from './CommercialRoutineSection';
 import { DashboardExecutiveHeader } from './DashboardExecutiveHeader';
 import { DashboardInternalNav } from './DashboardInternalNav';
 import { LeadScoringSection } from './LeadScoringSection';
 import { LoyalCustomersSection } from './LoyalCustomersSection';
 import { NitrosExecutiveSummary } from './NitrosExecutiveSummary';
+import { OperationCredibilitySection } from './OperationCredibilitySection';
+import { PerformanceRecommendationsSection } from './PerformanceRecommendationsSection';
 import { PipelineHealthSection } from './PipelineHealthSection';
 import { RevenueForecastSection } from './RevenueForecastSection';
 import { RecentCustomersSection } from './RecentCustomersSection';
 import { RetentionSection } from './RetentionSection';
+import { ProductCatalogSection } from './ProductCatalogSection';
 import { ServiceCapacitySection } from './ServiceCapacitySection';
-import { DashboardChartTooltip as ChartTooltip, DashboardDataTable as DataTable, DashboardEmptyInsight as EmptyInsight, DashboardMiniMetric as MiniMetric, DashboardSection as Section, statusToneClass } from './DashboardSectionPrimitives';
 import { useDashboardNavigation, usePresentationMode } from '../hooks';
 import type { CommercialStatusFilter, DashboardNavigationItem, ExecutiveKpi, PeriodFilter, ProductSort, RoutineItem } from '../types';
 import { daysSince, filterConversations, filterOrders, filterProducts, formatPercent, getCustomerAction, getCustomerStatus, hasBuyingIntent, periodCutoff, scoreConversation } from '../utils';
-import { Link } from 'react-router-dom';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Cell,
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-
-const CHART = {
-  blue: '#2563EB',
-  deepBlue: '#1D4ED8',
-  red: '#EF4444',
-  green: '#16A34A',
-  amber: '#F59E0B',
-  slate: '#64748B',
-};
-
-const PIE_COLORS = ['#2563EB', '#EF4444', '#1D4ED8', '#16A34A', '#F59E0B', '#64748B'];
 
 const CHANNEL_LABELS: Record<ChannelType, string> = {
   whatsapp: 'WhatsApp',
@@ -146,9 +114,6 @@ export function DashboardWorkspace() {
   const [channelFilter, setChannelFilter] = useState('');
   const { presentationMode, togglePresentationMode } = usePresentationMode();
   const [productSort, setProductSort] = useState<ProductSort>('best');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [askText, setAskText] = useState('');
-  const [agentAnswer, setAgentAnswer] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { activeSection, isHidden: isDashboardNavHidden } = useDashboardNavigation(presentationMode);
 
@@ -157,17 +122,6 @@ export function DashboardWorkspace() {
   const orders = useMemo(() => ordersData?.data ?? [], [ordersData]);
   const conversationList = useMemo(() => conversations ?? [], [conversations]);
 
-  const askMutation = useMutation({
-    mutationFn: (message: string) =>
-      agentService.chat({
-        message,
-        mode: 'copilot',
-        conversationId: conversationList[0]?.id,
-        customerId: conversationList[0]?.customerId,
-      }),
-    onSuccess: (response) => setAgentAnswer(response.reply),
-    onError: () => setAgentAnswer('Não foi possível consultar o NITRUS agora. Tente novamente em instantes.'),
-  });
 
   const cutoff = periodCutoff(period);
 
@@ -483,15 +437,6 @@ export function DashboardWorkspace() {
   ];
   const channelOptions = [{ value: '', label: 'Canais' }, ...Object.entries(CHANNEL_LABELS).map(([value, label]) => ({ value, label }))];
 
-  const quickQuestions = [
-    'Por que minhas vendas caíram?',
-    'Quais clientes devo priorizar hoje?',
-    'Quais produtos estão parados?',
-    'Quais leads estão mais quentes?',
-    'O que devo fazer para vender mais esta semana?',
-    'Quais clientes posso reativar?',
-  ];
-
   const recommendations = [
     {
       title: 'Responder leads em espera',
@@ -626,259 +571,17 @@ export function DashboardWorkspace() {
 
         <RetentionSection customers={retentionCustomers} presentationMode={presentationMode} />
 
-        <Section id="produtos" title="Produtos e catálogo comercial" subtitle="Catálogo disponível para atendimento, propostas e campanhas." icon={Package} hidden={presentationMode}>
-          <div className="flex flex-col gap-3 rounded-2xl border border-gray-200/80 bg-white/90 p-4 shadow-sm dark:border-white/10 dark:bg-gray-900/90 md:flex-row md:items-center md:justify-between">
-            <p className="text-sm text-gray-500">
-              Quantidade vendida e receita por produto dependem de detalhamento de itens nos pedidos. Quando o backend fornecer esses dados, o painel pode preencher essas colunas.
-            </p>
-            <Select
-              className="md:w-56"
-              aria-label="Ordenar produtos"
-              value={productSort}
-              onChange={(e) => setProductSort(e.target.value as ProductSort)}
-              options={[
-                { value: 'best', label: 'Mais vendidos' },
-                { value: 'worst', label: 'Menos vendidos' },
-                { value: 'revenue', label: 'Maior receita' },
-                { value: 'idle', label: 'Sem movimento' },
-                { value: 'recent', label: 'Mais recentes' },
-                { value: 'az', label: 'A-Z' },
-              ]}
-            />
-          </div>
-          {productRows.length ? (
-            <DataTable headers={['Nome', 'Código', 'Categoria', 'Preço', 'Estoque', 'Status', 'Qtd. vendida', 'Receita', 'Última atualização', 'Ações']}>
-              {productRows.map((product) => (
-                <tr key={product.id}>
-                  <td className="min-w-52 px-3 py-2.5 font-semibold text-gray-900 dark:text-white">{product.name}</td>
-                  <td className="px-3 py-2.5 text-gray-500">{product.code || '-'}</td>
-                  <td className="px-3 py-2.5 text-gray-600 dark:text-gray-300">{product.category || '-'}</td>
-                  <td className="px-3 py-2.5 font-semibold tabular-nums">{formatCurrency(product.price)}</td>
-                  <td className="px-3 py-2.5 tabular-nums">{product.stock}</td>
-                  <td className="px-3 py-2.5">
-                    <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold ring-1', statusToneClass(product.stock > 10 ? 'green' : product.stock > 0 ? 'amber' : 'red'))}>
-                      {product.stock > 10 ? 'Disponível' : product.stock > 0 ? 'Baixo estoque' : 'Sem estoque'}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2.5 text-gray-500">Sem dado</td>
-                  <td className="px-3 py-2.5 text-gray-500">Sem dado</td>
-                  <td className="px-3 py-2.5 text-gray-500">{product.synced ? 'Sincronizado' : 'Local'}</td>
-                  <td className="px-3 py-2.5">
-                    <div className="flex min-w-48 flex-nowrap gap-1.5">
-                      <Button type="button" size="sm" variant="outline" className="px-2 text-xs" onClick={() => setSelectedProduct(product)}>Detalhes</Button>
-                      <Button type="button" size="sm" variant="outline" className="px-2 text-xs" onClick={() => setSelectedProduct(product)}>Editar</Button>
-                      <Button type="button" size="sm" variant="outline" className="px-2 text-xs" onClick={() => setSelectedProduct(product)}>Pedidos</Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </DataTable>
-          ) : (
-            <EmptyInsight text="Nenhum produto encontrado com os filtros atuais." />
-          )}
-        </Section>
+        <ProductCatalogSection products={productRows} sort={productSort} presentationMode={presentationMode} onSortChange={setProductSort} />
 
-        <Section id="desempenho" title="Desempenho comercial" subtitle="Evolução no período selecionado e indicadores de venda." icon={TrendingUp}>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <MiniMetric label="Ticket médio" value={formatCurrency(ticketMedio)} tone="blue" />
-            <MiniMetric label="Quantidade de pedidos" value={filteredOrders.length || salesMetrics?.quantidadeVendas || 0} tone="slate" />
-            <MiniMetric label="Valor total vendido" value={formatCurrency(revenueSold)} tone="green" />
-            <MiniMetric label="Receita retida" value={formatCurrency(retainedRevenue)} tone="green" />
-            <MiniMetric label="Clientes ativos" value={activeCustomers} tone="blue" />
-            <MiniMetric label="Clientes recorrentes" value={recurringCustomers} tone="green" />
-            <MiniMetric label="Conversão estimada" value={formatPercent(conversionRate)} tone="amber" />
-            <MiniMetric label="Evolução" value={ordersChart.length ? `${ordersChart.length} pontos` : 'Sem série'} tone="slate" />
-          </div>
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-3xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Vendas e conversas</h3>
-              <ResponsiveContainer width="100%" height={280}>
-                <AreaChart data={conversationsChart}>
-                  <defs>
-                    <linearGradient id="dashConversations" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={CHART.blue} stopOpacity={0.35} />
-                      <stop offset="100%" stopColor={CHART.blue} stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="dashCustomers" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={CHART.red} stopOpacity={0.25} />
-                      <stop offset="100%" stopColor={CHART.red} stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="4 4" vertical={false} className="stroke-gray-200 dark:stroke-gray-800" />
-                  <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 12, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Area type="monotone" dataKey="conversas" name="Conversas" stroke={CHART.blue} fill="url(#dashConversations)" strokeWidth={3} />
-                  <Area type="monotone" dataKey="clientes" name="Clientes" stroke={CHART.red} fill="url(#dashCustomers)" strokeWidth={3} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="rounded-3xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Pedidos e velocidade</h3>
-              <ResponsiveContainer width="100%" height={280}>
-                <LineChart data={responseTimeChart}>
-                  <CartesianGrid strokeDasharray="4 4" vertical={false} className="stroke-gray-200 dark:stroke-gray-800" />
-                  <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 12, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Line type="monotone" dataKey="conversas" name="Tempo (min)" stroke={CHART.blue} strokeWidth={3} dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </Section>
+        <CommercialPerformanceSection data={{ ticketAverage: ticketMedio, orderCount: filteredOrders.length || salesMetrics?.quantidadeVendas || 0, soldRevenue: revenueSold, retainedRevenue, activeCustomers, recurringCustomers, conversionRate, evolutionPoints: ordersChart.length, conversationsChart, responseTimeChart }} />
 
-        <Section id="pergunte" title="Pergunte ao NITRUS" subtitle="Use o agente existente para perguntas em linguagem natural dentro do dashboard." icon={Bot} hidden={presentationMode}>
-          <div className="grid gap-4 lg:grid-cols-5">
-            <div className="rounded-3xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90 lg:col-span-2">
-              <div className="space-y-3">
-                <Input
-                  label="Pergunta"
-                  value={askText}
-                  onChange={(e) => setAskText(e.target.value)}
-                  placeholder="Ex.: Quais clientes devo priorizar hoje?"
-                />
-                <Button
-                  type="button"
-                  className="w-full"
-                  loading={askMutation.isPending}
-                  onClick={() => {
-                    const message = askText.trim();
-                    if (message) askMutation.mutate(message);
-                  }}
-                >
-                  <Sparkles className="h-4 w-4" /> Perguntar ao NITRUS
-                </Button>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {quickQuestions.map((question) => (
-                  <button
-                    key={question}
-                    type="button"
-                    onClick={() => {
-                      setAskText(question);
-                      askMutation.mutate(question);
-                    }}
-                    className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 transition hover:border-blue-300 hover:text-blue-700 dark:border-white/10 dark:text-gray-300"
-                  >
-                    {question}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="rounded-3xl border border-blue-200/80 bg-blue-50/70 p-5 shadow-sm dark:border-blue-900/40 dark:bg-blue-950/20 lg:col-span-3">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-700 dark:text-blue-300">Resposta do NITRUS</p>
-              <div className="mt-4 min-h-40 whitespace-pre-wrap rounded-2xl bg-white/80 p-4 text-sm leading-relaxed text-gray-700 shadow-sm dark:bg-gray-900/80 dark:text-gray-200">
-                {askMutation.isPending
-                  ? 'Analisando os dados disponíveis no NITRUS...'
-                  : agentAnswer || 'Faça uma pergunta ou use uma sugestão rápida para receber uma análise comercial.'}
-              </div>
-            </div>
-          </div>
-        </Section>
+        <AskNitrosSection conversationId={conversationList[0]?.id} customerId={conversationList[0]?.customerId} presentationMode={presentationMode} />
 
-        <Section id="credibilidade" title="Credibilidade e operação NITRUS" subtitle="Status dos dados, canais, IA e prontidão operacional." icon={ShieldCheck}>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <MiniMetric label="IA" value={agentStatus?.online ? 'Online' : 'Offline'} tone={agentStatus?.online ? 'green' : 'amber'} />
-            <MiniMetric label="Modelo" value={agentStatus?.model ?? 'Sem status'} tone="slate" />
-            <MiniMetric label="Canais conectados" value={channels?.filter((c) => c.connected).length ?? 0} tone="blue" />
-            <MiniMetric label="Prontidão" value={`${readiness}%`} tone={readiness >= 70 ? 'green' : 'amber'} />
-            <MiniMetric label="Clientes sincronizados" value={mercosStatus?.syncedCustomers ?? systemStatus?.mercos.syncedCustomers ?? customers.length} tone="blue" />
-            <MiniMetric label="Produtos sincronizados" value={mercosStatus?.syncedProducts ?? systemStatus?.mercos.syncedProducts ?? products.length} tone="blue" />
-            <MiniMetric label="Pedidos sincronizados" value={mercosStatus?.syncedOrders ?? systemStatus?.mercos.syncedOrders ?? orders.length} tone="blue" />
-            <MiniMetric label="Última atualização" value={mercosStatus?.lastSync ? formatDateTime(mercosStatus.lastSync) : 'Sem sync'} tone="slate" />
-          </div>
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-3xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Canais de conversão</h3>
-              {channelVolume.length ? (
-                <div className="mt-4 flex items-center gap-4">
-                  <ResponsiveContainer width="42%" height={180}>
-                    <PieChart>
-                      <Pie data={channelVolume} cx="50%" cy="50%" innerRadius={42} outerRadius={66} paddingAngle={4} dataKey="value" strokeWidth={0}>
-                        {channelVolume.map((_, i) => (
-                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<ChartTooltip />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="flex-1 space-y-2">
-                    {channelVolume.map((ch, i) => (
-                      <div key={ch.type} className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
-                          {ch.name}
-                        </span>
-                        <strong>{ch.value}%</strong>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <p className="mt-4 text-sm text-gray-500">Sem mensagens registradas por canal.</p>
-              )}
-            </div>
-            <div className="rounded-3xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Status geral do sistema</h3>
-              <div className="mt-4 space-y-3 text-sm">
-                <p className="flex justify-between gap-4"><span className="text-gray-500">Mercos</span><strong>{mercosStatus?.connected || systemStatus?.mercos.configured ? 'Configurado' : 'Pendente'}</strong></p>
-                <p className="flex justify-between gap-4"><span className="text-gray-500">WhatsApp</span><strong>{systemStatus?.whatsapp.connected ? 'Conectado' : 'Verificar'}</strong></p>
-                <p className="flex justify-between gap-4"><span className="text-gray-500">Supabase</span><strong>{systemStatus?.supabase.ok ? 'Operacional' : 'Sem status'}</strong></p>
-                <p className="flex justify-between gap-4"><span className="text-gray-500">Dados sincronizados</span><strong>{mercosStatus?.connected ? 'Sim' : 'Parcial'}</strong></p>
-              </div>
-            </div>
-          </div>
-        </Section>
+        <OperationCredibilitySection data={{ metrics: [{ label: 'IA', value: agentStatus?.online ? 'Online' : 'Offline', tone: agentStatus?.online ? 'green' : 'amber' }, { label: 'Modelo', value: agentStatus?.model ?? 'Sem status', tone: 'slate' }, { label: 'Canais conectados', value: channels?.filter((channel) => channel.connected).length ?? 0, tone: 'blue' }, { label: 'Prontidão', value: `${readiness}%`, tone: readiness >= 70 ? 'green' : 'amber' }, { label: 'Clientes sincronizados', value: mercosStatus?.syncedCustomers ?? systemStatus?.mercos.syncedCustomers ?? customers.length, tone: 'blue' }, { label: 'Produtos sincronizados', value: mercosStatus?.syncedProducts ?? systemStatus?.mercos.syncedProducts ?? products.length, tone: 'blue' }, { label: 'Pedidos sincronizados', value: mercosStatus?.syncedOrders ?? systemStatus?.mercos.syncedOrders ?? orders.length, tone: 'blue' }, { label: 'Última atualização', value: mercosStatus?.lastSync ? formatDateTime(mercosStatus.lastSync) : 'Sem sync', tone: 'slate' }], channelVolume, mercosStatus: mercosStatus?.connected || systemStatus?.mercos.configured ? 'Configurado' : 'Pendente', whatsappStatus: systemStatus?.whatsapp.connected ? 'Conectado' : 'Verificar', supabaseStatus: systemStatus?.supabase.ok ? 'Operacional' : 'Sem status', synchronizedDataStatus: mercosStatus?.connected ? 'Sim' : 'Parcial' }} />
 
-        <Section id="recomendacoes" title="Recomendações para melhorar performance" subtitle="Próximas ações sugeridas pelo painel a partir da operação atual." icon={Zap}>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {recommendations.map((rec) => (
-              <div key={rec.title} className="rounded-2xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90">
-                <span className={cn('rounded-full px-2.5 py-1 text-xs font-bold ring-1', statusToneClass(rec.priority === 'Alta' ? 'red' : rec.priority === 'Media' ? 'amber' : 'slate'))}>
-                  Prioridade {rec.priority}
-                </span>
-                <h3 className="mt-4 font-semibold text-gray-950 dark:text-white">{rec.title}</h3>
-                <p className="mt-2 text-sm text-gray-500">{rec.reason}</p>
-                <p className="mt-3 text-sm text-gray-700 dark:text-gray-300">{rec.impact}</p>
-                {rec.href ? (
-                  <Link to={rec.href} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700">
-                    {rec.action} <ArrowRight className="h-4 w-4" />
-                  </Link>
-                ) : (
-                  <a href="#pergunte" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700">
-                    {rec.action} <ArrowRight className="h-4 w-4" />
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        </Section>
+        <PerformanceRecommendationsSection recommendations={recommendations} />
       </div>
 
-      <Modal
-        open={!!selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-        title={selectedProduct?.name ?? 'Produto'}
-        footer={<Button variant="outline" onClick={() => setSelectedProduct(null)}>Fechar</Button>}
-      >
-        {selectedProduct && (
-          <div className="space-y-4 text-sm">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <p><strong>Código:</strong> {selectedProduct.code || '-'}</p>
-              <p><strong>Categoria:</strong> {selectedProduct.category || '-'}</p>
-              <p><strong>Preço:</strong> {formatCurrency(selectedProduct.price)}</p>
-              <p><strong>Estoque:</strong> {selectedProduct.stock}</p>
-            </div>
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
-              A edição local de produtos depende do endpoint de atualização no backend. Nenhuma alteração será salva por este modal.
-            </div>
-            <p className="text-gray-500">
-              Pedidos relacionados por item ainda dependem do backend retornar itens de pedido por produto. O painel não inventa dados quando essa relação não está disponível.
-            </p>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

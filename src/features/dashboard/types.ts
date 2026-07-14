@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import type { ChannelType, Customer, SalesFunnelStep } from '@/types';
+import type { ChannelType, ChartDataPoint, Customer, Product, SalesFunnelStep } from '@/types';
 
 export type PeriodFilter = 'today' | '7d' | '30d' | 'month';
 export type CommercialStatusFilter = 'all' | 'active' | 'waiting' | 'closed';
@@ -179,4 +179,72 @@ export interface RetentionCustomerItem {
 export interface RetentionSectionProps {
   customers: RetentionCustomerItem[];
   presentationMode: boolean;
+}
+
+export interface ProductCatalogSectionProps {
+  products: Product[];
+  sort: ProductSort;
+  presentationMode: boolean;
+  onSortChange: (sort: ProductSort) => void;
+}
+
+export interface CommercialPerformanceData {
+  ticketAverage: number;
+  orderCount: number;
+  soldRevenue: number;
+  retainedRevenue: number;
+  activeCustomers: number;
+  recurringCustomers: number;
+  conversionRate: number;
+  evolutionPoints: number;
+  conversationsChart: ChartDataPoint[];
+  responseTimeChart: ChartDataPoint[];
+}
+
+export interface CommercialPerformanceSectionProps {
+  data: CommercialPerformanceData;
+}
+
+export interface AskNitrosSectionProps {
+  conversationId?: string;
+  customerId?: string;
+  presentationMode: boolean;
+}
+
+export interface CredibilityMetric {
+  label: string;
+  value: string | number;
+  tone: DashboardTone;
+}
+
+export interface ChannelVolumeItem {
+  name: string;
+  value: number;
+  type: ChannelType;
+}
+
+export interface OperationCredibilityData {
+  metrics: CredibilityMetric[];
+  channelVolume: ChannelVolumeItem[];
+  mercosStatus: string;
+  whatsappStatus: string;
+  supabaseStatus: string;
+  synchronizedDataStatus: string;
+}
+
+export interface OperationCredibilitySectionProps {
+  data: OperationCredibilityData;
+}
+
+export interface PerformanceRecommendation {
+  title: string;
+  reason: string;
+  impact: string;
+  priority: string;
+  action: string;
+  href?: string;
+}
+
+export interface PerformanceRecommendationsSectionProps {
+  recommendations: PerformanceRecommendation[];
 }
