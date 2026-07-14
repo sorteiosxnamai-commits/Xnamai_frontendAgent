@@ -615,7 +615,7 @@ export function ConversationsPage() {
         }
       >
         {agentOptions.length === 0 ? (
-          <p className="text-sm text-gray-500">Cadastre usuários em Configurações → Usuários.</p>
+          <p className="text-sm text-gray-500">Cadastre pessoas com login em Configurações → Equipe e acessos.</p>
         ) : (
           <Select
             label="Atendente"

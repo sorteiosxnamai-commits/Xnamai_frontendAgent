@@ -13,55 +13,97 @@ import { UsersSettingsPanel } from '@/components/settings/UsersSettingsPanel';
 import { WhatsAppSettingsPanel } from '@/components/settings/WhatsAppSettingsPanel';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useNotification } from '@/contexts/NotificationContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { usePermissions } from '@/hooks/usePermissions';
-import { canAccessSettingsTab } from '@/utils/navPermissions';
 import { aiSettingsStore } from '@/store/aiSettingsStore';
 import { motion } from 'framer-motion';
 import {
   Bell,
   Building2,
+  DatabaseZap,
+  IdCard,
   Key,
   Link,
   MessageCircle,
   Palette,
   Server,
+  Settings,
   Shield,
+  SlidersHorizontal,
   Sparkles,
   Users,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ComponentType } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-const tabs = [
-  { id: 'empresa', label: 'Empresa', icon: Building2 },
-  { id: 'sistema', label: 'Status do sistema', icon: Server },
-  { id: 'usuarios', label: 'Usuários', icon: Users },
-  { id: 'permissoes', label: 'Permissões', icon: Shield },
-  { id: 'mercos', label: 'Mercos', icon: Link },
-  { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
-  { id: 'openai', label: 'OpenAI', icon: Sparkles },
-  { id: 'integracoes', label: 'Integrações', icon: Link },
-  { id: 'notificacoes', label: 'Notificações', icon: Bell },
-  { id: 'seguranca', label: 'Segurança', icon: Key },
-  { id: 'tema', label: 'Tema', icon: Palette },
-];
+interface SettingsTab {
+  id: string;
+  label: string;
+  group: 'workspace' | 'company' | 'integrations' | 'system';
+  icon: ComponentType<{ className?: string }>;
+}
+
+const GROUP_LABELS: Record<SettingsTab['group'], string> = {
+  workspace: 'Workspace',
+  company: 'Empresa',
+  integrations: 'Canais e dados',
+  system: 'Sistema global',
+};
 
 export function SettingsPage() {
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState(() => tabFromUrl ?? 'empresa');
+  const [activeTab, setActiveTab] = useState(() => tabFromUrl ?? 'perfil');
+  const { user } = useAuth();
+  const workspace = useWorkspace();
   const { theme, setTheme } = useTheme();
   const { addToast } = useNotification();
-  const { can, role } = usePermissions();
+  const { can } = usePermissions();
   const navigate = useNavigate();
   const [aiSettings, setAiSettings] = useState(() => aiSettingsStore.get());
 
-  const visibleTabs = useMemo(
-    () => tabs.filter((tab) => canAccessSettingsTab(tab.id, can, role)),
-    [can, role],
-  );
+  const canManageCompany = ['owner', 'admin'].includes(workspace.role) || can('manageUsers');
+  const canManageIntegrations = can('manageIntegrations');
+  const isSystemAdmin = workspace.accountType === 'system_admin';
+
+  const visibleTabs = useMemo<SettingsTab[]>(() => {
+    const tabs: SettingsTab[] = [
+      { id: 'perfil', label: 'Meu perfil', group: 'workspace', icon: IdCard },
+      { id: 'preferencias', label: 'Preferências', group: 'workspace', icon: SlidersHorizontal },
+      { id: 'notificacoes', label: 'Notificações', group: 'workspace', icon: Bell },
+      { id: 'seguranca', label: 'Segurança', group: 'workspace', icon: Key },
+      { id: 'tema', label: 'Aparência', group: 'workspace', icon: Palette },
+    ];
+
+    if (canManageCompany) {
+      tabs.push(
+        { id: 'empresa', label: 'Minha empresa', group: 'company', icon: Building2 },
+        { id: 'usuarios', label: 'Equipe e acessos', group: 'company', icon: Users },
+        { id: 'permissoes', label: 'Permissões', group: 'company', icon: Shield },
+      );
+    }
+
+    if (canManageIntegrations) {
+      tabs.push(
+        { id: 'fontes', label: 'Canais e fontes de dados', group: 'integrations', icon: DatabaseZap },
+        { id: 'integracoes', label: 'Integrações', group: 'integrations', icon: Link },
+        { id: 'mercos', label: 'Atualização de catálogo', group: 'integrations', icon: Settings },
+      );
+    }
+
+    if (isSystemAdmin) {
+      tabs.push(
+        { id: 'sistema', label: 'Status técnico do sistema', group: 'system', icon: Server },
+        { id: 'openai', label: 'Configuração OpenAI', group: 'system', icon: Sparkles },
+        { id: 'whatsapp', label: 'Credenciais brutas do WhatsApp', group: 'system', icon: MessageCircle },
+      );
+    }
+
+    return tabs;
+  }, [canManageCompany, canManageIntegrations, isSystemAdmin]);
 
   useEffect(() => {
     if (tabFromUrl && visibleTabs.some((tab) => tab.id === tabFromUrl)) {
@@ -84,39 +126,97 @@ export function SettingsPage() {
     });
   };
 
+  const activeLabel = visibleTabs.find((tab) => tab.id === activeTab)?.label ?? 'Configurações';
+  const groups = Object.entries(GROUP_LABELS) as Array<[SettingsTab['group'], string]>;
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Configurações</h1>
         <p className="mt-1 text-gray-500 dark:text-gray-400">
-          Empresa, notificações e segurança persistidos no Supabase
+          Preferências pessoais, equipe, fontes comerciais e controles técnicos conforme seu acesso.
         </p>
       </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
-        <nav className="flex gap-2 overflow-x-auto lg:w-56 lg:flex-col lg:gap-1">
-          {visibleTabs.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                activeTab === id
-                  ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:ring-blue-900/40'
-                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </button>
-          ))}
+        <nav className="flex gap-2 overflow-x-auto lg:w-64 lg:flex-col lg:gap-4">
+          {groups.map(([group, label]) => {
+            const items = visibleTabs.filter((tab) => tab.group === group);
+            if (items.length === 0) return null;
+
+            return (
+              <div key={group} className="flex gap-2 lg:flex-col lg:gap-1">
+                <p className="hidden px-3 text-[11px] font-bold uppercase tracking-[0.16em] text-gray-400 lg:block">
+                  {label}
+                </p>
+                {items.map(({ id, label: tabLabel, icon: Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => setActiveTab(id)}
+                    className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      activeTab === id
+                        ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:ring-blue-900/40'
+                        : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {tabLabel}
+                  </button>
+                ))}
+              </div>
+            );
+          })}
         </nav>
 
         <div className="flex-1">
-          <Card title={visibleTabs.find((t) => t.id === activeTab)?.label ?? 'Configurações'}>
+          <Card title={activeLabel}>
+            {activeTab === 'perfil' && (
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="primary">{user?.name ?? 'Usuário'}</Badge>
+                  <Badge variant="default">{workspace.role}</Badge>
+                </div>
+                <p className="text-sm text-gray-500">{user?.email}</p>
+                <Button variant="outline" onClick={() => navigate('/perfil')}>
+                  Abrir meu perfil
+                </Button>
+              </div>
+            )}
+            {activeTab === 'preferencias' && (
+              <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                <p>Workspace: <strong>{workspace.name ?? 'legacy'}</strong></p>
+                <p>Tipo de conta: <strong>{workspace.accountType}</strong></p>
+                <p>Onboarding: <strong>{workspace.onboardingStatus}</strong></p>
+              </div>
+            )}
             {activeTab === 'empresa' && <CompanySettingsPanel />}
-            {activeTab === 'sistema' && <SystemStatusPanel />}
             {activeTab === 'usuarios' && <UsersSettingsPanel />}
             {activeTab === 'permissoes' && <PermissionsSettingsPanel />}
+            {activeTab === 'fontes' && (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-500">
+                  Canais e fontes conectadas ficam nas páginas operacionais existentes.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" onClick={() => navigate('/canais')}>
+                    Abrir canais
+                  </Button>
+                  <Button variant="outline" onClick={() => setActiveTab('mercos')}>
+                    Atualização de catálogo
+                  </Button>
+                </div>
+              </div>
+            )}
+            {activeTab === 'integracoes' && (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-500">Gerencie integrações conectadas na página dedicada.</p>
+                <Button variant="outline" onClick={() => navigate('/integracoes')}>
+                  Abrir integrações
+                </Button>
+              </div>
+            )}
+            {activeTab === 'mercos' && <MercosSettingsPanel />}
+            {activeTab === 'sistema' && <SystemStatusPanel />}
             {activeTab === 'openai' && (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
@@ -157,16 +257,7 @@ export function SettingsPage() {
                 </div>
               </div>
             )}
-            {activeTab === 'mercos' && <MercosSettingsPanel />}
             {activeTab === 'whatsapp' && <WhatsAppSettingsPanel />}
-            {activeTab === 'integracoes' && (
-              <div className="space-y-4">
-                <p className="text-sm text-gray-500">Gerencie integrações conectadas na página dedicada.</p>
-                <Button variant="outline" onClick={() => navigate('/integracoes')}>
-                  Abrir integrações
-                </Button>
-              </div>
-            )}
             {activeTab === 'notificacoes' && <NotificationsSettingsPanel />}
             {activeTab === 'seguranca' && <SecuritySettingsPanel />}
             {activeTab === 'tema' && (

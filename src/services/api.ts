@@ -1,7 +1,13 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import type { AuthResponse, LoginCredentials, RegisterCredentials, User } from '@/types';
+import { normalizeSessionUser } from '@/utils/sessionScope';
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
+function normalizeApiUrl(value: string | undefined): string {
+  const normalized = (value ?? '/api').trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, '');
+  return normalized || '/api';
+}
+
+const API_URL = normalizeApiUrl(import.meta.env.VITE_API_URL);
 
 export const TOKEN_KEY = 'pulsedesk_token';
 export const REFRESH_KEY = 'pulsedesk_refresh';
@@ -85,9 +91,10 @@ api.interceptors.response.use(
       const { data } = await axios.post<AuthResponse>(`${API_URL}/auth/refresh`, {
         refreshToken,
       });
+      const authUser = normalizeSessionUser(data.user);
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(REFRESH_KEY, data.refreshToken);
-      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+      localStorage.setItem(USER_KEY, JSON.stringify(authUser));
 
       refreshQueue.forEach((callback) => callback(data.token));
       refreshQueue = [];

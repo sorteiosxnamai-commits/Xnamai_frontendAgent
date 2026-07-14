@@ -2,7 +2,7 @@ import { ProductCard } from '@/components/cards/ProductCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Loading, SkeletonTable } from '@/components/ui/EmptyState';
-import { ProductsEmptyState, ProductsMercosHint } from '@/components/ui/GuidedEmptyState';
+import { CatalogSourceHint, ProductsEmptyState } from '@/components/ui/GuidedEmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { Pagination } from '@/components/ui/Pagination';
 import { Search } from '@/components/ui/Search';
@@ -14,17 +14,7 @@ import { useProducts } from '@/hooks/useQueries';
 import { formatCurrency } from '@/utils';
 import type { Product } from '@/types';
 import { LayoutGrid, List, Package, RefreshCw } from 'lucide-react';
-import { useState } from 'react';
-
-const categories = [
-  { value: '', label: 'Todas categorias' },
-  { value: 'Sensores', label: 'Sensores' },
-  { value: 'Controladores', label: 'Controladores' },
-  { value: 'Acessórios', label: 'Acessórios' },
-  { value: 'Módulos', label: 'Módulos' },
-  { value: 'Relés', label: 'Relés' },
-  { value: 'Painéis', label: 'Painéis' },
-];
+import { useMemo, useState } from 'react';
 
 export function ProductsPage() {
   const [page, setPage] = useState(1);
@@ -43,6 +33,20 @@ export function ProductsPage() {
     syncMutation.mutate('products');
   };
 
+  const products = useMemo(() => data?.data ?? [], [data?.data]);
+  const isEmpty = (data?.total ?? 0) === 0;
+  const hasFilters = Boolean(search.trim() || category);
+  const categories = useMemo(() => {
+    const productCategories = Array.from(
+      new Set(products.map((product) => product.category).filter(Boolean)),
+    ).sort((a, b) => a.localeCompare(b));
+
+    return [
+      { value: '', label: 'Todas categorias' },
+      ...productCategories.map((value) => ({ value, label: value })),
+    ];
+  }, [products]);
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -51,10 +55,6 @@ export function ProductsPage() {
       </div>
     );
   }
-
-  const products = data?.data ?? [];
-  const isEmpty = (data?.total ?? 0) === 0;
-  const hasFilters = Boolean(search.trim() || category);
 
   const columns = [
     {
@@ -100,12 +100,13 @@ export function ProductsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Produtos</h1>
-          <p className="text-gray-500 dark:text-gray-400">Catálogo sincronizado da API Mercos</p>
+          <p className="text-gray-500 dark:text-gray-400">Catálogo comercial disponível para o agente e para a equipe.</p>
+          {canSync && <p className="mt-1 text-xs text-gray-400">Fonte técnica atual: Mercos</p>}
         </div>
         <div className="flex gap-2">
           {canSync && (
             <Button onClick={handleSync} loading={syncMutation.isPending}>
-              <RefreshCw className="h-4 w-4" /> Sincronizar Mercos
+              <RefreshCw className="h-4 w-4" /> Atualizar catálogo
             </Button>
           )}
           <Button variant={viewMode === 'table' ? 'primary' : 'outline'} size="icon" onClick={() => setViewMode('table')}>
@@ -117,7 +118,7 @@ export function ProductsPage() {
         </div>
       </div>
 
-      <ProductsMercosHint />
+      <CatalogSourceHint />
 
       <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
         <div className="flex flex-col gap-3 border-b border-gray-200 p-4 sm:flex-row dark:border-gray-700">

@@ -5,6 +5,11 @@ export interface User {
   avatar?: string;
   role: string;
   company: string;
+  accountType?: 'system_admin' | 'workspace_user';
+  workspaceId?: string;
+  workspaceName?: string;
+  workspaceRole?: 'owner' | 'admin' | 'supervisor' | 'seller' | 'member';
+  onboardingStatus?: 'pending' | 'in_progress' | 'complete';
 }
 
 export interface AuthResponse {

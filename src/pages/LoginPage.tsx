@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { z } from 'zod';
 
 const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
+  email: z.string().email('E-mail inválido'),
   password: z.string().min(4, 'Senha deve ter no mínimo 4 caracteres'),
   remember: z.boolean().optional(),
 });
@@ -29,6 +29,7 @@ export function LoginPage() {
   const [forgotOpen, setForgotOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const {
     register,
@@ -56,12 +57,10 @@ export function LoginPage() {
     }
   };
 
-  const [forgotLoading, setForgotLoading] = useState(false);
-
   const handleForgotPassword = async () => {
     const email = resetEmail || getValues('email');
     if (!email || !z.string().email().safeParse(email).success) {
-      addToast({ title: 'Email inválido', message: 'Informe um e-mail válido', type: 'warning' });
+      addToast({ title: 'E-mail inválido', message: 'Informe um e-mail válido', type: 'warning' });
       return;
     }
 
@@ -132,7 +131,7 @@ export function LoginPage() {
               </div>
             )}
             <Input
-              label="Email"
+              label="E-mail"
               type="email"
               autoComplete="email"
               placeholder="seu@empresa.com"
@@ -144,7 +143,7 @@ export function LoginPage() {
               label="Senha"
               type="password"
               autoComplete="current-password"
-              placeholder="••••••••"
+              placeholder="********"
               error={errors.password?.message}
               className="border-gray-700 bg-gray-800 text-white placeholder:text-gray-500"
               {...register('password')}
@@ -189,21 +188,26 @@ export function LoginPage() {
 
         <p className="mt-6 flex items-center justify-center gap-2 text-center text-xs text-gray-600">
           <Mail className="h-3.5 w-3.5" />
-          Protegido com criptografia · Conformidade LGPD
+          Protegido com criptografia - Conformidade LGPD
         </p>
       </motion.div>
 
-      <Modal open={forgotOpen} onClose={() => setForgotOpen(false)} title="Recuperar senha" footer={
-        <>
-          <Button variant="outline" onClick={() => setForgotOpen(false)}>Cancelar</Button>
-          <Button onClick={handleForgotPassword} loading={forgotLoading}>Enviar link</Button>
-        </>
-      }>
+      <Modal
+        open={forgotOpen}
+        onClose={() => setForgotOpen(false)}
+        title="Recuperar senha"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setForgotOpen(false)}>Cancelar</Button>
+            <Button onClick={handleForgotPassword} loading={forgotLoading}>Enviar link</Button>
+          </>
+        }
+      >
         <p className="mb-4 text-sm text-gray-500">
           Informe seu e-mail e enviaremos um link para redefinir sua senha.
         </p>
         <Input
-          label="Email"
+          label="E-mail"
           type="email"
           value={resetEmail}
           onChange={(e) => setResetEmail(e.target.value)}

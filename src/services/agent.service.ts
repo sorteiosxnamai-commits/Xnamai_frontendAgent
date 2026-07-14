@@ -1,3 +1,4 @@
+import { USE_MOCK } from '@/config/runtime';
 import { mockAgentStatus } from '@/data/mocks';
 import { buildAiContext, contextToPrompt } from '@/services/ai/contextBuilder';
 import {
@@ -16,8 +17,6 @@ import type {
   Message,
 } from '@/types';
 import { api } from './api';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 
 async function fetchAgentContext(
   conversationId?: string,
@@ -83,7 +82,7 @@ export const agentService = {
       const configured = aiSettingsStore.isConfigured();
       return {
         ...mockAgentStatus,
-        model: configured ? aiSettingsStore.get().model : 'PulseDesk IA Pro',
+        model: configured ? aiSettingsStore.get().model : 'NITRUS IA Pro',
         online: true,
       };
     }

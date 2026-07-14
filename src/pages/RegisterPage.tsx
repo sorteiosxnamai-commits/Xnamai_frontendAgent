@@ -13,7 +13,7 @@ import { z } from 'zod';
 const registerSchema = z
   .object({
     name: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres'),
-    email: z.string().email('Email inválido'),
+    email: z.string().email('E-mail inválido'),
     company: z.string().optional(),
     password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
     confirmPassword: z.string(),
@@ -48,7 +48,7 @@ export function RegisterPage() {
       });
       addToast({
         title: 'Conta criada',
-        message: 'Bem-vindo a NITRUS!',
+        message: 'Bem-vindo ao NITRUS!',
         type: 'success',
       });
       navigate('/dashboard');
@@ -85,9 +85,15 @@ export function RegisterPage() {
             <Link to="/" className="inline-block">
               <Logo size="md" showCompany className="[&_span]:text-white [&_p]:text-gray-500" />
             </Link>
-            <h1 className="mt-6 font-display text-2xl font-bold tracking-tight text-white">Crie sua conta</h1>
+            <h1 className="mt-6 font-display text-2xl font-bold tracking-tight text-white">
+              Crie sua conta empresarial
+            </h1>
             <p className="mt-2 text-sm text-gray-400">
-              Cadastre-se para acessar a plataforma NITRUS
+              Configure o ambiente da sua empresa para gerenciar o agente comercial NITRUS.
+            </p>
+            <p className="mt-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs leading-5 text-gray-500">
+              Esta conta é destinada a empresas e equipes que administram o NITRUS. Clientes finais
+              são atendidos pelos canais comerciais da empresa.
             </p>
           </div>
 
@@ -101,7 +107,7 @@ export function RegisterPage() {
               {...register('name')}
             />
             <Input
-              label="Email"
+              label="E-mail"
               type="email"
               autoComplete="email"
               placeholder="seu@empresa.com"
@@ -154,7 +160,7 @@ export function RegisterPage() {
 
         <p className="mt-6 flex items-center justify-center gap-2 text-center text-xs text-gray-600">
           <Building2 className="h-3.5 w-3.5" />
-          Seus dados ficam protegidos no Supabase · LGPD
+          Seus dados ficam protegidos no Supabase - LGPD
         </p>
       </motion.div>
     </div>

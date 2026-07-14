@@ -1,9 +1,8 @@
 import { api } from './api';
+import { USE_MOCK } from '@/config/runtime';
 import { mockMercosStatus, mockMercosLogs } from '@/data/mocks';
 import { delay } from '@/utils';
 import type { MercosHomologacao, MercosStatus, MercosLog } from '@/types';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 
 export type MercosSyncType = 'products' | 'customers' | 'orders' | 'all';
 
@@ -31,7 +30,7 @@ export const mercosService = {
       await delay(400);
       return {
         prontoParaHomologacao: false,
-        erros: { mock: 'Modo mock ativo — configure VITE_USE_MOCK=false' },
+        erros: { mock: 'Modo mock ativo. Remova VITE_USE_MOCK=true para usar o backend real.' },
       };
     }
     const { data } = await api.get<MercosHomologacao>('/mercos/homologacao');
@@ -62,7 +61,7 @@ export const mercosService = {
   testConnection: async (): Promise<{ ok: boolean; message: string; clientes?: number }> => {
     if (USE_MOCK) {
       await delay(800);
-      return { ok: false, message: 'Modo mock ativo — configure VITE_USE_MOCK=false e o backend real' };
+      return { ok: false, message: 'Modo mock ativo. Remova VITE_USE_MOCK=true para usar o backend real.' };
     }
     const { data } = await api.post<{ ok: boolean; message: string; clientes?: number }>('/mercos/testar-conexao');
     return data;

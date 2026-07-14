@@ -1,8 +1,7 @@
 import { api } from './api';
+import { USE_MOCK } from '@/config/runtime';
 import { delay } from '@/utils';
 import type { SalesMetrics } from '@/types';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 
 const mockSalesMetrics: SalesMetrics = {
   quantidadeVendas: 48,
@@ -20,7 +19,7 @@ const mockSalesMetrics: SalesMetrics = {
   pipelineNegocios: 12,
   pipelineValor: 186500,
   funil: [
-    { id: '1', label: 'Contatos / Conversas', quantidade: 196, valor: 0, conversaoPct: 100, quedaPct: 100, tipo: 'topo' },
+    { id: '1', label: 'Clientes / Conversas', quantidade: 196, valor: 0, conversaoPct: 100, quedaPct: 100, tipo: 'topo' },
     { id: '2', label: 'Oportunidades no funil', quantidade: 82, valor: 186500, conversaoPct: 41.8, quedaPct: 41.8, tipo: 'funil' },
     { id: '3', label: 'Lead', quantidade: 28, valor: 92000, conversaoPct: 14.3, quedaPct: 34.1, tipo: 'funil' },
     { id: '4', label: 'Proposta', quantidade: 38, valor: 52000, conversaoPct: 19.4, quedaPct: 135.7, tipo: 'funil' },

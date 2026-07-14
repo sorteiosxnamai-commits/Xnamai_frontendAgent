@@ -2,20 +2,18 @@ import { CustomerCard } from '@/components/cards/CustomerCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Loading, SkeletonTable } from '@/components/ui/EmptyState';
-import { CustomersEmptyState, CustomersMercosHint } from '@/components/ui/GuidedEmptyState';
-import { Input } from '@/components/ui/Input';
+import { CustomersEmptyState, CustomerSourceHint } from '@/components/ui/GuidedEmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { Pagination } from '@/components/ui/Pagination';
 import { Search } from '@/components/ui/Search';
 import { Table } from '@/components/ui/Table';
-import { useNotification } from '@/contexts/NotificationContext';
 import { useMercosSync } from '@/hooks/useMercosSync';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useCustomers } from '@/hooks/useQueries';
-import { customerEditStore, customerStore } from '@/store/customerStore';
+import { customerStore } from '@/store/customerStore';
 import { formatCurrency, formatDate } from '@/utils';
 import type { Customer } from '@/types';
-import { Eye, LayoutGrid, List, Pencil, RefreshCw } from 'lucide-react';
+import { Eye, LayoutGrid, List, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
 export function CustomersPage() {
@@ -23,9 +21,6 @@ export function CustomersPage() {
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
-  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', company: '', city: '', notes: '' });
-  const { addToast } = useNotification();
   const { can } = usePermissions();
   const canSync = can('manageIntegrations');
   const syncMutation = useMercosSync();
@@ -35,30 +30,6 @@ export function CustomersPage() {
   const handleSyncAll = () => {
     if (!canSync) return;
     syncMutation.mutate('customers');
-  };
-
-  const openEdit = (customer: Customer) => {
-    const edits = customerEditStore.get(customer.id);
-    setEditCustomer(customer);
-    setEditForm({
-      name: edits?.name ?? customer.name,
-      email: edits?.email ?? customer.email,
-      phone: edits?.phone ?? customer.phone,
-      company: edits?.company ?? customer.company,
-      city: edits?.city ?? customer.city,
-      notes: edits?.notes ?? customer.notes ?? '',
-    });
-  };
-
-  const handleSaveEdit = () => {
-    if (!editCustomer) return;
-    if (!editForm.name.trim()) {
-      addToast({ title: 'Nome obrigatório', type: 'warning' });
-      return;
-    }
-    customerEditStore.save(editCustomer.id, editForm);
-    addToast({ title: 'Cliente atualizado', message: editForm.name, type: 'success' });
-    setEditCustomer(null);
   };
 
   if (isLoading) {
@@ -76,14 +47,14 @@ export function CustomersPage() {
       header: 'Nome',
       render: (c: Customer) => (
         <div>
-          <p className="font-medium">{customerEditStore.get(c.id)?.name ?? c.name}</p>
-          <p className="text-xs text-gray-500">{customerEditStore.get(c.id)?.company ?? c.company}</p>
+          <p className="font-medium">{c.name}</p>
+          <p className="text-xs text-gray-500">{c.company}</p>
         </div>
       ),
     },
-    { key: 'email', header: 'Email', render: (c: Customer) => customerEditStore.get(c.id)?.email ?? c.email },
-    { key: 'phone', header: 'Telefone', render: (c: Customer) => customerEditStore.get(c.id)?.phone ?? c.phone },
-    { key: 'city', header: 'Cidade', render: (c: Customer) => customerEditStore.get(c.id)?.city ?? c.city },
+    { key: 'email', header: 'Email' },
+    { key: 'phone', header: 'Telefone' },
+    { key: 'city', header: 'Cidade' },
     {
       key: 'ordersCount',
       header: 'Pedidos',
@@ -111,18 +82,10 @@ export function CustomersPage() {
           <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedCustomer(c); }}>
             <Eye className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEdit(c); }}>
-            <Pencil className="h-4 w-4" />
-          </Button>
         </div>
       ),
     },
   ];
-
-  const displayCustomer = (c: Customer) => {
-    const edits = customerEditStore.get(c.id);
-    return edits ? { ...c, ...edits } : c;
-  };
 
   const customers = data?.data ?? [];
   const isEmpty = (data?.total ?? 0) === 0;
@@ -132,13 +95,13 @@ export function CustomersPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Contatos</h1>
-          <p className="text-gray-500 dark:text-gray-400">Clientes do WhatsApp (agent) e do Mercos</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Clientes</h1>
+          <p className="text-gray-500 dark:text-gray-400">Leads e compradores reunidos pelos canais da empresa.</p>
         </div>
         <div className="flex gap-2">
           {canSync && (
             <Button onClick={handleSyncAll} loading={syncMutation.isPending}>
-              <RefreshCw className="h-4 w-4" /> Sincronizar Mercos
+              <RefreshCw className="h-4 w-4" /> Atualizar clientes
             </Button>
           )}
           <Button
@@ -158,7 +121,7 @@ export function CustomersPage() {
         </div>
       </div>
 
-      <CustomersMercosHint />
+      <CustomerSourceHint />
 
       <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
         <div className="border-b border-gray-200 p-4 dark:border-gray-700">
@@ -182,7 +145,7 @@ export function CustomersPage() {
         ) : (
           <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
             {customers.map((c) => (
-              <CustomerCard key={c.id} customer={displayCustomer(c)} onClick={() => setSelectedCustomer(c)} />
+              <CustomerCard key={c.id} customer={c} onClick={() => setSelectedCustomer(c)} />
             ))}
           </div>
         )}
@@ -200,51 +163,25 @@ export function CustomersPage() {
       <Modal
         open={!!selectedCustomer}
         onClose={() => setSelectedCustomer(null)}
-        title="Detalhes do Cliente"
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setSelectedCustomer(null)}>Fechar</Button>
-            <Button onClick={() => selectedCustomer && openEdit(selectedCustomer)}>Editar</Button>
-          </>
-        }
+        title="Detalhes do cliente"
+        footer={<Button variant="outline" onClick={() => setSelectedCustomer(null)}>Fechar</Button>}
       >
-        {selectedCustomer && (() => {
-          const c = displayCustomer(selectedCustomer);
-          return (
-            <div className="space-y-3 text-sm">
-              <p><strong>Nome:</strong> {c.name}</p>
-              <p><strong>Empresa:</strong> {c.company}</p>
-              <p><strong>Email:</strong> {c.email}</p>
-              <p><strong>Telefone:</strong> {c.phone}</p>
-              <p><strong>Cidade:</strong> {c.city}</p>
-              <p><strong>Pedidos:</strong> {c.ordersCount}</p>
-              <p><strong>Total gasto:</strong> {formatCurrency(c.totalSpent)}</p>
-              <p><strong>Último contato:</strong> {formatDate(c.lastContact)}</p>
-              {c.notes && <p><strong>Observações:</strong> {c.notes}</p>}
-            </div>
-          );
-        })()}
-      </Modal>
-
-      <Modal
-        open={!!editCustomer}
-        onClose={() => setEditCustomer(null)}
-        title="Editar cliente"
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setEditCustomer(null)}>Cancelar</Button>
-            <Button onClick={handleSaveEdit}>Salvar</Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <Input label="Nome" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
-          <Input label="Email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
-          <Input label="Telefone" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
-          <Input label="Empresa" value={editForm.company} onChange={(e) => setEditForm({ ...editForm, company: e.target.value })} />
-          <Input label="Cidade" value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} />
-          <Input label="Observações" value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} />
-        </div>
+        {selectedCustomer && (
+          <div className="space-y-3 text-sm">
+            <p><strong>Nome:</strong> {selectedCustomer.name}</p>
+            <p><strong>Empresa:</strong> {selectedCustomer.company}</p>
+            <p><strong>Email:</strong> {selectedCustomer.email}</p>
+            <p><strong>Telefone:</strong> {selectedCustomer.phone}</p>
+            <p><strong>Cidade:</strong> {selectedCustomer.city}</p>
+            <p><strong>Pedidos:</strong> {selectedCustomer.ordersCount}</p>
+            <p><strong>Total gasto:</strong> {formatCurrency(selectedCustomer.totalSpent)}</p>
+            <p><strong>Último contato:</strong> {formatDate(selectedCustomer.lastContact)}</p>
+            {selectedCustomer.notes && <p><strong>Observações:</strong> {selectedCustomer.notes}</p>}
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+              A edição de clientes será habilitada quando a fonte de dados permitir atualização.
+            </p>
+          </div>
+        )}
       </Modal>
     </div>
   );

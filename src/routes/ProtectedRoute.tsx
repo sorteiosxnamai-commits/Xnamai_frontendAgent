@@ -12,7 +12,8 @@ export function ProtectedRoute() {
 }
 
 export function PublicRoute() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return <Loading className="min-h-screen" />;
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   return <Outlet />;
 }

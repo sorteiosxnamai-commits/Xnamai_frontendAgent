@@ -183,7 +183,7 @@ function handleMagicText(ctx: AgentContext): string {
     general: 'Analisamos sua solicitação e preparamos a melhor solução para atendê-lo com agilidade.',
   };
 
-  return `✍️ **Texto sugerido (tom PulseDesk):**\n\nPrezado(a) ${name},\n\nAgradecemos o contato e a confiança depositada na ${company}. ${closings[intent]}\n\nAtenciosamente,\nEquipe PulseDesk · Tironitech`;
+  return `✍️ **Texto sugerido (tom NITRUS):**\n\nPrezado(a) ${name},\n\nAgradecemos o contato e a confiança depositada na ${company}. ${closings[intent]}\n\nAtenciosamente,\nEquipe NITRUS`;
 }
 
 function handleDirectQuestion(ctx: AgentContext, message: string): string | null {
@@ -241,7 +241,7 @@ export function generateIntelligentReply(
 
   if (mode === 'agent') {
     if (norm.match(/\b(oi|ola|bom dia|boa tarde|boa noite|hello|hey)\b/)) {
-      return `Olá! Sou o Copiloto IA do PulseDesk. Consulto produtos, estoque, pedidos e histórico de clientes em tempo real. Posso resumir conversas, sugerir respostas ou montar orçamentos. Como posso ajudar?`;
+      return `Olá! Sou o Copiloto IA do NITRUS. Consulto produtos, estoque, pedidos e histórico de clientes em tempo real. Posso resumir conversas, sugerir respostas ou montar orçamentos. Como posso ajudar?`;
     }
     return suggestReplies(ctx, message);
   }

@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Loading } from '@/components/ui/EmptyState';
 import { Input } from '@/components/ui/Input';
-import { useAuth } from '@/contexts/AuthContext';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useNotification } from '@/contexts/NotificationContext';
 import { whatsappService } from '@/services/whatsapp.service';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -10,10 +10,10 @@ import { CheckCircle, Copy, MessageCircle, XCircle } from 'lucide-react';
 import { useState } from 'react';
 
 export function WhatsAppSettingsPanel() {
-  const { user } = useAuth();
+  const workspace = useWorkspace();
   const { addToast } = useNotification();
   const queryClient = useQueryClient();
-  const isAdmin = user?.role === 'admin';
+  const isSystemAdmin = workspace.accountType === 'system_admin';
 
   const { data: status, isLoading } = useQuery({
     queryKey: ['whatsapp'],
@@ -91,7 +91,7 @@ export function WhatsAppSettingsPanel() {
             Conversas entram em Atendimento via bridge Supabase.
           </li>
           <li>
-            <strong>Esta tela:</strong> WhatsApp oficial Meta Cloud no backend PulseDesk — canal próprio,
+            <strong>Esta tela:</strong> WhatsApp oficial Meta Cloud no backend NITRUS — canal próprio,
             independente do Z-API. “Desconectado” aqui não significa que o vendedor IA está fora.
           </li>
         </ul>
@@ -153,7 +153,7 @@ export function WhatsAppSettingsPanel() {
         </div>
       )}
 
-      {isAdmin && (
+      {isSystemAdmin && (
         <div className="space-y-4 rounded-lg border border-gray-100 p-4 dark:border-gray-800">
           <div className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-green-600" />
@@ -197,9 +197,9 @@ export function WhatsAppSettingsPanel() {
         </div>
       )}
 
-      {!isAdmin && (
+      {!isSystemAdmin && (
         <p className="text-sm text-gray-500">
-          Somente administradores podem alterar credenciais do WhatsApp.
+          Somente administradores globais do NITRUS podem alterar credenciais brutas do WhatsApp.
         </p>
       )}
     </div>

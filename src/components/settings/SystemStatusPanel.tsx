@@ -3,9 +3,8 @@ import { Button } from '@/components/ui/Button';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Loading } from '@/components/ui/EmptyState';
 import { useNotification } from '@/contexts/NotificationContext';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useSystemStatus } from '@/hooks/useQueries';
-import { usePermissions } from '@/hooks/usePermissions';
-import { canAccessSettingsTab } from '@/utils/navPermissions';
 import { systemService } from '@/services/system.service';
 import { formatDateTime } from '@/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -60,7 +59,7 @@ function StatusRow({
 
 export function SystemStatusPanel() {
   const { data, isLoading, isFetching, refetch } = useSystemStatus();
-  const { can, role } = usePermissions();
+  const workspace = useWorkspace();
   const { addToast } = useNotification();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -94,10 +93,6 @@ export function SystemStatusPanel() {
   });
 
   const goToTab = (tab: string) => {
-    if (!canAccessSettingsTab(tab, can, role)) {
-      navigate('/configuracoes');
-      return;
-    }
     navigate(`/configuracoes?tab=${tab}`);
   };
 
@@ -235,7 +230,7 @@ export function SystemStatusPanel() {
         </ul>
       </div>
 
-      {role === 'admin' && (
+      {workspace.accountType === 'system_admin' && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/50 dark:bg-amber-950/20">
           <p className="flex items-center gap-2 font-medium text-amber-900 dark:text-amber-100">
             <Trash2 className="h-4 w-4" />

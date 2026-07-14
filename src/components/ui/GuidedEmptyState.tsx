@@ -20,7 +20,7 @@ export function ConversationsEmptyState({ filtered }: { filtered: boolean }) {
     <EmptyState
       icon={Headphones}
       title="Nenhuma conversa ainda"
-      description="As conversas aparecem quando leads enviam mensagem pelo WhatsApp ou quando voce testa o agente automatico. Conecte a Meta na semana que vem."
+      description="As conversas aparecem quando leads enviam mensagem pelos canais conectados ou quando você testa o agente automático."
       action={
         <div className="flex flex-wrap justify-center gap-2">
           <Button variant="outline" size="sm" onClick={() => navigate('/configuracoes?tab=whatsapp')}>
@@ -40,7 +40,7 @@ export function ConversationsSelectPrompt() {
     <EmptyState
       icon={MessageSquare}
       title="Selecione uma conversa"
-      description="Escolha um atendimento na lista ao lado ou aguarde novas mensagens pelo WhatsApp."
+      description="Escolha um atendimento na lista ao lado ou aguarde novas mensagens pelos canais conectados."
     />
   );
 }
@@ -52,14 +52,14 @@ export function CampaignsEmptyState({ onCreate }: { onCreate: () => void }) {
     <EmptyState
       icon={Megaphone}
       title="Nenhuma campanha criada"
-      description="Crie campanhas WhatsApp para clientes sincronizados do Mercos. O disparo real exige WhatsApp conectado (Meta) — disponível na próxima etapa."
+      description="Crie campanhas para compradores e leads sincronizados. O disparo real exige canais conectados."
       action={
         <div className="flex flex-wrap justify-center gap-2">
           <Button size="sm" onClick={onCreate}>
             Criar campanha
           </Button>
           <Button variant="outline" size="sm" onClick={() => navigate('/configuracoes?tab=mercos')}>
-            Sincronizar Mercos
+            Ver fontes de dados
           </Button>
         </div>
       }
@@ -75,7 +75,7 @@ export function CustomersEmptyState({ searched }: { searched: boolean }) {
       <EmptyState
         icon={Users}
         title="Nenhum cliente encontrado"
-        description="Não há contatos que correspondam à sua busca. Tente outro nome, e-mail ou telefone."
+        description="Não há compradores ou leads que correspondam à sua busca. Tente outro nome, e-mail ou telefone."
       />
     );
   }
@@ -83,12 +83,12 @@ export function CustomersEmptyState({ searched }: { searched: boolean }) {
   return (
     <EmptyState
       icon={Users}
-      title="Nenhum contato sincronizado"
-      description="Os clientes vêm do Mercos. Configure os tokens de produção e sincronize para popular esta lista — necessário também para campanhas WhatsApp."
+      title="Nenhum cliente disponível"
+      description="Leads e compradores aparecem quando uma fonte de dados conectada disponibiliza registros para a operação."
       action={
         <div className="flex flex-wrap justify-center gap-2">
           <Button size="sm" onClick={() => navigate('/configuracoes?tab=mercos')}>
-            Ir para Mercos
+            Ver fontes de dados
           </Button>
           <Button variant="outline" size="sm" onClick={() => navigate('/configuracoes?tab=sistema')}>
             Ver status do sistema
@@ -106,7 +106,7 @@ export function ChannelsEmptyState({ onRegisterWhatsApp }: { onRegisterWhatsApp?
     <EmptyState
       icon={Radio}
       title="Nenhum canal configurado"
-      description="Cadastre o WhatsApp agora (fica pendente até os tokens Meta). Quando conectar a API, o canal passa a receber e enviar mensagens reais."
+      description="Cadastre canais comerciais para que a equipe e o agente acompanhem conversas reais."
       action={
         <div className="flex flex-wrap justify-center gap-2">
           {onRegisterWhatsApp && (
@@ -143,11 +143,11 @@ export function ProductsEmptyState({ searched }: { searched: boolean }) {
     <EmptyState
       icon={Package}
       title="Catálogo vazio"
-      description="Os produtos vêm da API Mercos. Configure os tokens e sincronize para o robô, copiloto e atendimento consultarem preço e estoque reais."
+      description="O catálogo comercial aparece quando uma fonte de dados conectada disponibiliza produtos para o agente e para a equipe."
       action={
         <div className="flex flex-wrap justify-center gap-2">
           <Button size="sm" onClick={() => navigate('/configuracoes?tab=mercos')}>
-            Ir para Mercos
+            Ver fontes de dados
           </Button>
           <Button variant="outline" size="sm" onClick={() => navigate('/configuracoes?tab=sistema')}>
             Ver status do sistema
@@ -158,7 +158,7 @@ export function ProductsEmptyState({ searched }: { searched: boolean }) {
   );
 }
 
-export function ProductsMercosHint() {
+export function CatalogSourceHint() {
   const navigate = useNavigate();
 
   return (
@@ -169,13 +169,13 @@ export function ProductsMercosHint() {
     >
       <Link className="h-4 w-4 shrink-0" />
       <p>
-        Catálogo do <strong>Mercos</strong> — use Sincronizar para atualizar preços e estoque via API.
+        Catálogo comercial disponível para o agente e para a equipe. Use Atualizar catálogo para revisar preços e estoque.
       </p>
     </button>
   );
 }
 
-export function CustomersMercosHint() {
+export function CustomerSourceHint() {
   const navigate = useNavigate();
 
   return (
@@ -186,7 +186,7 @@ export function CustomersMercosHint() {
     >
       <Link className="h-4 w-4 shrink-0" />
       <p>
-        Dados do <strong>Mercos</strong> — sincronize em Configurações quando receber os tokens de produção.
+        Leads e compradores reunidos pelos canais da empresa. Atualizações dependem das fontes de dados conectadas.
       </p>
     </button>
   );
@@ -209,11 +209,11 @@ export function OrdersEmptyState({ searched }: { searched: boolean }) {
     <EmptyState
       icon={ShoppingCart}
       title="Nenhum pedido ainda"
-      description="Pedidos fechados pelo agente no WhatsApp aparecem aqui automaticamente. Pedidos do Mercos entram via sincronização em Configurações."
+      description="Pedidos fechados pelo agente e pelos canais conectados aparecem aqui automaticamente."
       action={
         <div className="flex flex-wrap justify-center gap-2">
           <Button size="sm" onClick={() => navigate('/configuracoes?tab=mercos')}>
-            Ir para Mercos
+            Ver fontes de dados
           </Button>
           <Button variant="outline" size="sm" onClick={() => navigate('/configuracoes?tab=sistema')}>
             Ver status do sistema
@@ -235,7 +235,7 @@ export function OrdersMercosHint() {
     >
       <Link className="h-4 w-4 shrink-0" />
       <p>
-        Pedidos do <strong>WhatsApp</strong> (nº WA-…) e do <strong>Mercos</strong> — vendas do agent aparecem ao fechar no chat.
+        Pedidos dos canais conectados e da fonte comercial atual. Vendas do agente aparecem ao fechar no atendimento.
       </p>
     </button>
   );

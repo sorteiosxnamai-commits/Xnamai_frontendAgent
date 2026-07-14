@@ -6,12 +6,12 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { USE_MOCK } from '@/config/runtime';
 import { mockUser } from '@/data/mocks';
 import { authService, REFRESH_KEY, TOKEN_KEY, USER_KEY } from '@/services/api';
 import { extractApiErrorMessage } from '@/utils/apiErrors';
+import { normalizeSessionUser } from '@/utils/sessionScope';
 import type { LoginCredentials, RegisterCredentials, User } from '@/types';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 
 interface AuthContextValue {
   user: User | null;
@@ -26,9 +26,10 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 function persistSession(token: string, refreshToken: string, authUser: User) {
+  const normalizedUser = normalizeSessionUser(authUser);
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(REFRESH_KEY, refreshToken);
-  localStorage.setItem(USER_KEY, JSON.stringify(authUser));
+  localStorage.setItem(USER_KEY, JSON.stringify(normalizedUser));
 }
 
 function clearSession() {
@@ -37,11 +38,37 @@ function clearSession() {
   localStorage.removeItem(USER_KEY);
 }
 
+function isPersistedUser(value: unknown): value is User {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<User>;
+  return Boolean(candidate.id && candidate.email && candidate.role);
+}
+
+function readStoredSessionUser(): User | null {
+  const storedToken = localStorage.getItem(TOKEN_KEY);
+  if (!USE_MOCK && storedToken?.startsWith('mock-')) {
+    clearSession();
+    return null;
+  }
+
+  const stored = localStorage.getItem(USER_KEY);
+  if (!stored) return null;
+
+  try {
+    const parsed = JSON.parse(stored) as unknown;
+    if (!isPersistedUser(parsed)) {
+      clearSession();
+      return null;
+    }
+    return normalizeSessionUser(parsed);
+  } catch {
+    clearSession();
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    const stored = localStorage.getItem(USER_KEY);
-    return stored ? (JSON.parse(stored) as User) : null;
-  });
+  const [user, setUser] = useState<User | null>(() => readStoredSessionUser());
   const [isLoading, setIsLoading] = useState(false);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
@@ -52,16 +79,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (USE_MOCK) {
-        await new Promise((r) => setTimeout(r, 800));
-        const authUser = { ...mockUser, email: credentials.email };
+        await new Promise((resolve) => {
+          setTimeout(resolve, 800);
+        });
+        const authUser = normalizeSessionUser({ ...mockUser, email: credentials.email });
         persistSession('mock-jwt-token', 'mock-refresh-token', authUser);
         setUser(authUser);
         return;
       }
 
       const { data } = await authService.login(credentials);
-      persistSession(data.token, data.refreshToken, data.user);
-      setUser(data.user);
+      const authUser = normalizeSessionUser(data.user);
+      persistSession(data.token, data.refreshToken, authUser);
+      setUser(authUser);
     } catch (error: unknown) {
       throw new Error(extractApiErrorMessage(error, 'Não foi possível entrar'));
     } finally {
@@ -77,22 +107,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (USE_MOCK) {
-        await new Promise((r) => setTimeout(r, 800));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 800);
+        });
         const authUser: User = {
           id: `mock-${Date.now()}`,
           name: credentials.name,
           email: credentials.email,
           role: 'user',
-          company: credentials.company || 'PulseDesk',
+          company: credentials.company || 'NITRUS',
         };
         persistSession('mock-jwt-token', 'mock-refresh-token', authUser);
-        setUser(authUser);
+        setUser(normalizeSessionUser(authUser));
         return;
       }
 
       const { data } = await authService.register(credentials);
-      persistSession(data.token, data.refreshToken, data.user);
-      setUser(data.user);
+      const authUser = normalizeSessionUser(data.user);
+      persistSession(data.token, data.refreshToken, authUser);
+      setUser(authUser);
     } catch (error: unknown) {
       throw new Error(extractApiErrorMessage(error, 'Não foi possível criar a conta'));
     } finally {
@@ -113,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (USE_MOCK) {
       setUser((prev) => {
         if (!prev) return prev;
-        const updated = { ...prev, ...patch };
+        const updated = normalizeSessionUser({ ...prev, ...patch });
         localStorage.setItem(USER_KEY, JSON.stringify(updated));
         return updated;
       });
@@ -124,8 +157,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       name: patch.name,
       company: patch.company,
     });
-    localStorage.setItem(USER_KEY, JSON.stringify(data));
-    setUser(data);
+    const authUser = normalizeSessionUser(data);
+    localStorage.setItem(USER_KEY, JSON.stringify(authUser));
+    setUser(authUser);
   }, []);
 
   const value = useMemo(

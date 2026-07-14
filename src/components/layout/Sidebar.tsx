@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   BarChart3,
   Bot,
+  Brain,
+  Building2,
   ChevronLeft,
   DollarSign,
   Flame,
@@ -15,7 +17,6 @@ import {
   LogOut,
   Megaphone,
   Package,
-  Settings,
   ShoppingCart,
   Sparkles,
   UserCircle,
@@ -24,6 +25,7 @@ import {
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { usePermissions } from '@/hooks/usePermissions';
 
 const navSections: NavSection[] = [
@@ -38,13 +40,14 @@ const navSections: NavSection[] = [
   { title: 'AGENTE', items: [
     { to: '/copiloto', icon: Sparkles, label: 'Copiloto Comercial' },
     { to: '/robo', icon: Bot, label: 'Agente Automático' },
+    { to: '/persona', icon: Brain, label: 'Persona do agente', permission: 'managePlatform' },
   ] },
   { title: 'GESTÃO', items: [
     { to: '/campanhas', icon: Megaphone, label: 'Campanhas', permission: 'managePlatform' },
     { to: '/relatorios', icon: BarChart3, label: 'Relatórios', permission: 'viewReports' },
     { to: '/configuracoes', icon: UserCircle, label: 'Equipe e acessos' },
     { to: '/integracoes', icon: Link2, label: 'Canais e integrações', permission: 'manageIntegrations' },
-    { to: '/perfil', icon: Settings, label: 'Minha empresa' },
+    { to: '/minha-empresa', icon: Building2, label: 'Minha empresa', permission: 'manageUsers', roles: ['owner', 'admin'] },
   ] },
 ];
 
@@ -58,8 +61,9 @@ interface SidebarProps {
 export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
   const { logout } = useAuth();
   const { can } = usePermissions();
+  const workspace = useWorkspace();
   const navigate = useNavigate();
-  const visibleSections = filterNavSections(navSections, can);
+  const visibleSections = filterNavSections(navSections, can, workspace.role);
 
   const handleExitToLanding = () => {
     onMobileClose();

@@ -1,4 +1,5 @@
 import { api } from './api';
+import { USE_MOCK } from '@/config/runtime';
 import {
   mockCustomers,
   mockProducts,
@@ -16,8 +17,6 @@ import type {
   ListParams,
   PaginatedResponse,
 } from '@/types';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 
 export const customersService = {
   getCustomers: async (params: ListParams = {}): Promise<PaginatedResponse<Customer>> => {

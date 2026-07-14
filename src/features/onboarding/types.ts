@@ -7,6 +7,17 @@ export interface BusinessProfile {
   currency?: string;
   salesChannels?: string[];
   salesModel?: 'b2b' | 'b2c' | 'mixed';
+  whatsappSupport?: boolean;
+  ecommerce?: boolean;
+  physicalStore?: boolean;
+  consultativeSales?: boolean;
+  businessHours?: string;
+  primaryContact?: string;
+  agentDisplayName?: string;
+  agentMainRole?: string;
+  agentLanguage?: string;
+  agentMainChannel?: string;
+  agentConfigurationStatus?: 'not_configured' | 'draft' | 'configured';
 }
 
 export type OnboardingStep =

@@ -1,18 +1,20 @@
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { useAuth } from '@/contexts/AuthContext';
 import { useNotification } from '@/contexts/NotificationContext';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { settingsService, type CompanySettings } from '@/services/settings.service';
 import { roleLabel } from '@/services/users.service';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
 export function CompanySettingsPanel() {
-  const { user } = useAuth();
+  const workspace = useWorkspace();
+  const { can } = usePermissions();
   const { addToast } = useNotification();
   const queryClient = useQueryClient();
-  const isAdmin = user?.role === 'admin';
+  const canManageCompany = ['owner', 'admin'].includes(workspace.role) || can('manageUsers');
 
   const { data, isLoading } = useQuery({
     queryKey: ['settings', 'empresa'],
@@ -45,36 +47,36 @@ export function CompanySettingsPanel() {
 
   return (
     <div className="space-y-4">
-      {!isAdmin && (
+      {!canManageCompany && (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
-          Apenas administradores podem editar os dados da empresa.
+          Apenas responsáveis pela empresa podem editar estes dados.
         </p>
       )}
       <Input
         label="Nome da empresa"
         value={form.name}
         onChange={(e) => setForm({ ...form, name: e.target.value })}
-        disabled={!isAdmin}
+        disabled={!canManageCompany}
       />
       <Input
         label="CNPJ"
         value={form.cnpj}
         onChange={(e) => setForm({ ...form, cnpj: e.target.value })}
-        disabled={!isAdmin}
+        disabled={!canManageCompany}
       />
       <Input
         label="Email"
         value={form.email}
         onChange={(e) => setForm({ ...form, email: e.target.value })}
-        disabled={!isAdmin}
+        disabled={!canManageCompany}
       />
       <Input
         label="Telefone"
         value={form.phone}
         onChange={(e) => setForm({ ...form, phone: e.target.value })}
-        disabled={!isAdmin}
+        disabled={!canManageCompany}
       />
-      {isAdmin && (
+      {canManageCompany && (
         <div className="flex justify-end">
           <Button onClick={() => saveMutation.mutate()} loading={saveMutation.isPending}>
             Salvar empresa
@@ -174,7 +176,7 @@ export function PermissionsSettingsPanel() {
         <Badge variant="primary">{roleLabel(data?.role ?? 'user')}</Badge>
       </div>
       <p className="text-sm text-gray-500">
-        Permissões vêm do perfil do usuário. Para alterar, um admin ajusta o perfil em Usuários.
+        Permissões vêm do perfil do usuário. Para alterar, ajuste o perfil em Equipe e acessos.
       </p>
       <div className="space-y-3">
         {Object.entries(labels).map(([key, label]) => (

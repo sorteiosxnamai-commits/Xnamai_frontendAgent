@@ -1,9 +1,8 @@
 import { api } from './api';
+import { USE_MOCK } from '@/config/runtime';
 import { mockConversations, mockMessages } from '@/data/mocks';
 import { delay } from '@/utils';
 import type { Conversation, Message } from '@/types';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 
 let messagesStore = { ...mockMessages };
 

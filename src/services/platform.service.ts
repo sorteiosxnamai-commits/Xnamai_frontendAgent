@@ -1,9 +1,8 @@
 import { api } from './api';
+import { USE_MOCK } from '@/config/runtime';
 import { platformStore } from '@/store/platformStore';
 import { delay } from '@/utils';
 import type { Channel, FunnelStage, Campaign, ChatbotFlow, Integration } from '@/types';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
 
 export const channelsService = {
   getChannels: async (): Promise<Channel[]> => {
