@@ -40,7 +40,7 @@ export const settingsService = {
     return data;
   },
 
-  saveCompany: async (payload: CompanySettings): Promise<CompanySettings> => {
+  saveCompany: async (payload: Partial<CompanySettings>): Promise<CompanySettings> => {
     const { data } = await api.patch<CompanySettings>('/settings/empresa', payload);
     return data;
   },

@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/Card';
 import { EmptyState, Loading } from '@/components/ui/EmptyState';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
-import { BusinessIdentityForm, BusinessOperationForm, useBusinessProfile, useSaveBusinessProfile, type BusinessProfileDraft } from '@/features/business';
+import { BusinessIdentityForm, BusinessOperationForm, useBusinessProfile, useSaveBusinessCompanyStep, type BusinessProfileDraft } from '@/features/business';
 import { PersonaIdentityForm, PersonaPreview, PersonaPresentationForm, PersonaTestPanel, PersonaToneForm, usePersonaDraft } from '@/features/persona';
 import { personaKeys, personaService } from '@/features/persona/services/persona.service';
 import type { AgentPersona } from '@/features/persona/types';
@@ -26,7 +26,29 @@ const editableRoles = new Set(['owner', 'admin']);
 const viewRoles = new Set(['owner', 'admin', 'supervisor']);
 const requirementLabels: Record<MissingRequirement, string> = { companyConfigured: 'Empresa configurada', operationConfigured: 'Operação configurada', catalogAvailable: 'Catálogo disponível', catalogScope: 'Origem do catálogo', catalogProductCount: 'Produtos do catálogo', channelConfigured: 'Canal configurado', personaCreated: 'Persona criada', personaActive: 'Persona ativa', testCompleted: 'Teste concluído', readyForActivation: 'Pronto para ativação' };
 
-function errorMessage(error: unknown, fallback: string) { return extractApiErrorMessage(error, fallback); }
+interface ValidationDetail {
+  loc?: unknown;
+}
+
+interface ApiErrorWithValidation {
+  response?: {
+    data?: {
+      detail?: unknown;
+    };
+  };
+}
+
+function errorMessage(error: unknown, fallback: string) {
+  const detail = (error as ApiErrorWithValidation).response?.data?.detail;
+  if (Array.isArray(detail) && detail.some((item): item is ValidationDetail => {
+    if (!item || typeof item !== 'object') return false;
+    const loc = (item as ValidationDetail).loc;
+    return Array.isArray(loc) && loc.includes('businessHours');
+  })) {
+    return 'Os horários de atendimento estão em um formato inválido.';
+  }
+  return extractApiErrorMessage(error, fallback);
+}
 
 export function BusinessOnboardingPage() {
   const navigate = useNavigate();
@@ -40,7 +62,7 @@ export function BusinessOnboardingPage() {
   const onboardingQuery = useQuery({ queryKey: onboardingKeys.current(workspaceId), queryFn: () => onboardingService.getCurrent(workspaceId), enabled: workspaceId !== 'legacy' });
   const channelsQuery = useQuery({ queryKey: onboardingKeys.channels(workspaceId), queryFn: () => onboardingService.listChannels(workspaceId), enabled: workspaceId !== 'legacy' && canView });
   const personasQuery = useQuery({ queryKey: personaKeys.list(workspaceId), queryFn: personaService.listPersonas, enabled: workspaceId !== 'legacy' && canView });
-  const saveBusiness = useSaveBusinessProfile();
+  const saveBusiness = useSaveBusinessCompanyStep();
   const { draft: personaDraft, setDraft: setPersonaDraft } = usePersonaDraft();
   const [businessDraft, setBusinessDraft] = useState<BusinessProfileDraft>(initialBusiness);
   const [activeStep, setActiveStep] = useState<OnboardingStep>('empresa');
@@ -57,7 +79,7 @@ export function BusinessOnboardingPage() {
 
   const invalidateOnboarding = async () => { await queryClient.invalidateQueries({ queryKey: onboardingKeys.current(workspaceId) }); await queryClient.invalidateQueries({ queryKey: workspaceKeys.current() }); };
   const persistStep = async (step: OnboardingStep) => { if (!canEdit) return; await onboardingService.update(workspaceId, step, onboarding?.status === 'pending' ? 'in_progress' : undefined); await invalidateOnboarding(); };
-  const saveBusinessStep = async () => { await saveBusiness.mutateAsync({ draft: businessDraft, current: businessData?.raw }); await invalidateOnboarding(); };
+  const saveBusinessStep = async () => { await saveBusiness.mutateAsync({ draft: businessDraft }); await invalidateOnboarding(); };
   const savePersonaMutation = useMutation({ mutationFn: async () => { if (selectedPersona?.id) return personaService.updatePersona(selectedPersona.id, { ...personaDraft, id: selectedPersona.id }); return personaService.createPersona(personaDraft); }, onSuccess: async (persona) => { setSelectedPersona(persona); setPersonaDraft(persona); await queryClient.invalidateQueries({ queryKey: personaKeys.list(workspaceId) }); await invalidateOnboarding(); } });
   const activatePersonaMutation = useMutation({ mutationFn: () => personaService.activatePersona(selectedPersona?.id ?? ''), onSuccess: async (persona) => { setSelectedPersona(persona); setPersonaDraft(persona); await queryClient.invalidateQueries({ queryKey: personaKeys.list(workspaceId) }); await invalidateOnboarding(); } });
   const channelMutation = useMutation({ mutationFn: (type: WorkspaceChannel['channelType']) => onboardingService.saveChannel(workspaceId, type), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: onboardingKeys.channels(workspaceId) }); await invalidateOnboarding(); } });

@@ -28,3 +28,15 @@ export function useSaveBusinessProfile() {
     },
   });
 }
+
+export function useSaveBusinessCompanyStep() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ draft }: { draft: BusinessProfileDraft }) => businessService.saveCompanyStep(draft),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: businessProfileQueryKey });
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.current() });
+    },
+  });
+}
