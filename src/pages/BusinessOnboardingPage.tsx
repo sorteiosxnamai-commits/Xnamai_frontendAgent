@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState, Loading } from '@/components/ui/EmptyState';
 import { useNotification } from '@/contexts/NotificationContext';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 import {
   BusinessAgentConfigForm,
   BusinessIdentityForm,
@@ -18,6 +19,7 @@ import {
   PersonaToneForm,
   usePersonaDraft,
 } from '@/features/persona';
+import { personaKeys, personaService } from '@/features/persona/services/persona.service';
 import type { OnboardingStep } from '@/features/onboarding/types';
 import { onboardingKeys, onboardingService, type OnboardingState } from '@/services/onboarding.service';
 import { workspaceKeys } from '@/services/workspace.service';
@@ -52,6 +54,7 @@ export function BusinessOnboardingPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { addToast } = useNotification();
+  const workspace = useWorkspace();
   const { data: businessData, isLoading: businessLoading, isError: businessError, refetch: refetchBusiness } = useBusinessProfile();
   const { data: onboarding, isLoading: onboardingLoading, isError: onboardingError, refetch: refetchOnboarding } = useQuery({
     queryKey: onboardingKeys.current(),
@@ -86,10 +89,24 @@ export function BusinessOnboardingPage() {
   const [activeStep, setActiveStep] = useState<OnboardingStep>('business');
   const [businessDraft, setBusinessDraft] = useState<BusinessProfileDraft>(initialBusiness);
   const { draft: personaDraft, setDraft: setPersonaDraft } = usePersonaDraft();
+  const personaListQuery = useQuery({
+    queryKey: personaKeys.list(workspace.id),
+    queryFn: personaService.listPersonas,
+  });
+  const savePersonaMutation = useMutation({
+    mutationFn: async () => {
+      const firstPersona = personaListQuery.data?.items[0];
+      if (firstPersona?.id) return personaService.updatePersona(firstPersona.id, { ...personaDraft, id: firstPersona.id });
+      return personaService.createPersona(personaDraft);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: personaKeys.list(workspace.id) });
+    },
+  });
   const currentIndex = steps.findIndex((step) => step.id === activeStep);
   const isFirst = currentIndex === 0;
   const isLast = currentIndex === steps.length - 1;
-  const isBusy = saveBusinessMutation.isPending || updateOnboardingMutation.isPending || completeOnboardingMutation.isPending;
+  const isBusy = saveBusinessMutation.isPending || updateOnboardingMutation.isPending || completeOnboardingMutation.isPending || savePersonaMutation.isPending;
 
   useEffect(() => {
     if (businessData?.profile) setBusinessDraft((current) => ({ ...current, ...businessData.profile }));
@@ -113,6 +130,11 @@ export function BusinessOnboardingPage() {
     await persistStep(steps[Math.min(currentIndex + 1, steps.length - 1)].id, completedStep);
   };
 
+  const savePersonaIfNeeded = async () => {
+    await savePersonaMutation.mutateAsync();
+    await persistStep(steps[Math.min(currentIndex + 1, steps.length - 1)].id, 'persona');
+  };
+
   const goTo = async (index: number) => {
     const nextStep = steps[index];
     if (!nextStep || isBusy) return;
@@ -122,6 +144,8 @@ export function BusinessOnboardingPage() {
         await saveBusinessIfNeeded(activeStep);
       } else if (index > currentIndex && (activeStep === 'catalog')) {
         await persistStep(nextStep.id, activeStep);
+      } else if (index > currentIndex && activeStep === 'persona') {
+        await savePersonaIfNeeded();
       } else {
         await persistStep(nextStep.id);
       }
@@ -212,13 +236,13 @@ export function BusinessOnboardingPage() {
               </div>
             </Card>
             <p className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200">
-              A persistência completa da persona será habilitada na próxima fase.
+              Ao avancar, a persona sera salva como rascunho real do workspace.
             </p>
           </div>
           <PersonaPreview persona={personaDraft} />
         </div>
       )}
-      {activeStep === 'test' && <PersonaTestPanel persona={personaDraft} />}
+      {activeStep === 'test' && <PersonaTestPanel persona={personaDraft} disabled />}
       {activeStep === 'activation' && (
         <Card title="Ativação" icon={CheckCircle2}>
           <div className="space-y-4">
