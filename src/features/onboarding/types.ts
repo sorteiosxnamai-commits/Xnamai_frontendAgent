@@ -21,10 +21,10 @@ export interface BusinessProfile {
 }
 
 export type OnboardingStep =
-  | 'business'
-  | 'operation'
-  | 'catalog'
-  | 'channels'
+  | 'empresa'
+  | 'operacao'
+  | 'catalogo'
+  | 'canais'
   | 'persona'
   | 'test'
-  | 'activation';
+  | 'ativacao';
