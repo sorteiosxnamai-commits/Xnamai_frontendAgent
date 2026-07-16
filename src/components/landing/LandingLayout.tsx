@@ -26,7 +26,7 @@ export function LandingNavbar() {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-gray-950/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="shrink-0">
-          <Logo size="sm" showCompany className="[&_span]:text-white [&_p]:text-gray-400" />
+          <Logo size="sm" full className="max-w-[180px]" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
@@ -93,7 +93,7 @@ export function LandingFooter() {
     <footer className="border-t border-white/10 bg-gray-950 py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-          <Logo size="sm" showCompany className="[&_span]:text-white [&_p]:text-gray-500" />
+          <Logo size="sm" full className="max-w-[180px]" />
           <p className="text-sm text-gray-500">© 2024 Tironi Tech · ChatBô. Todos os direitos reservados.</p>
           <div className="flex gap-6 text-sm text-gray-500">
             <Link to="/legal/privacidade" className="hover:text-gray-300">Privacidade</Link>

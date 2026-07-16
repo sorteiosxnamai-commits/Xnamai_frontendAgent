@@ -79,7 +79,9 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
       )}
     >
       <div className="flex h-16 items-center justify-between border-b border-gray-200/80 px-4 dark:border-white/10">
-        {!collapsed && <Logo size="sm" />}
+        <div title="ChatBô" className={cn(collapsed && 'mx-auto')}>
+          <Logo size="sm" showText={!collapsed} />
+        </div>
         <button
           onClick={onToggle}
           className="hidden rounded-lg p-1.5 text-gray-400 transition hover:bg-blue-50 hover:text-blue-700 lg:block dark:hover:bg-white/10 dark:hover:text-white"
