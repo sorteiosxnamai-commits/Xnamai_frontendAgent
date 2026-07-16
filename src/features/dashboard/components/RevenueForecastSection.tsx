@@ -9,7 +9,7 @@ const FORECAST_COLORS = ['#16A34A', '#64748B', '#2563EB', '#EF4444'];
 
 export function RevenueForecastSection({ data }: RevenueForecastSectionProps) {
   return (
-    <DashboardSection id="previsao" title="Previsão comercial" subtitle="Estimativa calculada a partir dos dados disponíveis no NITRUS." icon={LineChartIcon}>
+      <DashboardSection id="previsao" title="Previsão comercial" subtitle="Estimativa calculada a partir dos dados disponíveis no ChatBô." icon={LineChartIcon}>
       {data.openPipeline > 0 ? (
         <div className="grid gap-4 lg:grid-cols-5">
           <div className="rounded-3xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90 lg:col-span-2">
@@ -21,7 +21,7 @@ export function RevenueForecastSection({ data }: RevenueForecastSectionProps) {
               <DashboardMiniMetric label="Otimista" value={formatCurrency(data.optimistic)} tone="green" />
               <DashboardMiniMetric label="Prob. conversão" value={formatPercent(data.probableRate * 100)} tone="amber" />
             </div>
-            <p className="mt-4 text-xs text-gray-500">Estimativa calculada a partir dos dados disponíveis no NITRUS, combinando pipeline, retenção, conversão e fila comercial.</p>
+            <p className="mt-4 text-xs text-gray-500">Estimativa calculada a partir dos dados disponíveis no ChatBô, combinando pipeline, retenção, conversão e fila comercial.</p>
           </div>
           <div className="rounded-3xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90 lg:col-span-3">
             <ResponsiveContainer width="100%" height={280}>
@@ -36,7 +36,7 @@ export function RevenueForecastSection({ data }: RevenueForecastSectionProps) {
           </div>
         </div>
       ) : (
-        <DashboardEmptyInsight text="Sem pipeline suficiente para estimativa. Sincronize pedidos, movimente oportunidades ou registre novas conversas para o NITRUS projetar cenários." />
+        <DashboardEmptyInsight text="Sem pipeline suficiente para estimativa. Sincronize pedidos, movimente oportunidades ou registre novas conversas para o ChatBô projetar cenários." />
       )}
     </DashboardSection>
   );

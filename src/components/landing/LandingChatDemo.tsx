@@ -209,7 +209,7 @@ export function LandingChatDemo() {
             </div>
           </div>
 
-          {/* Copiloto */}
+          {/* Assistente ChatBô */}
           <div className="col-span-3 space-y-2 rounded-lg bg-gray-800/50 p-3">
             <AnimatePresence>
               {copilotVisible && (
@@ -227,7 +227,7 @@ export function LandingChatDemo() {
                   >
                     <Sparkles className="mb-1 h-3 w-3 text-blue-200" />
                   </motion.div>
-                  Copiloto: Proposta e follow-up em 2h
+                  Assistente ChatBô: proposta e follow-up em 2h
                 </motion.div>
               )}
             </AnimatePresence>

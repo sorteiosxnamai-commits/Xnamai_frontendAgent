@@ -48,7 +48,7 @@ export function RegisterPage() {
       });
       addToast({
         title: 'Conta criada',
-        message: 'Bem-vindo ao NITRUS!',
+        message: 'Bem-vindo ao ChatBô!',
         type: 'success',
       });
       navigate(user.onboardingStatus === 'complete' ? '/dashboard' : '/onboarding');
@@ -89,10 +89,10 @@ export function RegisterPage() {
               Crie sua conta empresarial
             </h1>
             <p className="mt-2 text-sm text-gray-400">
-              Configure o ambiente da sua empresa para gerenciar o agente comercial NITRUS.
+              Configure o ambiente da sua empresa para gerenciar o Assistente ChatBô.
             </p>
             <p className="mt-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs leading-5 text-gray-500">
-              Esta conta é destinada a empresas e equipes que administram o NITRUS. Clientes finais
+              Esta conta é destinada a empresas e equipes que administram o ChatBô. Clientes finais
               são atendidos pelos canais comerciais da empresa.
             </p>
           </div>

@@ -44,10 +44,10 @@ export function DashboardExecutiveHeader({
             </span>
             <span className="text-sm capitalize text-blue-100">{formatToday()}</span>
           </div>
-          <h1 className="mt-5 font-display text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">Painel Comercial NITRUS</h1>
+          <h1 className="mt-5 font-display text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">Painel Comercial ChatBô</h1>
           <p className="mt-3 max-w-3xl text-base text-blue-50/90 lg:text-lg">Visão inteligente de vendas, clientes, produtos e oportunidades.</p>
           <p className="mt-2 text-sm text-blue-100/80">
-            {getGreeting()}, {firstName}. O NITRUS consolida a rotina comercial, previsões e prioridades da operação em uma única tela.
+            {getGreeting()}, {firstName}. O ChatBô consolida a rotina comercial, previsões e prioridades da operação em uma única tela.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -55,7 +55,7 @@ export function DashboardExecutiveHeader({
             <Target className="h-4 w-4" /> Abrir Central de Conversão
           </Link>
           <a href="#pergunte" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-2.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">
-            <Brain className="h-4 w-4" /> Perguntar ao NITRUS
+            <Brain className="h-4 w-4" /> Perguntar ao ChatBô
           </a>
           <Button type="button" variant="outline" className="border-white/25 bg-white/10 text-white hover:bg-white/15" onClick={onRefresh} loading={isFetching}>
             <RefreshCw className="h-4 w-4" /> Atualizar

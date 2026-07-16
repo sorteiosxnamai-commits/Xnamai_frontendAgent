@@ -92,7 +92,7 @@ export function InsightsPage() {
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Inteligência de Vendas</h1>
         <p className="mt-1 text-gray-500 dark:text-gray-400">
-          Produtos e clientes que mais e menos compram, com base nos pedidos da NITRUS e WhatsApp
+          Produtos e clientes que mais e menos compram, com base nos pedidos do ChatBô e WhatsApp
         </p>
       </div>
 

@@ -15,7 +15,7 @@ export function ServiceCapacitySection({ data }: ServiceCapacitySectionProps) {
       </div>
       <div className="rounded-2xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90">
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          {data.status === 'Saudável' ? 'Operação saudável no momento.' : data.status === 'Atenção' ? 'Use o Copiloto para acelerar respostas e priorize leads quentes.' : 'Fila alta. Priorize leads quentes e distribua atendimento antes de iniciar novas campanhas.'}
+          {data.status === 'Saudável' ? 'Operação saudável no momento.' : data.status === 'Atenção' ? 'Use o Assistente ChatBô para acelerar respostas e priorize leads quentes.' : 'Fila alta. Priorize leads quentes e distribua atendimento antes de iniciar novas campanhas.'}
         </p>
       </div>
     </DashboardSection>

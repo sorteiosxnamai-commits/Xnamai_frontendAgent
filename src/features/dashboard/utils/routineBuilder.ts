@@ -56,10 +56,10 @@ export function buildRoutineItems(input: {
       : []),
     {
       priority: 'Baixa' as const,
-      description: 'Perguntar ao NITRUS quais propostas priorizar esta semana.',
+      description: 'Perguntar ao ChatBô quais propostas priorizar esta semana.',
       origin: 'IA Comercial',
       impact: 'Ajuda a orientar a rotina de vendas.',
-      action: 'Perguntar ao NITRUS',
+      action: 'Perguntar ao ChatBô',
     },
   ].slice(0, 6);
 }

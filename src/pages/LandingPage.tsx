@@ -49,7 +49,7 @@ const features = [
   },
   {
     icon: Sparkles,
-    title: 'Copiloto Comercial IA',
+    title: 'Assistente ChatBô',
     desc: 'Gere respostas, contorne objeções e acelere follow-ups usando dados reais de clientes e pedidos.',
     tag: 'Sales IA',
   },
@@ -85,7 +85,7 @@ const steps = [
     step: '02',
     icon: Sparkles,
     title: 'Qualifique com IA + time',
-    desc: 'Agente automático faz triagem, Copiloto sugere respostas e humanos fecham a negociação.',
+    desc: 'A automação faz triagem, o Assistente ChatBô sugere respostas e humanos fecham a negociação.',
     color: 'text-red-400',
     glow: 'group-hover:shadow-red-900/30',
   },
@@ -108,15 +108,15 @@ const benefits = [
 
 const faqs = [
   {
-    q: 'O que é a NITRUS?',
-    a: 'A NITRUS é uma plataforma comercial com IA para transformar conversas em vendas, centralizando canais, leads, funil e respostas inteligentes.',
+    q: 'O que é o ChatBô?',
+    a: 'O ChatBô é uma plataforma comercial com IA para transformar conversas em vendas, centralizando canais, leads, funil e respostas inteligentes.',
   },
   {
     q: 'Funciona com WhatsApp API Oficial?',
     a: 'Sim. Múltiplos atendentes em um número, automação, campanhas e governança — sem depender de celular.',
   },
   {
-    q: 'A NITRUS ajuda a recuperar oportunidades?',
+    q: 'O ChatBô ajuda a recuperar oportunidades?',
     a: 'Sim. A plataforma organiza leads, histórico, campanhas e próximos passos para reduzir perda de oportunidades.',
   },
   {
@@ -191,7 +191,7 @@ export function LandingPage() {
             transition={{ delay: 0.1 }}
             className="mx-auto max-w-4xl font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-[3.4rem]"
           >
-            Transforme conversas em vendas com a IA comercial da <span className="gradient-text">NITRUS</span>
+            Transforme conversas em vendas com a IA comercial do <span className="gradient-text">ChatBô</span>
           </motion.h1>
 
           <motion.p
@@ -424,7 +424,7 @@ export function LandingPage() {
           >
             <Zap className="h-6 w-6 text-blue-300" />
           </motion.div>
-          <h2 className="text-3xl font-bold sm:text-4xl">Como funciona a NITRUS</h2>
+          <h2 className="text-3xl font-bold sm:text-4xl">Como funciona o ChatBô</h2>
           <p className="mx-auto mt-4 max-w-2xl text-gray-400">
             Do primeiro contato ao fechamento — três passos para acelerar sua receita.
           </p>

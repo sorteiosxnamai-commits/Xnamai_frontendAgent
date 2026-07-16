@@ -32,10 +32,10 @@ export function buildRecommendations(input: {
     },
     {
       title: 'Usar IA para gerar propostas',
-      reason: 'O Copiloto pode acelerar resposta e qualificação.',
+      reason: 'O Assistente ChatBô pode acelerar resposta e qualificação.',
       impact: 'Reduz tempo médio de atendimento.',
       priority: 'Media',
-      action: 'Perguntar ao NITRUS',
+      action: 'Perguntar ao ChatBô',
     },
   ];
 }
@@ -59,7 +59,7 @@ export function buildExecutiveInsights(input: {
 } {
   const executiveDiagnosis =
     input.filteredOrdersCount === 0 && input.filteredConversationsCount === 0
-      ? 'O NITRUS precisa de mais conversas, pedidos e clientes sincronizados para gerar previsões mais precisas.'
+      ? 'O ChatBô precisa de mais conversas, pedidos e clientes sincronizados para gerar previsões mais precisas.'
       : input.waitingQueue > 0
         ? 'A fila de atendimento está aumentando. Priorize leads recentes para evitar perda de conversão.'
         : input.retentionRate >= 50
@@ -84,10 +84,10 @@ export function buildExecutiveInsights(input: {
 
   const recommendedAction =
     input.waitingQueue > 0
-      ? 'Abrir a Central de Conversão e responder a fila com apoio do Copiloto.'
+      ? 'Abrir a Central de Conversão e responder a fila com apoio do Assistente ChatBô.'
       : input.retentionCustomersCount > 0
         ? 'Criar uma abordagem de reativação para clientes com histórico de compra.'
-        : 'Usar o NITRUS para revisar oportunidades e gerar propostas comerciais.';
+        : 'Usar o ChatBô para revisar oportunidades e gerar propostas comerciais.';
 
   const expectedImpact =
     input.waitingQueue > 0

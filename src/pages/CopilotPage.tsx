@@ -71,7 +71,7 @@ export function CopilotPage() {
       id: 'welcome',
       conversationId: 'copilot',
       content:
-        'Sou o Copiloto Comercial IA da NITRUS. Analiso oportunidades, gero respostas comerciais, consulto pedidos, estoque e métricas de venda com dados reais do Mercos e Supabase. Peça resumos, status de pedido, funil de vendas ou mensagens prontas para enviar ao cliente.',
+        'Sou o Assistente ChatBô. Analiso oportunidades, gero respostas comerciais, consulto pedidos, estoque e métricas de venda com dados reais do Mercos e Supabase. Peça resumos, status de pedido, funil de vendas ou mensagens prontas para enviar ao cliente.',
       sender: 'ai',
       timestamp: new Date().toISOString(),
       status: 'read',
@@ -138,8 +138,8 @@ export function CopilotPage() {
       const detail =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
         (err as Error)?.message ??
-        'Falha ao contactar o Copiloto';
-      addToast({ title: 'Copiloto indisponível', message: String(detail), type: 'error' });
+        'Falha ao contactar o Assistente ChatBô';
+      addToast({ title: 'Assistente ChatBô indisponível', message: String(detail), type: 'error' });
     },
   });
 
@@ -157,9 +157,9 @@ export function CopilotPage() {
         <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-white/15 blur-3xl" />
         <div className="relative">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-blue-100">
-            <Sparkles className="h-3.5 w-3.5" /> IA Comercial NITRUS
+            <Sparkles className="h-3.5 w-3.5" /> Assistente ChatBô
           </span>
-          <h1 className="mt-4 font-display text-2xl font-black tracking-tight text-white lg:text-3xl">Copiloto Comercial IA</h1>
+          <h1 className="mt-4 font-display text-2xl font-black tracking-tight text-white lg:text-3xl">Assistente ChatBô</h1>
           <p className="mt-2 max-w-3xl text-blue-50/90">
             Use a IA para gerar respostas, analisar oportunidades, consultar pedidos e acelerar negociações com dados reais.
           </p>
@@ -174,7 +174,7 @@ export function CopilotPage() {
           </p>
         ) : (
           <p className="relative mt-4 text-sm text-amber-100">
-            Modo local (limitado) — configure OPENAI_API_KEY no Render para Copiloto 100% inteligente com GPT-4o
+            Modo local (limitado) — configure OPENAI_API_KEY no Render para o Assistente ChatBô 100% inteligente com GPT-4o
           </p>
         )}
       </div>
@@ -198,7 +198,7 @@ export function CopilotPage() {
                 addToast({ title: 'Sem conversas', message: 'Abra Atendimento e crie conversas primeiro', type: 'warning' });
                 return;
               }
-              addToast({ title, message: 'Processando com Copiloto Comercial...', type: 'info' });
+              addToast({ title, message: 'Processando com o Assistente ChatBô...', type: 'info' });
               chatMutation.mutate({ message: prompt, conversationId });
             }}
             onKeyDown={(e) => {
@@ -218,7 +218,7 @@ export function CopilotPage() {
         ))}
       </div>
 
-      <Card title="Workspace comercial NITRUS" subtitle="Converse com a IA usando dados reais da plataforma e contexto da oportunidade" className="border-gray-200/80 bg-white/90 dark:border-white/10 dark:bg-gray-900/90">
+      <Card title="Workspace comercial ChatBô" subtitle="Converse com a IA usando dados reais da plataforma e contexto da oportunidade" className="border-gray-200/80 bg-white/90 dark:border-white/10 dark:bg-gray-900/90">
         {conversations && conversations.length > 0 && (
           <div className="mb-4 max-w-md">
             <Select
@@ -234,7 +234,7 @@ export function CopilotPage() {
         )}
         <div className="flex h-[420px] flex-col overflow-hidden rounded-2xl border border-gray-200/80 dark:border-white/10">
           <div className="flex items-center justify-between border-b border-gray-200/80 bg-slate-50/70 px-4 py-3 dark:border-white/10 dark:bg-white/[0.03]">
-            <span className="text-sm font-semibold">Chat com Copiloto Comercial</span>
+            <span className="text-sm font-semibold">Chat com Assistente ChatBô</span>
             <div className="flex items-center gap-2">
               {contextConv && (
                 <span className="hidden text-xs text-gray-400 sm:inline">

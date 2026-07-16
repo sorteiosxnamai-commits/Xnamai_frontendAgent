@@ -5,7 +5,7 @@ import { DashboardChartTooltip, DashboardMiniMetric, DashboardSection } from './
 
 const COLORS = ['#2563EB','#EF4444','#1D4ED8','#16A34A','#F59E0B','#64748B'];
 export function OperationCredibilitySection({ data }: OperationCredibilitySectionProps) {
-  return <DashboardSection id="credibilidade" title="Credibilidade e operação NITRUS" subtitle="Status dos dados, canais, IA e prontidão operacional." icon={ShieldCheck}>
+  return <DashboardSection id="credibilidade" title="Credibilidade e operação ChatBô" subtitle="Status dos dados, canais, IA e prontidão operacional." icon={ShieldCheck}>
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">{data.metrics.map((metric) => <DashboardMiniMetric key={metric.label} {...metric}/>)}</div>
     <div className="grid gap-4 lg:grid-cols-2">
       <div className="rounded-3xl border border-gray-200/80 bg-white/90 p-5 shadow-sm dark:border-white/10 dark:bg-gray-900/90"><h3 className="font-semibold text-gray-900 dark:text-white">Canais de conversão</h3>

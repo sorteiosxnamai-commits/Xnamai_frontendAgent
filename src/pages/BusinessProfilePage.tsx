@@ -96,7 +96,7 @@ export function BusinessProfilePage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Minha empresa</h1>
-          <p className="text-gray-500 dark:text-gray-400">Empresa que controla o agente NITRUS neste workspace.</p>
+          <p className="text-gray-500 dark:text-gray-400">Empresa que controla o Assistente ChatBô neste workspace.</p>
         </div>
         <Badge variant={canManageCompany ? 'success' : 'default'}>
           {canManageCompany ? 'Edição permitida' : 'Somente leitura'}

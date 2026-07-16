@@ -20,7 +20,7 @@ export function AgentPage() {
     {
       id: 'welcome',
       conversationId: 'agent-test',
-      content: 'Ola! Sou o agente comercial de IA da NITRUS. Como posso ajudar?',
+      content: 'Olá! Sou o Assistente ChatBô. Como posso ajudar?',
       sender: 'ai',
       timestamp: new Date().toISOString(),
       status: 'read',
@@ -72,7 +72,7 @@ export function AgentPage() {
         {
           id: 'welcome',
           conversationId: 'agent-test',
-          content: 'Ola! Sou o agente comercial de IA da NITRUS. Como posso ajudar?',
+      content: 'Olá! Sou o Assistente ChatBô. Como posso ajudar?',
           sender: 'ai',
           timestamp: new Date().toISOString(),
           status: 'read',
@@ -87,7 +87,7 @@ export function AgentPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agente IA</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Assistente ChatBô</h1>
         <p className="text-gray-500 dark:text-gray-400">Painel e teste do agente inteligente</p>
       </div>
 

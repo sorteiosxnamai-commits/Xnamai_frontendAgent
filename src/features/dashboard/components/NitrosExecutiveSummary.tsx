@@ -4,7 +4,7 @@ import { DashboardSection } from './DashboardSectionPrimitives';
 
 export function NitrosExecutiveSummary({ diagnosis, recommendedAction, expectedImpact, mainRisk, mainOpportunity, agentOnline, connectedChannels }: NitrosExecutiveSummaryProps) {
   return (
-    <DashboardSection id="ia" title="Resumo inteligente do NITRUS" subtitle="Diagnóstico acionável gerado a partir dos dados disponíveis no painel." icon={Brain}>
+    <DashboardSection id="ia" title="Resumo inteligente do ChatBô" subtitle="Diagnóstico acionável gerado a partir dos dados disponíveis no painel." icon={Brain}>
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#0b1220] via-blue-800 to-red-600 p-6 text-white shadow-xl shadow-blue-900/20 lg:col-span-2">
           <div className="flex items-center gap-2 text-blue-100"><Sparkles className="h-5 w-5" /><p className="text-xs font-bold uppercase tracking-[0.18em]">Coach comercial</p></div>

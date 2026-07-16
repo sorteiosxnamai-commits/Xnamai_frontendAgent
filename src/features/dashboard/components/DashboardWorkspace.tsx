@@ -236,7 +236,7 @@ export function DashboardWorkspace() {
 
   const executiveDiagnosis =
     filteredOrders.length === 0 && filteredConversations.length === 0
-      ? 'O NITRUS precisa de mais conversas, pedidos e clientes sincronizados para gerar previsões mais precisas.'
+      ? 'O ChatBô precisa de mais conversas, pedidos e clientes sincronizados para gerar previsões mais precisas.'
       : stats.waitingQueue > 0
         ? 'A fila de atendimento está aumentando. Priorize leads recentes para evitar perda de conversão.'
         : retentionRate >= 50
@@ -261,10 +261,10 @@ export function DashboardWorkspace() {
 
   const recommendedAction =
     stats.waitingQueue > 0
-      ? 'Abrir a Central de Conversão e responder a fila com apoio do Copiloto.'
+      ? 'Abrir a Central de Conversão e responder a fila com apoio do Assistente ChatBô.'
       : retentionCustomers.length > 0
         ? 'Criar uma abordagem de reativação para clientes com histórico de compra.'
-        : 'Usar o NITRUS para revisar oportunidades e gerar propostas comerciais.';
+        : 'Usar o ChatBô para revisar oportunidades e gerar propostas comerciais.';
 
   const expectedImpact =
     stats.waitingQueue > 0
@@ -321,10 +321,10 @@ export function DashboardWorkspace() {
       : []),
     {
       priority: 'Baixa' as const,
-      description: 'Perguntar ao NITRUS quais propostas priorizar esta semana.',
+      description: 'Perguntar ao ChatBô quais propostas priorizar esta semana.',
       origin: 'IA Comercial',
       impact: 'Ajuda a orientar a rotina de vendas.',
-      action: 'Perguntar ao NITRUS',
+      action: 'Perguntar ao ChatBô',
     },
   ].slice(0, 6);
 
@@ -356,7 +356,7 @@ export function DashboardWorkspace() {
     {
       title: 'Pedidos confirmados',
       value: salesMetrics?.quantidadeVendas ?? stats.totalOrders,
-      description: 'Pedidos capturados no NITRUS e dados comerciais disponíveis.',
+      description: 'Pedidos capturados no ChatBô e dados comerciais disponíveis.',
       badge: `${salesMetrics?.quantidadeEntregues ?? 0} entregues`,
       tone: 'blue',
       icon: ShoppingCart,
@@ -462,10 +462,10 @@ export function DashboardWorkspace() {
     },
     {
       title: 'Usar IA para gerar propostas',
-      reason: 'O Copiloto pode acelerar resposta e qualificação.',
+      reason: 'O Assistente ChatBô pode acelerar resposta e qualificação.',
       impact: 'Reduz tempo médio de atendimento.',
       priority: 'Media',
-      action: 'Perguntar ao NITRUS',
+      action: 'Perguntar ao ChatBô',
     },
   ];
 

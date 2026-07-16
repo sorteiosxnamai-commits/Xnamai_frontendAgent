@@ -121,7 +121,7 @@ export function SettingsPage() {
     aiSettingsStore.save(aiSettings);
     addToast({
       title: 'Preferências OpenAI salvas',
-      message: 'Em produção o Copiloto usa OPENAI_API_KEY do Render (backend).',
+      message: 'Em produção o Assistente ChatBô usa OPENAI_API_KEY do Render (backend).',
       type: 'success',
     });
   };
@@ -224,7 +224,7 @@ export function SettingsPage() {
                     {aiSettings.enabled && aiSettings.apiKey.startsWith('sk-') ? 'OpenAI local' : 'Backend Render'}
                   </Badge>
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    Em produção o Copiloto usa a chave configurada no Render, não esta tela.
+                    Em produção o Assistente ChatBô usa a chave configurada no Render, não esta tela.
                   </p>
                 </div>
                 <label className="flex cursor-pointer items-center gap-2 text-sm">

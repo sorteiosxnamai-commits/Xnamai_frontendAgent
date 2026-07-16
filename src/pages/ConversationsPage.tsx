@@ -312,7 +312,7 @@ export function ConversationsPage() {
           </p>
         </div>
         <div className="hidden rounded-2xl border border-gray-200/80 bg-white/80 px-4 py-3 shadow-sm dark:border-white/10 dark:bg-gray-900/80 lg:block">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Mesa Comercial NITRUS</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Mesa Comercial ChatBô</p>
           <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">Atendimento orientado à venda</p>
         </div>
       </div>
@@ -530,7 +530,7 @@ export function ConversationsPage() {
                 <div className="rounded-2xl border border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-red-50 p-3 shadow-sm dark:border-white/10 dark:from-blue-950/30 dark:via-gray-900 dark:to-red-950/20">
                   <div className="flex items-center justify-between gap-2">
                     <p className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.12em] text-blue-700 dark:text-blue-300">
-                      <Sparkles className="h-3.5 w-3.5" /> Copiloto Comercial
+                      <Sparkles className="h-3.5 w-3.5" /> Assistente ChatBô
                     </p>
                     {aiSuggestion && (
                       <Badge variant={aiSuggestion.priority === 'high' ? 'danger' : aiSuggestion.priority === 'medium' ? 'warning' : 'default'} className="text-[10px]">

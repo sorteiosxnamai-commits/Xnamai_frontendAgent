@@ -278,7 +278,7 @@ export function PersonaPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Persona do agente</h1>
-          <p className="text-gray-500 dark:text-gray-400">Configure visualmente a personalidade comercial do agente NITRUS.</p>
+          <p className="text-gray-500 dark:text-gray-400">Configure visualmente a personalidade comercial do Assistente ChatBô.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => handleSelect(undefined)} disabled={busy || isReadOnly}>

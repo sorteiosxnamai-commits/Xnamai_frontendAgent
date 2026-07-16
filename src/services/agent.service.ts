@@ -82,7 +82,7 @@ export const agentService = {
       const configured = aiSettingsStore.isConfigured();
       return {
         ...mockAgentStatus,
-        model: configured ? aiSettingsStore.get().model : 'NITRUS IA Pro',
+        model: configured ? aiSettingsStore.get().model : 'ChatBô IA Pro',
         online: true,
       };
     }

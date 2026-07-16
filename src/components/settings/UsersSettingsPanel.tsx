@@ -105,7 +105,7 @@ export function UsersSettingsPanel() {
     <div className="space-y-4">
       <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900/40 dark:text-gray-400">
         <p>
-          Usuarios reais da NITRUS — autenticacao via Supabase. Total:{' '}
+          Usuários reais do ChatBô — autenticação via Supabase. Total:{' '}
           <strong>{users?.length ?? 0}</strong>
           {!canManageUsers && ' (somente leitura — peça a um administrador para convidar ou editar).'}
         </p>

@@ -35,7 +35,7 @@ export function PipelineHealthSection({ data }: PipelineHealthSectionProps) {
           ))}
         </div>
       ) : (
-        <DashboardEmptyInsight text="O NITRUS ainda não recebeu etapas suficientes do funil. A saúde do pipeline está usando pedidos, conversas e métricas comerciais disponíveis." />
+        <DashboardEmptyInsight text="O ChatBô ainda não recebeu etapas suficientes do funil. A saúde do pipeline está usando pedidos, conversas e métricas comerciais disponíveis." />
       )}
     </DashboardSection>
   );

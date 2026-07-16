@@ -7,7 +7,7 @@ export type DemoNoticeVariant = 'memory' | 'ai' | 'sandbox' | 'mock' | 'comingSo
 const copy: Record<DemoNoticeVariant, string> = {
   memory:
     'Módulo em Beta — alterações são demonstrativas e não persistem após reiniciar o servidor.',
-  ai: 'Copiloto em Beta — sugestões usam dados de demonstração até integração completa com sua base.',
+  ai: 'Assistente ChatBô em Beta — sugestões usam dados de demonstração até integração completa com sua base.',
   sandbox:
     'Integração Mercos em sandbox — dados de teste até o ambiente de produção estar disponível.',
   mock: 'Conteúdo demonstrativo — esta seção ainda não está conectada aos dados reais da sua conta.',

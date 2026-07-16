@@ -91,7 +91,7 @@ export function WhatsAppSettingsPanel() {
             Conversas entram em Atendimento via bridge Supabase.
           </li>
           <li>
-            <strong>Esta tela:</strong> WhatsApp oficial Meta Cloud no backend NITRUS — canal próprio,
+            <strong>Esta tela:</strong> WhatsApp oficial Meta Cloud no backend ChatBô — canal próprio,
             independente do Z-API. “Desconectado” aqui não significa que o vendedor IA está fora.
           </li>
         </ul>
@@ -199,7 +199,7 @@ export function WhatsAppSettingsPanel() {
 
       {!isSystemAdmin && (
         <p className="text-sm text-gray-500">
-          Somente administradores globais do NITRUS podem alterar credenciais brutas do WhatsApp.
+            Somente administradores globais do ChatBô podem alterar credenciais brutas do WhatsApp.
         </p>
       )}
     </div>

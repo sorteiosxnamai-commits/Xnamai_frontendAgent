@@ -38,7 +38,7 @@ const navSections: NavSection[] = [
     { to: '/funil', icon: GitBranch, label: 'Funil de Vendas' },
   ] },
   { title: 'AGENTE', items: [
-    { to: '/copiloto', icon: Sparkles, label: 'Copiloto Comercial' },
+    { to: '/copiloto', icon: Sparkles, label: 'Assistente ChatBô' },
     { to: '/robo', icon: Bot, label: 'Agente Automático' },
     { to: '/persona', icon: Brain, label: 'Persona do agente', permission: 'managePlatform' },
   ] },

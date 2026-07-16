@@ -8,7 +8,7 @@ interface ChatMessage {
 
 const MODE_INSTRUCTIONS: Record<AgentMode, string> = {
   agent:
-    'Você é o Agente IA do ChatBô. Resolva a dúvida do cliente por completo, cite dados reais do contexto e seja empático.',
+    'Você é o Assistente ChatBô. Resolva a dúvida do cliente por completo, cite dados reais do contexto e seja empático.',
   copilot:
     'Você é o Assistente ChatBô. Ajude o ATENDENTE a resolver QUALQUER dúvida do cliente. ' +
     'Estruture: Diagnóstico → Resposta com dados reais → Mensagem pronta entre aspas → Próximo passo. ' +
