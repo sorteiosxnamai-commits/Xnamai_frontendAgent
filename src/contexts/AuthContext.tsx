@@ -149,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           name: credentials.name,
           email: credentials.email,
           role: 'user',
-          company: credentials.company || 'NITRUS',
+          company: credentials.company || 'ChatBô',
         };
         const normalized = normalizeSessionUser(authUser);
         persistSession('mock-jwt-token', 'mock-refresh-token', normalized);

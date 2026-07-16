@@ -10,6 +10,11 @@ import { LegalPage } from '@/pages/LegalPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
+import { PlansPage } from '@/pages/PlansPage';
+import { SubscriptionPage } from '@/pages/SubscriptionPage';
+import { SystemAdminPage } from '@/pages/SystemAdminPage';
+import { SystemAdminRoute } from '@/routes/SystemAdminRoute';
+import { SystemAdminLayout } from '@/layouts/SystemAdminLayout';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { PermissionRoute } from '@/routes/PermissionRoute';
@@ -39,11 +44,22 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/legal/:slug" element={<LegalPage />} />
+      <Route path="/planos" element={<PlansPage />} />
 
       <Route element={<PublicRoute />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cadastro" element={<RegisterPage />} />
         <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
+      </Route>
+
+      <Route element={<SystemAdminRoute />}>
+        <Route element={<SystemAdminLayout />}>
+          <Route path="/system/empresas" element={<SystemAdminPage />} />
+          <Route path="/system/workspaces" element={<SystemAdminPage />} />
+          <Route path="/system/planos" element={<SystemAdminPage />} />
+          <Route path="/system/assinaturas" element={<SystemAdminPage />} />
+          <Route path="/system/uso" element={<SystemAdminPage />} />
+        </Route>
       </Route>
 
       <Route element={<ProtectedRoute />}>
@@ -60,6 +76,7 @@ export function AppRoutes() {
           <Route path="/agente-ia" element={<Navigate to="/copiloto" replace />} />
           <Route path="/funil" element={<FunnelPage />} />
           <Route path="/configuracoes" element={<SettingsPage />} />
+          <Route path="/configuracoes/assinatura" element={<SubscriptionPage />} />
           <Route path="/perfil" element={<ProfilePage />} />
           <Route path="/minha-empresa" element={<LazyPage><BusinessProfilePage /></LazyPage>} />
 

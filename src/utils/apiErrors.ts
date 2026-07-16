@@ -52,7 +52,7 @@ export function extractApiErrorMessage(
     ) {
       return error.message;
     }
-    return 'Não foi possível conectar ao servidor NITRUS. Verifique se o backend está disponível.';
+    return 'Não foi possível conectar ao servidor ChatBô. Verifique se o backend está disponível.';
   }
 
   const fromDetail = detailToMessage(axiosError.response.data?.detail);

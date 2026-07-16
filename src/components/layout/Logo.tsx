@@ -49,10 +49,10 @@ export function Logo({ size = 'md', showText = true, showCompany = false, classN
       {showText && (
         <div className="flex flex-col justify-center">
           <span className={cn('font-display font-black tracking-[0.02em] text-gray-950 dark:text-white', s.text)}>
-            NITRUS
+            ChatBô
           </span>
           {showCompany && (
-            <p className={cn('mt-0.5 font-semibold uppercase tracking-[0.16em] text-gray-500 dark:text-gray-400', s.sub)}>sales cockpit</p>
+            <p className={cn('mt-0.5 font-semibold tracking-[0.08em] text-gray-500 dark:text-gray-400', s.sub)}>by Tironi Tech</p>
           )}
         </div>
       )}

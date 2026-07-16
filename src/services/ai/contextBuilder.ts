@@ -55,7 +55,7 @@ export function contextToPrompt(ctx: AgentContext): string {
   const intent = detectIntentFromContext(ctx);
 
   const lines: string[] = [
-    'Você é o Copiloto IA do NITRUS, plataforma de atendimento comercial B2B.',
+    'Você é o Assistente ChatBô, plataforma de atendimento comercial B2B.',
     'Responda em português do Brasil, de forma profissional, empática e orientada a ação.',
     'Use SEMPRE os dados abaixo. Cite valores, estoque e prazos quando disponíveis.',
     'Para sugestões: escreva mensagens prontas para o atendente copiar e enviar ao cliente.',

@@ -152,7 +152,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
               <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
                 <Flame className="h-4 w-4" />
               </div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-100">Pulso NITRUS</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-100">ChatBô</p>
               <p className="mt-1 text-sm font-semibold leading-5">Acelere leads prontos para comprar.</p>
               <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-semibold">
                 <DollarSign className="h-3 w-3" /> Receita em foco
