@@ -26,7 +26,7 @@ export function LandingNavbar() {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-gray-950/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="shrink-0">
-          <Logo size="sm" full className="max-w-[180px]" />
+          <Logo size="md" full className="max-w-[220px]" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
@@ -34,7 +34,7 @@ export function LandingNavbar() {
             <button
               key={link.href}
               onClick={() => scrollTo(link.href)}
-              className="text-sm font-medium text-gray-300 transition-colors hover:text-white"
+              className="text-sm font-medium text-slate-300 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
             >
               {link.label}
             </button>
@@ -42,13 +42,13 @@ export function LandingNavbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Button variant="ghost" className="text-gray-300 hover:bg-white/10 hover:text-white" onClick={() => navigate('/login')}>
+          <Button variant="ghost" className="text-slate-300 hover:bg-white/10 hover:text-white focus-visible:ring-cyan-300" onClick={() => navigate('/login')}>
             Entrar
           </Button>
           <Button onClick={() => navigate('/login')}>Teste grátis</Button>
         </div>
 
-        <button className="rounded-lg p-2 text-gray-300 md:hidden" onClick={() => setOpen(!open)}>
+        <button className="rounded-lg p-2 text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 md:hidden" onClick={() => setOpen(!open)}>
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
@@ -59,7 +59,7 @@ export function LandingNavbar() {
             <button
               key={link.href}
               onClick={() => scrollTo(link.href)}
-              className="block w-full py-2 text-left text-sm text-gray-300"
+              className="block w-full py-2 text-left text-sm text-slate-300 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
             >
               {link.label}
             </button>
