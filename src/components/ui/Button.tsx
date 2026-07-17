@@ -3,10 +3,10 @@ import { Loader2 } from 'lucide-react';
 import type { ButtonHTMLAttributes } from 'react';
 
 const variants = {
-  primary: 'bg-primary-600 text-white shadow-sm shadow-blue-600/15 hover:bg-primary-700',
+  primary: 'bg-primary-600 text-white shadow-sm shadow-blue-600/15 hover:bg-primary-500 active:bg-primary-700',
   secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700',
-  outline: 'border border-gray-300 bg-transparent hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800',
-  ghost: 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800',
+  outline: 'border border-gray-300 bg-transparent hover:border-primary-400 hover:bg-primary-50 dark:border-slate-500/70 dark:text-slate-100 dark:hover:border-cyan-300/70 dark:hover:bg-cyan-400/10',
+  ghost: 'bg-transparent hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-white/10 dark:hover:text-white',
   danger: 'bg-red-600 text-white hover:bg-red-700',
 };
 
@@ -35,7 +35,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-900',
+        'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-offset-slate-950',
         variants[variant],
         sizes[size],
         className,

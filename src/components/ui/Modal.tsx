@@ -27,7 +27,7 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: M
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm"
             onClick={onClose}
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -36,13 +36,13 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: M
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               className={cn(
-                'w-full rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900',
+                'w-full rounded-xl border border-gray-200 bg-white shadow-xl dark:border-slate-600/80 dark:bg-slate-900',
                 sizes[size],
               )}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-50">{title}</h2>
                 <Button variant="ghost" size="icon" onClick={onClose}>
                   <X className="h-4 w-4" />
                 </Button>

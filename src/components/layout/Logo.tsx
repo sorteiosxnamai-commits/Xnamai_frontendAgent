@@ -37,11 +37,11 @@ export function Logo({ size = 'md', showText = true, showCompany = false, full =
       />
       {showText && (
         <div className="flex flex-col justify-center">
-          <span className={cn('font-display font-black tracking-[0.02em] text-gray-950 dark:text-white', s.text)}>
+          <span className={cn('font-display font-black tracking-[0.02em] text-gray-950 dark:text-slate-50', s.text)}>
             ChatBô
           </span>
           {showCompany && (
-            <p className={cn('mt-0.5 font-semibold tracking-[0.08em] text-gray-500 dark:text-gray-400', s.sub)}>by Tironi Tech</p>
+            <p className={cn('mt-0.5 font-semibold tracking-[0.08em] text-gray-500 dark:text-slate-300', s.sub)}>by Tironi Tech</p>
           )}
         </div>
       )}

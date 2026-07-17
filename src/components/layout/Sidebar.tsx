@@ -74,11 +74,11 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
   const content = (
     <aside
       className={cn(
-        'flex h-full flex-col border-r border-gray-200/80 bg-white/95 shadow-lg shadow-slate-200/40 backdrop-blur-xl transition-all duration-300 dark:border-white/10 dark:bg-[#0b1220]/95 dark:shadow-black/20',
+        'flex h-full flex-col border-r border-gray-200/80 bg-white/95 shadow-lg shadow-slate-200/40 backdrop-blur-xl transition-all duration-300 dark:border-slate-700/70 dark:bg-chatbo-background-elevated/95 dark:shadow-black/20',
         collapsed ? 'w-[72px]' : 'w-64',
       )}
     >
-      <div className="flex h-16 items-center justify-between border-b border-gray-200/80 px-4 dark:border-white/10">
+      <div className="flex h-16 items-center justify-between border-b border-gray-200/80 px-4 dark:border-slate-700/70">
         <div title="ChatBô" className={cn(collapsed && 'mx-auto')}>
           <Logo size="sm" showText={!collapsed} />
         </div>
@@ -100,7 +100,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
         {visibleSections.map((section) => (
           <div key={section.title} className="mb-4">
             {!collapsed && (
-              <p className="mb-2 px-6 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 dark:text-gray-500">
+              <p className="mb-2 px-6 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 dark:text-slate-400">
                 {section.title}
               </p>
             )}
@@ -115,7 +115,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
                         'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-semibold leading-5 transition-all',
                         isActive
                           ? 'bg-gradient-to-r from-blue-600 to-red-500 text-white shadow-lg shadow-blue-600/20'
-                          : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white',
+                          : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white',
                         collapsed && 'justify-center px-2',
                       )
                     }

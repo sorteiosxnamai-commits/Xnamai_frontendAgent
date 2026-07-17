@@ -29,7 +29,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   };
 
   return (
-    <header className="relative z-[80] flex h-16 items-center justify-between border-b border-gray-200/80 bg-white/95 px-4 shadow-sm shadow-slate-200/40 backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/95 dark:shadow-black/10 lg:px-6">
+    <header className="relative z-[80] flex h-16 items-center justify-between border-b border-gray-200/80 bg-white/95 px-4 shadow-sm shadow-slate-200/40 backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/95 dark:shadow-black/10 lg:px-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden">
           <Menu className="h-5 w-5" />
@@ -65,7 +65,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
-                  className="fixed left-3 right-3 top-16 z-[120] overflow-hidden rounded-2xl border border-gray-200/80 bg-white/95 shadow-2xl shadow-slate-900/15 backdrop-blur-xl dark:border-white/10 dark:bg-gray-950/95 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-96"
+                  className="fixed left-3 right-3 top-16 z-[120] overflow-hidden rounded-2xl border border-gray-200/80 bg-white/95 shadow-2xl shadow-slate-900/15 backdrop-blur-xl dark:border-slate-600/80 dark:bg-slate-950/95 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-96"
                 >
                   <div className="flex items-center justify-between border-b border-gray-200/80 px-4 py-3 dark:border-white/10">
                     <h3 className="flex items-center gap-2 font-semibold">
@@ -89,8 +89,8 @@ export function Header({ onMenuClick }: HeaderProps) {
                         )}
                       >
                         <span className="text-sm font-medium">{n.title}</span>
-                        <span className="text-xs text-gray-500">{n.message}</span>
-                        <span className="text-xs text-gray-400">{formatRelativeTime(n.createdAt)}</span>
+                        <span className="text-xs text-gray-500 dark:text-slate-300">{n.message}</span>
+                        <span className="text-xs text-gray-400 dark:text-slate-400">{formatRelativeTime(n.createdAt)}</span>
                       </button>
                     ))}
                   </div>
@@ -120,7 +120,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
-                  className="fixed left-3 right-3 top-16 z-[120] overflow-hidden rounded-2xl border border-gray-200/80 bg-white/95 py-1 shadow-2xl shadow-slate-900/15 backdrop-blur-xl dark:border-white/10 dark:bg-gray-950/95 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-56"
+                  className="fixed left-3 right-3 top-16 z-[120] overflow-hidden rounded-2xl border border-gray-200/80 bg-white/95 py-1 shadow-2xl shadow-slate-900/15 backdrop-blur-xl dark:border-slate-600/80 dark:bg-slate-950/95 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-56"
                 >
                   <div className="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user?.name}</p>

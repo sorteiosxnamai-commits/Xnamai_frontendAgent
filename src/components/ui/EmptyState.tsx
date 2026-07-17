@@ -11,12 +11,12 @@ interface EmptyStateProps {
 export function EmptyState({ icon: Icon, title, description, action }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-        <Icon className="h-7 w-7 text-gray-400" />
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800">
+        <Icon className="h-7 w-7 text-gray-400 dark:text-slate-300" />
       </div>
       <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{title}</h3>
       {description && (
-        <p className="mt-1 max-w-sm text-sm text-gray-500 dark:text-gray-400">{description}</p>
+        <p className="mt-1 max-w-sm text-sm text-gray-500 dark:text-slate-300">{description}</p>
       )}
       {action && <div className="mt-4">{action}</div>}
     </div>
@@ -27,14 +27,14 @@ export function Loading({ className, text = 'Carregando...' }: { className?: str
   return (
     <div className={cn('flex flex-col items-center justify-center py-12', className)}>
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-600 border-t-transparent" />
-      <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">{text}</p>
+      <p className="mt-3 text-sm text-gray-500 dark:text-slate-300">{text}</p>
     </div>
   );
 }
 
 export function Skeleton({ className }: { className?: string }) {
   return (
-    <div className={cn('animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700', className)} />
+    <div className={cn('animate-pulse rounded-lg bg-gray-200 dark:bg-slate-700', className)} />
   );
 }
 

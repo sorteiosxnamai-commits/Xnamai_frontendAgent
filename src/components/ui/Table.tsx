@@ -34,12 +34,12 @@ export function Table<T>({
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-gray-200 dark:border-gray-700">
+              <tr className="border-b border-gray-200 dark:border-slate-600/70">
             {columns.map((col) => (
               <th
                 key={col.key}
                 className={cn(
-                  'px-4 py-3 font-medium text-gray-500 dark:text-gray-400',
+                  'px-4 py-3 font-medium text-gray-500 dark:text-slate-300',
                   col.className,
                 )}
               >
@@ -54,12 +54,12 @@ export function Table<T>({
               key={keyExtractor(item)}
               onClick={() => onRowClick?.(item)}
               className={cn(
-                'border-b border-gray-100 transition-colors dark:border-gray-800',
-                onRowClick && 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50',
+                'border-b border-gray-100 transition-colors dark:border-slate-700/70',
+                onRowClick && 'cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/70',
               )}
             >
               {columns.map((col) => (
-                <td key={col.key} className={cn('px-4 py-3 text-gray-900 dark:text-gray-100', col.className)}>
+                <td key={col.key} className={cn('px-4 py-3 text-gray-900 dark:text-slate-100', col.className)}>
                   {col.render
                     ? col.render(item)
                     : String((item as Record<string, unknown>)[col.key] ?? '')}

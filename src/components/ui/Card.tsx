@@ -17,7 +17,7 @@ export function Card({ children, className, title, subtitle, icon: Icon, action 
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        'rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900',
+        'rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/90',
         className,
       )}
     >
@@ -30,8 +30,8 @@ export function Card({ children, className, title, subtitle, icon: Icon, action 
               </div>
             )}
             <div>
-              {title && <h3 className="font-semibold text-gray-900 dark:text-gray-100">{title}</h3>}
-              {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
+              {title && <h3 className="font-semibold text-gray-900 dark:text-slate-50">{title}</h3>}
+              {subtitle && <p className="text-sm text-gray-500 dark:text-slate-300">{subtitle}</p>}
             </div>
           </div>
           {action}
