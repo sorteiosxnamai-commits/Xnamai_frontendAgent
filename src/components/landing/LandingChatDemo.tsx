@@ -106,19 +106,19 @@ export function LandingChatDemo() {
       transition={{ delay: 0.5 }}
       className="relative mx-auto mt-16 max-w-5xl"
     >
-      <div className="rounded-2xl border border-white/10 bg-gray-900/80 p-2 shadow-2xl shadow-blue-900/20 backdrop-blur">
-        <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
+      <div className="rounded-2xl border border-slate-400/25 bg-slate-900/95 p-2 shadow-2xl shadow-blue-900/30 backdrop-blur">
+        <div className="flex items-center gap-2 border-b border-slate-400/20 px-4 py-3">
           <div className="flex gap-1.5">
             <div className="h-3 w-3 rounded-full bg-red-500/80" />
             <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
             <div className="h-3 w-3 rounded-full bg-green-500/80" />
           </div>
-          <span className="flex-1 text-center text-xs text-gray-500">app.nitrus.ai/conversao</span>
+          <span className="flex-1 text-center text-xs text-slate-300">app.chatbo.ai/conversao</span>
         </div>
 
         <div className="grid grid-cols-12 gap-2 p-4">
           {/* Lista de conversas */}
-          <div className="col-span-3 space-y-2 rounded-lg bg-gray-800/50 p-3">
+          <div className="col-span-3 space-y-2 rounded-lg border border-slate-400/15 bg-slate-800/80 p-3">
             {SIDEBAR_CHATS.map((chat, i) => (
               <motion.div
                 key={chat.name}
@@ -154,7 +154,7 @@ export function LandingChatDemo() {
           </div>
 
           {/* Chat central */}
-          <div className="col-span-6 flex flex-col rounded-lg bg-gray-800/50 p-4">
+          <div className="col-span-6 flex flex-col rounded-lg border border-slate-400/15 bg-slate-800/80 p-4">
             <div className="mb-4 flex items-center gap-2">
               <div className="relative">
                 <div className="h-8 w-8 rounded-full bg-blue-600/40" />
@@ -195,7 +195,7 @@ export function LandingChatDemo() {
                       transition={{ type: 'spring', stiffness: 380, damping: 28 }}
                       className={
                         msg.from === 'customer'
-                          ? 'mr-12 rounded-2xl rounded-tl-sm bg-gray-700/60 p-3 text-xs text-gray-300'
+                          ? 'mr-12 rounded-2xl rounded-tl-sm bg-slate-700/80 p-3 text-xs text-slate-200'
                           : 'ml-12 rounded-2xl rounded-tr-sm bg-blue-600/30 p-3 text-xs text-blue-100'
                       }
                     >
@@ -210,7 +210,7 @@ export function LandingChatDemo() {
           </div>
 
           {/* Assistente ChatBô */}
-          <div className="col-span-3 space-y-2 rounded-lg bg-gray-800/50 p-3">
+          <div className="col-span-3 space-y-2 rounded-lg border border-slate-400/15 bg-slate-800/80 p-3">
             <AnimatePresence>
               {copilotVisible && (
                 <motion.div

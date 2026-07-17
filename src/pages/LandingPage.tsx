@@ -189,16 +189,16 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mx-auto max-w-4xl font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-[3.4rem]"
+            className="mx-auto max-w-4xl font-display text-4xl font-bold leading-tight tracking-tight text-slate-50 sm:text-5xl lg:text-[3.4rem]"
           >
-            Transforme conversas em vendas com a IA comercial do <span className="gradient-text">ChatBô</span>
+            Transforme conversas em vendas com a IA comercial do <span className="landing-gradient-text">ChatBô</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="mx-auto mt-6 max-w-2xl text-lg text-gray-400"
+            className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-300"
           >
             Centralize canais, qualifique leads, gere respostas inteligentes e acompanhe oportunidades em um cockpit feito para acelerar receita.
           </motion.p>
@@ -215,7 +215,7 @@ export function LandingPage() {
             <Button
               size="lg"
               variant="outline"
-              className="min-w-[200px] border-gray-600 text-white hover:bg-white/5"
+              className="min-w-[200px] border-slate-400/50 text-white hover:border-cyan-300/70 hover:bg-cyan-400/10 focus-visible:ring-cyan-300"
               onClick={() => navigate('/login')}
             >
               Entrar na plataforma
@@ -226,7 +226,7 @@ export function LandingPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="mt-4 text-sm text-gray-500"
+            className="mt-4 text-sm text-slate-400"
           >
             5 dias grátis · Treinamento incluso · Sem cartão
           </motion.p>
@@ -239,7 +239,7 @@ export function LandingPage() {
             transition={{ delay: 0.55 }}
             className="mt-12"
           >
-            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-slate-600">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
               Feito para operações comerciais em movimento
             </p>
             <Marquee duration={28}>
@@ -259,7 +259,7 @@ export function LandingPage() {
             transition={{ repeat: Infinity, duration: 2 }}
             className="mt-8 flex justify-center"
           >
-            <ChevronDown className="h-6 w-6 text-gray-600" />
+            <ChevronDown className="h-6 w-6 text-slate-400" />
           </motion.div>
         </div>
       </section>
@@ -296,7 +296,7 @@ export function LandingPage() {
                     value
                   )}
                 </p>
-                <p className="mt-1 text-sm text-gray-500">{label}</p>
+                <p className="mt-1 text-sm text-slate-400">{label}</p>
               </motion.div>
             );
           })}
@@ -309,7 +309,7 @@ export function LandingPage() {
           <h2 className="text-3xl font-bold sm:text-4xl">
             Leads de todos os canais em uma so tela
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-gray-400">
+          <p className="mx-auto mt-4 max-w-2xl text-slate-300">
             Conversas, histórico e oportunidades conectadas para vender com mais velocidade.
           </p>
         </div>
@@ -324,7 +324,7 @@ export function LandingPage() {
                   className={`h-8 w-8 ${color} transition-all duration-300 ease-out group-hover:-translate-y-0.5 group-hover:scale-110`}
                 />
               </div>
-              <span className="mt-4 text-sm font-medium text-gray-300 transition-colors duration-300 group-hover:text-white">
+                <span className="mt-4 text-sm font-medium text-slate-300 transition-colors duration-300 group-hover:text-white">
                 {name}
               </span>
             </div>
@@ -337,7 +337,7 @@ export function LandingPage() {
         <AuroraBackground withGrid={false} className="opacity-45" />
         <div className="relative text-center">
           <h2 className="text-3xl font-bold sm:text-4xl">Ferramentas para converter mais</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-gray-400">
+          <p className="mx-auto mt-4 max-w-2xl text-slate-300">
             Ecossistema comercial para qualificar, responder, vender e recuperar oportunidades.
           </p>
         </div>
@@ -354,7 +354,7 @@ export function LandingPage() {
                 <Icon className="h-6 w-6" />
               </div>
               <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-gray-400">{desc}</p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-300">{desc}</p>
             </div>
           ))}
         </div>
@@ -371,7 +371,7 @@ export function LandingPage() {
               </div>
               <div>
                 <h4 className="font-semibold">{title}</h4>
-                <p className="mt-1 text-sm text-gray-400">{desc}</p>
+                <p className="mt-1 text-sm text-slate-300">{desc}</p>
               </div>
             </div>
           ))}
@@ -382,7 +382,7 @@ export function LandingPage() {
       <LandingSection id="segmentos">
         <div className="text-center">
           <h2 className="font-display text-3xl font-bold sm:text-4xl">Receita para cada operação comercial</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-gray-400">
+          <p className="mx-auto mt-4 max-w-2xl text-slate-300">
             Do pequeno negócio a operações maiores, com fluxos adaptáveis ao seu ciclo de vendas.
           </p>
         </div>
@@ -404,8 +404,8 @@ export function LandingPage() {
           ].map(({ title, desc, cta }) => (
             <div key={title} className="rounded-2xl border border-white/5 bg-gradient-to-b from-gray-900/80 to-gray-950 p-6">
               <h3 className="text-xl font-semibold">{title}</h3>
-              <p className="mt-3 text-sm text-gray-400">{desc}</p>
-              <Button variant="outline" className="mt-6 border-gray-700 text-gray-300 hover:bg-white/5" onClick={() => navigate('/login')}>
+              <p className="mt-3 text-sm text-slate-300">{desc}</p>
+              <Button variant="outline" className="mt-6 border-slate-400/50 text-slate-100 hover:border-cyan-300/70 hover:bg-cyan-400/10" onClick={() => navigate('/login')}>
                 {cta}
               </Button>
             </div>
@@ -425,7 +425,7 @@ export function LandingPage() {
             <Zap className="h-6 w-6 text-blue-300" />
           </motion.div>
           <h2 className="text-3xl font-bold sm:text-4xl">Como funciona o ChatBô</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-gray-400">
+          <p className="mx-auto mt-4 max-w-2xl text-slate-300">
             Do primeiro contato ao fechamento — três passos para acelerar sua receita.
           </p>
         </div>
@@ -447,7 +447,7 @@ export function LandingPage() {
                 <Icon className={`h-7 w-7 ${color} transition-transform duration-300 group-hover:scale-110`} />
               </div>
               <h3 className="mt-5 text-xl font-semibold text-white">{title}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-gray-400">{desc}</p>
+              <p className="mt-3 text-sm leading-relaxed text-slate-300">{desc}</p>
             </motion.div>
           ))}
         </div>
@@ -468,7 +468,7 @@ export function LandingPage() {
                 <Icon className="h-7 w-7" />
               </div>
               <h3 className="mt-4 font-semibold">{title}</h3>
-              <p className="mt-2 text-sm text-gray-400">{desc}</p>
+              <p className="mt-2 text-sm text-slate-300">{desc}</p>
             </div>
           ))}
         </div>
@@ -486,10 +486,10 @@ export function LandingPage() {
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                 >
                   {faq.q}
-                  <ChevronDown className={`h-5 w-5 shrink-0 text-gray-500 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-5 w-5 shrink-0 text-slate-400 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
                 </button>
                 {openFaq === i && (
-                  <div className="border-t border-white/5 px-5 py-4 text-sm text-gray-400">
+                  <div className="border-t border-white/10 px-5 py-4 text-sm text-slate-300">
                     {faq.a}
                   </div>
                 )}

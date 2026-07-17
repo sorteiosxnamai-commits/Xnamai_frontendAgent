@@ -73,6 +73,13 @@
     background-clip: text;
   }
 
+  .landing-gradient-text {
+    background: linear-gradient(110deg, #67e8f9 0%, #34d399 48%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
   .dashboard-grid-bg {
     background-image:
       linear-gradient(rgb(37 99 235 / 0.08) 1px, transparent 1px),
