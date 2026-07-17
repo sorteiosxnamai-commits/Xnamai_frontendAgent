@@ -19,6 +19,16 @@
 
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Sora", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-chatbo-background: #020617;
+  --color-chatbo-background-elevated: #07101f;
+  --color-chatbo-surface: #0f172a;
+  --color-chatbo-surface-secondary: #151f33;
+  --color-chatbo-border: rgb(148 163 184 / 0.18);
+  --color-chatbo-border-strong: rgb(148 163 184 / 0.3);
+  --color-chatbo-cyan: #22d3ee;
+  --color-chatbo-teal: #2dd4bf;
+  --color-chatbo-purple: #8b5cf6;
 }
 
 @layer base {
@@ -27,7 +37,7 @@
   }
 
   body {
-    @apply bg-slate-50 text-gray-900 antialiased dark:bg-[#0b1220] dark:text-gray-100;
+    @apply bg-slate-50 text-gray-900 antialiased dark:bg-chatbo-background dark:text-slate-100;
     font-family: var(--font-sans);
   }
 
@@ -42,6 +52,17 @@
   h2,
   h3 {
     @apply text-gray-950 dark:text-white;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    &:focus-visible {
+      outline: 2px solid #67e8f9;
+      outline-offset: 2px;
+    }
   }
 
   ::-webkit-scrollbar {
@@ -61,13 +82,13 @@
 
   .gradient-hero {
     background:
-      radial-gradient(circle at 18% 18%, rgb(37 99 235 / 0.32), transparent 34%),
-      radial-gradient(circle at 82% 16%, rgb(239 68 68 / 0.28), transparent 30%),
-      linear-gradient(135deg, #0b1220 0%, #1d4ed8 48%, #dc2626 100%);
+      radial-gradient(circle at 18% 18%, rgb(34 211 238 / 0.2), transparent 34%),
+      radial-gradient(circle at 82% 16%, rgb(139 92 246 / 0.18), transparent 30%),
+      linear-gradient(135deg, #020617 0%, #12356b 52%, #31215f 100%);
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, #2563eb 0%, #60a5fa 38%, #ef4444 100%);
+    background: linear-gradient(110deg, #67e8f9 0%, #34d399 48%, #a78bfa 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -82,17 +103,17 @@
 
   .dashboard-grid-bg {
     background-image:
-      linear-gradient(rgb(37 99 235 / 0.08) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(239 68 68 / 0.06) 1px, transparent 1px);
+      linear-gradient(rgb(34 211 238 / 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(139 92 246 / 0.06) 1px, transparent 1px);
     background-size: 24px 24px;
   }
 
   .nitrus-blue-glow {
-    box-shadow: 0 20px 60px rgb(37 99 235 / 0.22);
+    box-shadow: 0 20px 60px rgb(34 211 238 / 0.18);
   }
 
   .nitrus-red-glow {
-    box-shadow: 0 20px 60px rgb(239 68 68 / 0.18);
+    box-shadow: 0 20px 60px rgb(139 92 246 / 0.16);
   }
 
   .nitrus-card {
@@ -106,7 +127,7 @@
 
 @layer utilities {
   .gradient-text-alt {
-    background: linear-gradient(135deg, #60a5fa, #2563eb, #ef4444);
+    background: linear-gradient(110deg, #22d3ee, #3b82f6, #8b5cf6);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -141,6 +162,33 @@
 
   .animate-pulse-ring {
     animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@layer utilities {
+  /* Keep legacy utility classes readable when a page is rendered in dark mode. */
+  .dark .text-gray-950,
+  .dark .text-gray-900,
+  .dark .text-gray-800,
+  .dark .text-gray-700 {
+    color: #f8fafc;
+  }
+
+  .dark .text-gray-600,
+  .dark .text-gray-500,
+  .dark .text-gray-400 {
+    color: #cbd5e1;
+  }
+
+  .dark .border-gray-100,
+  .dark .border-gray-200,
+  .dark .border-gray-300 {
+    border-color: rgb(148 163 184 / 0.22);
+  }
+
+  .dark .border-gray-600,
+  .dark .border-gray-700 {
+    border-color: rgb(148 163 184 / 0.3);
   }
 }
 
