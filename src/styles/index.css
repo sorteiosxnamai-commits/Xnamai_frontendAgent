@@ -2,6 +2,43 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  --chatbo-background: #f8fafc;
+  --chatbo-foreground: #0f172a;
+  --chatbo-card: #ffffff;
+  --chatbo-card-foreground: #0f172a;
+  --chatbo-popover: #ffffff;
+  --chatbo-popover-foreground: #0f172a;
+  --chatbo-muted: #f1f5f9;
+  --chatbo-muted-foreground: #475569;
+  --chatbo-secondary: #e2e8f0;
+  --chatbo-secondary-foreground: #0f172a;
+  --chatbo-accent: #dbeafe;
+  --chatbo-accent-foreground: #0f172a;
+  --chatbo-border-token: #cbd5e1;
+  --chatbo-input-token: #94a3b8;
+  --chatbo-ring-token: #0891b2;
+}
+
+html.dark {
+  color-scheme: dark;
+  --chatbo-background: #020617;
+  --chatbo-foreground: #f8fafc;
+  --chatbo-card: #0f172a;
+  --chatbo-card-foreground: #f8fafc;
+  --chatbo-popover: #0f172a;
+  --chatbo-popover-foreground: #f8fafc;
+  --chatbo-muted: #172033;
+  --chatbo-muted-foreground: #a8b3c7;
+  --chatbo-secondary: #111c30;
+  --chatbo-secondary-foreground: #eaf0f8;
+  --chatbo-accent: #172554;
+  --chatbo-accent-foreground: #f8fafc;
+  --chatbo-border-token: rgb(148 163 184 / 0.22);
+  --chatbo-input-token: rgb(148 163 184 / 0.3);
+  --chatbo-ring-token: #22d3ee;
+}
+
 @theme {
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
@@ -52,6 +89,20 @@
   h2,
   h3 {
     @apply text-gray-950 dark:text-white;
+  }
+
+  html.dark h1,
+  html.dark h2,
+  html.dark h3,
+  html.dark h4,
+  html.dark h5,
+  html.dark h6 {
+    color: var(--chatbo-foreground);
+  }
+
+  ::selection {
+    background: rgb(34 211 238 / 0.45);
+    color: #ffffff;
   }
 
   button,
